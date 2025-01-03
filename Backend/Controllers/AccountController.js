@@ -46,24 +46,8 @@ export const registerUser = async (req, res) => {
     });
 
     await newUser.save();
+    await sendEmail(email, token);
 
-    // Gửi mã xác thực qua email
-    const transporter = nodemailer.createTransport({
-      service: "gmail",
-      auth: {
-        user: "trungnguyenhs3105@gmail.com",
-        pass: "ugtu fnsp xbqa vdff",
-      },
-    });
-
-    const mailOptions = {
-      from: "trungnguyenhs3105@gmail.com",
-      to: email,
-      subject: "Xác thực tài khoản",
-      text: `Mã xác thực của bạn là: ${verificationCode}. Mã này sẽ hết hạn sau 15 phút.`,
-    };
-
-    await transporter.sendMail(mailOptions);
     res.status(201).json({
       message: "Tài khoản đã được tạo. Vui lòng kiểm tra email để xác thực.",
     });
