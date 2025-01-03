@@ -1,6 +1,7 @@
 import express from "express";
 import {
   checkAuth,
+  checkUserStatus,
   dataRoute,
   loginUser,
   logoutUser,
@@ -17,5 +18,6 @@ router.post("/logout", logoutUser);
 router.get("/data/role", dataRoute);
 router.post("/verify-email", verifyEmail);
 router.get("/check", protectRoute, checkAuth);
+router.get("/check-status", protectRoute, checkUserStatus);
 
 export default router;

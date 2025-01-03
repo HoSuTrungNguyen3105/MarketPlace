@@ -5,6 +5,7 @@ import Register from "../pages/Auth/Register.jsx";
 import Profile from "../components/Profile/Profile.jsx";
 import Home from "../pages/Home/Home.jsx"; // Import Home nếu chưa có
 import { useAuthStore } from "../store/useAuthStore"; // Import store
+import SearchPage from "../components/Main/SearchPage.jsx";
 
 // Tạo PrivateRoute cho các trang yêu cầu đăng nhập
 const PrivateRoute = ({ children }) => {
@@ -33,10 +34,10 @@ const router = createBrowserRouter([
         ),
       },
       {
-        path: "/setting",
+        path: "/search",
         element: (
           <PrivateRoute>
-            <div>Setting</div>
+            <SearchPage />
           </PrivateRoute>
         ),
       },

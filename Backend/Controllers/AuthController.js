@@ -220,47 +220,26 @@ export const deleteAccount = async (req, res) => {
     res.status(500).json({ message: "Internal Server Error" });
   }
 };
-export const updateProfile = async (req, res) => {
+export const checkUserStatus = async (req, res) => {
   try {
-    const { profilePic } = req.body;
-    const userId = req.user._id;
+    const userId = req.user.id; // Lấy userId từ token (middleware auth)
+    const user = await UserModel.findById(userId);
 
-    if (!profilePic) {
-      return res.status(400).json({ message: "Profile pic is required" });
+    if (!user) {
+      return res.status(404).json({ message: "Người dùng không tồn tại" });
     }
 
-    const uploadResponse = await cloudinary.uploader.upload(profilePic);
-    const updatedUser = await UserModel.findByIdAndUpdate(
-      userId,
-      { profilePic: uploadResponse.secure_url },
-      { new: true }
-    );
+    if (user.isBlocked) {
+      return res.status(403).json({ message: "Tài khoản đã bị khóa" });
+    }
 
-    res.status(200).json(updatedUser);
+    res.status(200).json({ message: "Tài khoản hợp lệ" });
   } catch (error) {
-    console.log("error in update profile:", error);
-    res.status(500).json({ message: "Internal server error" });
+    console.error("Error in checking user status:", error.message);
+    res.status(500).json({ message: "Lỗi server" });
   }
 };
-// Cập nhật thông tin người dùng
-export const updateUserInfo = async (req, res) => {
-  try {
-    const { username, firstname, lastname, email } = req.body;
-    const userId = req.user._id;
 
-    // Cập nhật các thông tin người dùng (không có ảnh)
-    const updatedUser = await UserModel.findByIdAndUpdate(
-      userId,
-      { username, firstname, lastname, email },
-      { new: true }
-    );
-
-    res.status(200).json(updatedUser);
-  } catch (error) {
-    console.log("error in update user info:", error);
-    res.status(500).json({ message: "Internal server error" });
-  }
-};
 export const forgetPassword = async (req, res) => {
   const { email } = req.body;
   try {

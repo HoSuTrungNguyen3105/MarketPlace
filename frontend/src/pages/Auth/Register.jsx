@@ -3,6 +3,7 @@ import { useAuthStore } from "../../store/useAuthStore";
 import toast from "react-hot-toast";
 import { Check, Eye, EyeOff, Loader } from "lucide-react";
 import { Link } from "react-router-dom";
+import "./Auth.css";
 
 const Register = () => {
   return (
@@ -26,18 +27,21 @@ function Auth() {
     username: "",
     email: "",
     password: "",
+    phone: "", // Đảm bảo bạn có trường phone
     firstname: "",
     lastname: "",
   });
 
   const { signup, verifyEmail, isSigningUp, isVerifying, registerError } =
     useAuthStore();
+
   // Regex checks for each requirement
   const lengthCheck = formData.password.length >= 6;
   const letterCheck = /[A-Za-z]/.test(formData.password);
   const specialCheck =
     /[!@#$%^&*(),.?":{}|<>]/.test(formData.password) ||
     /\d/.test(formData.password);
+
   const getPasswordStrength = (password) => {
     let strength = 0;
 
@@ -117,12 +121,13 @@ function Auth() {
               }
             />
           </div>
-          {/* Email */}
+
+          {/* Phone */}
           <div>
             <input
               type="text"
               className="infoInput"
-              placeholder="***********"
+              placeholder="Số điện thoại"
               value={formData.phone}
               onChange={(e) =>
                 setFormData({ ...formData, phone: e.target.value })
@@ -189,6 +194,7 @@ function Auth() {
               "Tạo Tài Khoản"
             )}
           </button>
+
           {/* Link to Sign In */}
           <div className="text-center">
             <p className="text-base-content/60" style={{ fontSize: "15px" }}>
@@ -202,6 +208,7 @@ function Auth() {
               </Link>
             </p>
           </div>
+
           {/* Password strength criteria (Now below submit button) */}
           <div className="mt-2">
             <ul className="list-none">
@@ -233,6 +240,7 @@ function Auth() {
                 {specialCheck && <Check size={16} />}
                 <span>Chứa ít nhất một số hoặc ký tự đặc biệt</span>
               </li>
+
               {/* Password strength indicator */}
               <div className="mt-2 text-sm font-medium">
                 Đánh giá mật khẩu:{" "}

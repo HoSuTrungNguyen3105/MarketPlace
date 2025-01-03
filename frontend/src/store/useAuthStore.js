@@ -110,7 +110,7 @@ export const useAuthStore = create((set, get) => ({
   updateProfile: async (data) => {
     set({ isUpdatingProfile: true });
     try {
-      const res = await axiosInstance.put("/auth/update-profile", data);
+      const res = await axiosInstance.put("/user/update-profile", data);
       set({ authUser: res.data });
       toast.success("Cập nhật thông tin cá nhân thành công!");
     } catch (error) {
@@ -140,7 +140,7 @@ export const useAuthStore = create((set, get) => ({
 
     try {
       const response = await axiosInstance.put(
-        "/auth/update-profile-info",
+        "/user/update-profile-info",
         data
       );
       set({ authUser: response.data }); // Ghi đè bằng dữ liệu từ server

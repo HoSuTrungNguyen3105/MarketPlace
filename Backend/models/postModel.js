@@ -47,6 +47,16 @@ const postSchema = mongoose.Schema(
       type: Number, // Số lượt xem bài viết
       default: 0,
     },
+    reports: {
+      type: [
+        {
+          reportedBy: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
+          reportedAt: { type: Date, default: Date.now },
+        },
+      ],
+      default: [], // Thêm giá trị mặc định là mảng rỗng
+    },
+    isApproved: { type: Boolean, default: false },
   },
   {
     timestamps: true, // Tự động thêm `createdAt` và `updatedAt`
