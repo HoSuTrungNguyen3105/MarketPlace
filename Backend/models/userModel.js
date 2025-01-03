@@ -28,11 +28,9 @@ const userSchema = mongoose.Schema(
     },
     phone: {
       type: Number,
-      required: true,
     },
     location: {
       type: String, // Địa chỉ hoặc vị trí rao bán
-      required: true,
     },
     role: {
       type: String,
@@ -43,7 +41,12 @@ const userSchema = mongoose.Schema(
       type: String,
       default: "",
     },
-    connect: [],
+    connect: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "User",
+      },
+    ],
     isBlocked: {
       type: Boolean,
       default: false, // Mặc định người dùng không bị chặn

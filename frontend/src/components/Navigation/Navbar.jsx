@@ -1,6 +1,8 @@
 import React, { useEffect, useState } from "react";
 import { useLocation } from "react-router-dom";
 import { TypeAnimation } from "react-type-animation";
+import { useAuthStore } from "../../store/useAuthStore";
+import { LogOut } from "lucide-react";
 
 const Navbar = () => {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
@@ -9,6 +11,7 @@ const Navbar = () => {
   const [isSearchPage, setIsSearchPage] = useState(false);
   const params = useLocation();
   const searchText = params.search.slice(3);
+  const { logout, authUser } = useAuthStore();
 
   useEffect(() => {
     const isSearch = location.pathname === "/search";
@@ -28,31 +31,27 @@ const Navbar = () => {
   //   };
 
   return (
-    <header className="z-[100] h-[--m-top] fixed top-0 left-0 w-full flex items-center bg-white/80 sky-50 backdrop-blur-xl border-b border-slate-200">
-      <div className="2xl:w-[--w-side] lg:w-[--w-side-sm]">
-        <div className="flex items-center gap-1">
-          <button className="flex items-center justify-center w-8 h-8 text-xl rounded-full hover:bg-gray-100 xl:hidden group">
-            <icon-icon
-              name="menu-outline"
-              className="text-2xl group-aria-expanded:hidden"
-            ></icon-icon>
-            <ion-icon
-              name="close-outline"
-              className="hidden text-2xl group-aria-expanded:block"
-            ></ion-icon>
-          </button>
+    <header className="h-24 lg:h-20 lg:shadow-md sticky top-0 z-40 flex flex-col justify-center gap-1 bg-white">
+      <button className="flex items-center justify-center w-8 h-8 text-xl rounded-full hover:bg-gray-100 xl:hidden group">
+        <icon-icon
+          name="menu-outline"
+          className="text-2xl group-aria-expanded:hidden"
+        ></icon-icon>
+        <ion-icon
+          name="close-outline"
+          className="hidden text-2xl group-aria-expanded:block"
+        ></ion-icon>
+      </button>
 
-          <div id="logo" className="flex items-center">
-            <a className="flex items-center">
-              <img
-                src="~/images/logo.png"
-                className="w-10 md:block hidden"
-                alt="Logo"
-              />
-              <span className="ml-2">Circle App</span>
-            </a>
-          </div>
-        </div>
+      <div id="logo" className="flex items-center">
+        <a className="flex items-center">
+          <img
+            src="~/images/logo.png"
+            className="w-10 md:block hidden"
+            alt="Logo"
+          />
+          <span className="ml-2">Circle App</span>
+        </a>
       </div>
 
       <div className="flex-1 relative">
@@ -182,12 +181,24 @@ const Navbar = () => {
                 </div>
               </a>
               <hr />
-              <nav className="bg-gray-100 p-4 rounded-md shadow-md">
-                {/* {userRole === "user" && (
+              <nav>
+                {authUser && (
+                  <>
+                    {/* {userRole === "user" && (
                   <a href="#" onClick={confirmLogout} className="text-lg">
                     Logout
                   </a>
                 )} */}
+
+                    <button
+                      className="flex gap-2 items-center text-gray-800 hover:bg-primary/20 transition-colors duration-200"
+                      onClick={logout}
+                    >
+                      <LogOut className="w-5 h-5" />
+                      <span className="hidden sm:inline">Logout</span>
+                    </button>
+                  </>
+                )}
               </nav>
             </div>
           </div>
