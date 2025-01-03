@@ -24,12 +24,6 @@ const postSchema = mongoose.Schema(
     price: {
       type: Number, // Giá sản phẩm/dịch vụ
       required: true,
-      validate: {
-        validator: function (v) {
-          return v > 0; // Giá phải lớn hơn 0
-        },
-        message: (props) => `${props.value} không phải là giá hợp lệ!`,
-      },
     },
     location: {
       type: String, // Địa chỉ hoặc vị trí rao bán
@@ -41,7 +35,7 @@ const postSchema = mongoose.Schema(
       default: [],
     },
     contact: {
-      type: Number, // Số điện thoại liên hệ
+      type: mongoose.Schema.Types.ObjectId, // Tham chiếu đến User
       required: true,
       ref: "User",
     },

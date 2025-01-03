@@ -30,6 +30,13 @@ export const createPost = async (req, res) => {
         .json({ message: "Tiêu đề bị thiếu", field: "title" });
     }
 
+    // Kiểm tra giá bài viết
+    if (!price || price <= 0) {
+      return res.status(400).json({
+        message: "Giá không hợp lệ. Giá phải lớn hơn 0.",
+        field: "price",
+      });
+    }
     // Kiểm tra danh mục
     const allowedCategories = [
       "Electronics",
@@ -115,11 +122,9 @@ export const getPostToProfile = async (req, res) => {
     res.status(200).json(posts);
   } catch (error) {
     console.error("Lỗi lấy bài viết của người dùng:", error);
-    res
-      .status(500)
-      .json({
-        message: "Lỗi lấy bài viết của người dùng",
-        error: error.message,
-      });
+    res.status(500).json({
+      message: "Lỗi lấy bài viết của người dùng",
+      error: error.message,
+    });
   }
 };
