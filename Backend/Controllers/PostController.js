@@ -20,24 +20,22 @@ export const createPost = async (req, res) => {
     if (!user) {
       return res
         .status(400)
-        .json({ message: "User không tìm thấy", field: "userId" });
+        .json({ message: "Người dùng không tồn tại", field: "userId" });
     }
 
-    // Kiểm tra tiêu đề bài viết
+    // Kiểm tra các trường bắt buộc
     if (!title || title.trim().length === 0) {
       return res
         .status(400)
-        .json({ message: "Tiêu đề bị thiếu", field: "title" });
+        .json({ message: "Tiêu đề là bắt buộc", field: "title" });
     }
 
-    // Kiểm tra giá bài viết
     if (!price || price <= 0) {
-      return res.status(400).json({
-        message: "Giá không hợp lệ. Giá phải lớn hơn 0.",
-        field: "price",
-      });
+      return res
+        .status(400)
+        .json({ message: "Giá phải lớn hơn 0", field: "price" });
     }
-    // Kiểm tra danh mục
+
     const allowedCategories = [
       "Electronics",
       "Furniture",
@@ -51,14 +49,12 @@ export const createPost = async (req, res) => {
         .json({ message: "Danh mục không hợp lệ", field: "category" });
     }
 
-    // Kiểm tra giá
-    if (!price || price <= 0) {
+    if (!location || location.trim().length === 0) {
       return res
         .status(400)
-        .json({ message: "Giá phải lớn hơn 0", field: "price" });
+        .json({ message: "Địa chỉ là bắt buộc", field: "location" });
     }
 
-    // Kiểm tra số điện thoại liên hệ
     const phoneRegex = /^[0-9]{10,15}$/;
     if (!phoneRegex.test(contact)) {
       return res
@@ -68,12 +64,20 @@ export const createPost = async (req, res) => {
 
     // Upload hình ảnh lên Cloudinary (nếu có)
     const uploadedImages = [];
-    if (images && images.length > 0) {
+    if (Array.isArray(images) && images.length > 0) {
       for (const image of images) {
-        const uploadResponse = await cloudinary.uploader.upload(image, {
-          resource_type: "image",
-        });
-        uploadedImages.push(uploadResponse.secure_url);
+        try {
+          const uploadResponse = await cloudinary.uploader.upload(image, {
+            resource_type: "image",
+          });
+          uploadedImages.push(uploadResponse.secure_url);
+        } catch (uploadError) {
+          console.error("Lỗi khi tải lên ảnh:", uploadError);
+          return res.status(500).json({
+            message: "Lỗi khi tải lên hình ảnh",
+            error: uploadError.message,
+          });
+        }
       }
     }
 
@@ -91,11 +95,11 @@ export const createPost = async (req, res) => {
     });
 
     await newPost.save();
-    res.status(201).json(newPost);
+    return res.status(201).json(newPost);
   } catch (error) {
     console.error("Lỗi tạo bài viết:", error);
-    res.status(500).json({
-      message: "Lỗi tạo bài viết",
+    return res.status(500).json({
+      message: "Đã xảy ra lỗi trong quá trình tạo bài viết",
       error: error.message,
     });
   }

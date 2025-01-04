@@ -1,4 +1,9 @@
-import { Settings2Icon } from "lucide-react";
+import {
+  EggFried,
+  FileArchiveIcon,
+  FileEdit,
+  Settings2Icon,
+} from "lucide-react";
 import React from "react";
 
 const Sidebar = () => {
@@ -9,31 +14,19 @@ const Sidebar = () => {
           <ul>
             <li>
               <a href="#">
-                <img
-                  src="~/images/icons/home.png"
-                  className="w-6 inline-block mr-2"
-                  alt="Home"
-                />
+                <FileEdit />
                 <span>Feed</span>
               </a>
             </li>
             <li>
               <a href="#">
-                <img
-                  src="~/images/icons/page.png"
-                  className="w-6 inline-block mr-2"
-                  alt="Favorites"
-                />
+                <FileArchiveIcon />
                 <span>Favorites</span>
               </a>
             </li>
             <li>
               <a href="#">
-                <img
-                  src="~/images/icons/group-2.png"
-                  className="w-6 inline-block mr-2"
-                  alt="Friends"
-                />
+                <EggFried />
                 <span>Friends</span>
               </a>
             </li>

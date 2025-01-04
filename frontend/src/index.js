@@ -5,11 +5,15 @@ import App from "./App";
 import reportWebVitals from "./reportWebVitals";
 import { RouterProvider } from "react-router-dom";
 import router from "./routes/index.js";
+import { MantineProvider } from "@mantine/core"; // Thêm MantineProvider vào
 
 const root = ReactDOM.createRoot(document.getElementById("root"));
 root.render(
   <StrictMode>
-    <RouterProvider router={router} />
+    <MantineProvider withGlobalStyles withNormalizeCSS>
+      {/* Bao bọc RouterProvider trong MantineProvider */}
+      <RouterProvider router={router} />
+    </MantineProvider>
   </StrictMode>
 );
 

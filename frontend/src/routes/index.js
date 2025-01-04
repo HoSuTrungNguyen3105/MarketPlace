@@ -6,6 +6,7 @@ import Profile from "../components/Profile/Profile.jsx";
 import Home from "../pages/Home/Home.jsx"; // Import Home nếu chưa có
 import { useAuthStore } from "../store/useAuthStore"; // Import store
 import SearchPage from "../components/Main/SearchPage.jsx";
+import Posts from "../components/Post/Posts.jsx";
 
 // Tạo PrivateRoute cho các trang yêu cầu đăng nhập
 const PrivateRoute = ({ children }) => {
@@ -16,7 +17,7 @@ const PrivateRoute = ({ children }) => {
 // Tạo PublicRoute cho các trang không yêu cầu đăng nhập
 const PublicRoute = ({ children }) => {
   const { authUser } = useAuthStore();
-  return !authUser ? children : <Navigate to="/home" />;
+  return !authUser ? children : <Navigate to="/" />;
 };
 
 // Router
@@ -62,6 +63,14 @@ const router = createBrowserRouter([
         element: (
           <PrivateRoute>
             <Profile />
+          </PrivateRoute>
+        ),
+      },
+      {
+        path: "/post",
+        element: (
+          <PrivateRoute>
+            <Posts />
           </PrivateRoute>
         ),
       },

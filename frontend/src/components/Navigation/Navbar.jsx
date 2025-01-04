@@ -1,127 +1,137 @@
 import React, { useEffect, useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { TypeAnimation } from "react-type-animation";
+import { ArrowBigDown, LetterTextIcon, LogOut, Search } from "lucide-react";
+import ShareModal from "../Modal/ShareModal";
 import { useAuthStore } from "../../store/useAuthStore";
-import { ArrowBigDown, LogOut, Search } from "lucide-react";
+import { usePostStore } from "../../store/userPostStore";
 
 const Navbar = () => {
-  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
-  const [notificationsCount, setNotificationsCount] = useState(0);
-  const location = useLocation();
   const [isSearchPage, setIsSearchPage] = useState(false);
-  const params = useLocation();
-  const searchText = params.search ? params.search.slice(3) : ""; // Lấy giá trị search từ URL nếu có
-  const { logout, authUser } = useAuthStore();
+  const [modalOpened, setModalOpened] = useState(false);
+  const location = useLocation();
   const navigate = useNavigate();
+  const searchText = location.search ? location.search.slice(3) : ""; // Lấy giá trị query từ URL
+  const { logout, authUser } = useAuthStore();
+  const { createPost } = usePostStore();
 
-  useEffect(() => {
-    const isSearch = location.pathname === "/search";
-    setIsSearchPage(isSearch);
-  }, [location]);
-
-  const redirectToSearchPage = () => {
-    navigate("/search");
+  // Xử lý điều hướng đến trang tìm kiếm
+  const redirectToSearchPage = () => navigate("/search");
+  const handleSubmit = async (formData) => {
+    const newPost = await createPost(formData);
+    if (newPost) {
+      setModalOpened(false);
+    }
+  };
+  // Điều hướng đến route được chọn trong modal
+  const handleSelect = (route) => {
+    navigate(route);
+    setModalOpened(false);
   };
 
-  const handleOnChange = (e) => {
+  // Xử lý thay đổi trong ô tìm kiếm
+  const handleSearchChange = (e) => {
     const value = e.target.value;
     const url = `/search?q=${value}`;
     navigate(url);
   };
+
+  // Kiểm tra xem trang hiện tại có phải là trang tìm kiếm hay không
   useEffect(() => {
-    const isSearch = location.pathname === "/search";
-    setIsSearchPage(isSearch);
+    setIsSearchPage(location.pathname === "/search");
   }, [location]);
 
-  const toggleDropdown = () => {
-    setIsDropdownOpen((prevState) => !prevState);
-  };
-
   return (
-    <header className="h-24 lg:h-20 lg:shadow-md sticky top-0 z-40 flex flex-col justify-center gap-1 bg-white">
-      <div id="logo" className="flex items-center">
-        <a className="flex items-center">
-          <img
-            src="~/images/logo.png"
-            className="w-10 md:block hidden"
-            alt="Logo"
-          />
-          <span className="ml-2">Circle App</span>
-        </a>
+    <header className="h-20 lg:shadow-md sticky top-0 z-40 bg-white flex items-center px-4 lg:px-8">
+      {/* Logo */}
+      <div className="flex items-center gap-2">
+        <img
+          src="https://previews.123rf.com/images/butenkow/butenkow1612/butenkow161200764/67325901-pattern-design-logo-social-vector-illustration-of-icon.jpg"
+          className="w-10 h-10 md:block hidden"
+          alt="Logo"
+        />
+        <span className="text-lg font-semibold">Circle App</span>
       </div>
+
+      {/* Thanh tìm kiếm */}
+      <div className="flex-1 mx-6">
+        <div className="w-full h-11 lg:h-12 rounded-lg border flex items-center bg-slate-50 overflow-hidden focus-within:border-primary-200">
+          {isSearchPage ? (
+            <Link
+              to="/"
+              className="flex justify-center items-center h-full px-3 text-gray-500 hover:text-primary"
+            >
+              <ArrowBigDown size={20} />
+            </Link>
+          ) : (
+            <button
+              className="flex justify-center items-center h-full px-3 text-gray-500 hover:text-primary"
+              onClick={redirectToSearchPage}
+            >
+              <Search size={22} />
+            </button>
+          )}
+          <div className="w-full">
+            {isSearchPage ? (
+              <input
+                type="text"
+                placeholder="Search for atta, dal, and more."
+                autoFocus
+                defaultValue={searchText}
+                className="bg-transparent w-full h-full px-2 outline-none"
+                onChange={handleSearchChange}
+              />
+            ) : (
+              <div
+                onClick={redirectToSearchPage}
+                className="w-full h-full flex items-center cursor-pointer text-gray-400"
+              >
+                <TypeAnimation
+                  sequence={[
+                    'Search "milk"',
+                    1000,
+                    'Search "bread"',
+                    1000,
+                    'Search "sugar"',
+                    1000,
+                    'Search "paneer"',
+                    1000,
+                  ]}
+                  wrapper="span"
+                  speed={50}
+                  repeat={Infinity}
+                />
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+
+      {/* Nút thêm bài đăng */}
+      <button className="button r-button" onClick={() => setModalOpened(true)}>
+        <LetterTextIcon />
+        Thêm Bài Đăng mới
+      </button>
+
+      {/* Modal thêm bài đăng */}
+      {modalOpened && (
+        <ShareModal
+          modalOpened={modalOpened}
+          setModalOpened={setModalOpened}
+          onSubmit={handleSubmit}
+        />
+      )}
+
+      {/* Đăng xuất */}
       {authUser && (
         <button
-          className="flex gap-2 items-center text-gray-800 hover:bg-primary/20 transition-colors duration-200"
+          className="flex items-center gap-2 text-gray-800 hover:bg-gray-100 px-4 py-2 rounded transition"
           onClick={logout}
         >
           <LogOut className="w-5 h-5" />
           <span className="hidden sm:inline">Logout</span>
         </button>
       )}
-
-      <div className="w-full  min-w-[300px] lg:min-w-[420px] h-11 lg:h-12 rounded-lg border overflow-hidden flex items-center text-neutral-500 bg-slate-50 group focus-within:border-primary-200 ">
-        <div>
-          {isSearchPage ? (
-            <Link
-              to={"/"}
-              className="flex justify-center items-center h-full p-2 m-1 group-focus-within:text-primary-200 bg-white rounded-full shadow-md"
-            >
-              <ArrowBigDown size={20} />
-            </Link>
-          ) : (
-            <button className="flex justify-center items-center h-full p-3 group-focus-within:text-primary-200">
-              <Search size={22} />
-            </button>
-          )}
-        </div>
-        <div className="w-full h-full">
-          {!isSearchPage ? (
-            //not in search page
-            <div
-              onClick={redirectToSearchPage}
-              className="w-full h-full flex items-center"
-            >
-              <TypeAnimation
-                sequence={[
-                  // Same substring at the start will only be typed out once, initially
-                  'Search "milk"',
-                  1000, // wait 1s before replacing "Mice" with "Hamsters"
-                  'Search "bread"',
-                  1000,
-                  'Search "sugar"',
-                  1000,
-                  'Search "panner"',
-                  1000,
-                  'Search "chocolate"',
-                  1000,
-                  'Search "curd"',
-                  1000,
-                  'Search "rice"',
-                  1000,
-                  'Search "egg"',
-                  1000,
-                  'Search "chips"',
-                ]}
-                wrapper="span"
-                speed={50}
-                repeat={Infinity}
-              />
-            </div>
-          ) : (
-            //when i was search page
-            <div className="w-full h-full">
-              <input
-                type="text"
-                placeholder="Search for atta dal and more."
-                autoFocus
-                defaultValue={searchText}
-                className="bg-transparent w-full h-full outline-none"
-                onChange={handleOnChange}
-              />
-            </div>
-          )}
-        </div>
-      </div>
     </header>
   );
 };
