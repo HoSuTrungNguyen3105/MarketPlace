@@ -17,9 +17,9 @@ const postSchema = mongoose.Schema(
       required: true,
     },
     category: {
-      type: String, // Danh mục bài đăng
+      type: Number,
       required: true,
-      enum: ["Electronics", "Furniture", "Vehicles", "Real Estate", "Others"], // Các danh mục cố định
+      enum: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10], // ID của các danh mục
     },
     price: {
       type: Number, // Giá sản phẩm/dịch vụ
@@ -28,16 +28,14 @@ const postSchema = mongoose.Schema(
     location: {
       type: String, // Địa chỉ hoặc vị trí rao bán
       required: true,
-      ref: "User",
     },
     images: {
       type: [String], // Mảng chứa URL các hình ảnh sản phẩm
       default: [],
     },
     contact: {
-      type: mongoose.Schema.Types.ObjectId, // Tham chiếu đến User
+      type: String,
       required: true,
-      ref: "User",
     },
     isAvailable: {
       type: Boolean, // Trạng thái còn hàng hay đã bán

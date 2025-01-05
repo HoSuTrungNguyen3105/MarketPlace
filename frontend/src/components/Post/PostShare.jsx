@@ -1,7 +1,6 @@
 import React, { useEffect, useRef, useState } from "react";
 import axios from "axios";
 import toast from "react-hot-toast";
-import { FaCheckCircle } from "react-icons/fa"; // Thêm icon
 import { usePostStore } from "../../store/userPostStore";
 import { useAuthStore } from "../../store/useAuthStore";
 
@@ -9,19 +8,20 @@ const PostShare = ({ onPostCreateSuccess }) => {
   const { authUser } = useAuthStore();
   const { createPost, isCreating } = usePostStore();
   const fileInputRef = useRef();
-  const [hovered, setHovered] = useState(null); // Để theo dõi nút đang hover
 
-  const [error, setError] = useState(null); // Đảm bảo useState được định nghĩa
+  const [error, setError] = useState(null);
   const [formData, setFormData] = useState({
     userId: authUser?._id || "",
     username: authUser?.username || "",
-    desc: "",
-    contact: "",
-    location: "",
-    image: null,
+    title: "",
+    description: "",
+    contact: authUser?.phone || "", // Tự động lấy từ user
+    location: authUser?.location || "", // Tự động lấy từ user
+    images: null,
+    price: "",
+    category: "",
   });
 
-  const [postType, setPostType] = useState(""); // State để lưu loại bài đăng
   const [provinces, setProvinces] = useState([]);
   const [loadingProvinces, setLoadingProvinces] = useState(true);
 
@@ -42,16 +42,12 @@ const PostShare = ({ onPostCreateSuccess }) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-  const handleLocationChange = (e) => {
-    setFormData({ ...formData, location: e.target.value });
-  };
-
   const handleImageChange = (e) => {
     const file = e.target.files[0];
     if (file) {
       const reader = new FileReader();
       reader.onloadend = () => {
-        setFormData({ ...formData, image: reader.result });
+        setFormData({ ...formData, images: reader.result });
       };
       reader.readAsDataURL(file);
     }
@@ -59,17 +55,20 @@ const PostShare = ({ onPostCreateSuccess }) => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setError("");
+    setError(null);
     try {
-      const success = await createPost({ ...formData, postType });
+      const success = await createPost(formData);
       if (success) {
         setFormData({
           userId: authUser?._id || "",
           username: authUser?.username || "",
-          desc: "",
-          contact: "",
-          location: "",
-          image: null,
+          title: "",
+          description: "",
+          contact: authUser?.contact || "",
+          location: authUser?.location || "",
+          images: null,
+          price: "",
+          category: "",
         });
         if (fileInputRef.current) {
           fileInputRef.current.value = "";
@@ -77,6 +76,7 @@ const PostShare = ({ onPostCreateSuccess }) => {
         if (onPostCreateSuccess) {
           onPostCreateSuccess();
         }
+        toast.success("Bài đăng đã được tạo thành công!");
       }
     } catch (error) {
       console.error("Lỗi khi tạo bài viết:", error);
@@ -86,134 +86,124 @@ const PostShare = ({ onPostCreateSuccess }) => {
 
   return (
     <div className="post-share-container">
-      {!postType && (
-        <div className="space-y-8 max-w-2xl mx-auto text-center">
-          <h2 className="text-3xl font-extrabold text-gray-800">
-            Bạn muốn đăng bài về?
-          </h2>
-          <div className="flex justify-center space-x-6">
-            <button
-              onClick={() => setPostType("isLost")}
-              onMouseEnter={() => setHovered("isLost")} // Khi chuột di vào nút
-              onMouseLeave={() => setHovered(null)} // Khi chuột rời khỏi nút
-              className={`btn w-48 p-5 rounded-lg text-lg font-semibold transition-all duration-300 ${
-                postType === "isLost"
-                  ? "bg-blue-600 text-white scale-110"
-                  : "bg-white text-blue-600 border-2 border-blue-600"
-              } shadow-lg flex items-center justify-center space-x-2 transform ${
-                hovered === "isLost" ? "scale-110" : ""
-              }`}
-            >
-              {(hovered === "isLost" || postType === "isLost") && (
-                <FaCheckCircle className="text-blue-600" />
-              )}
-              <span>Mất đồ</span>
-            </button>
-            <button
-              onClick={() => setPostType("isFound")}
-              onMouseEnter={() => setHovered("isFound")}
-              onMouseLeave={() => setHovered(null)}
-              className={`btn w-48 p-5 rounded-lg text-lg font-semibold transition-all duration-300 ${
-                postType === "isFound"
-                  ? "bg-blue-600 text-white scale-110"
-                  : "bg-white text-blue-600 border-2 border-blue-600"
-              } shadow-lg flex items-center justify-center space-x-2 transform ${
-                hovered === "isFound" ? "scale-110" : ""
-              }`}
-            >
-              {(hovered === "isFound" || postType === "isFound") && (
-                <FaCheckCircle className="text-blue-600" />
-              )}
-              <span>Đã tìm thấy</span>
-            </button>
-          </div>
+      <form onSubmit={handleSubmit} className="space-y-6 max-w-xl mx-auto">
+        <h2 className="text-lg font-bold text-gray-800">Tạo bài đăng mới</h2>
+
+        <div className="space-y-2">
+          <label className="block text-sm font-semibold text-gray-700">
+            Tiêu đề *
+          </label>
+          <input
+            type="text"
+            name="title"
+            value={formData.title}
+            onChange={handleChange}
+            className="input input-bordered w-full p-3 rounded-md"
+            placeholder="Nhập tiêu đề bài đăng"
+            required
+          />
         </div>
-      )}
 
-      {postType && (
-        <form onSubmit={handleSubmit} className="space-y-6 max-w-xl mx-auto">
-          <p className="text-md font-semibold text-gray-700">
-            Bài đăng: {postType === "isLost" ? "Mất đồ" : "Đã tìm thấy"}
-          </p>
-          <div className="space-y-2">
-            <label className="block text-sm font-semibold text-gray-700">
-              Mô tả *
-            </label>
-            <textarea
-              name="desc"
-              value={formData.desc}
-              onChange={handleChange}
-              className="textarea textarea-bordered w-full p-3 rounded-md"
-              placeholder="Viết mô tả..."
-              required
-            />
-          </div>
+        <div className="space-y-2">
+          <label className="block text-sm font-semibold text-gray-700">
+            Mô tả *
+          </label>
+          <textarea
+            name="description"
+            value={formData.description}
+            onChange={handleChange}
+            className="textarea textarea-bordered w-full p-3 rounded-md"
+            placeholder="Viết mô tả..."
+            required
+          />
+        </div>
 
-          <div className="space-y-2">
-            <label className="block text-sm font-semibold text-gray-700">
-              Liên lạc *
-            </label>
-            <input
-              type="text"
-              name="contact"
-              value={formData.contact}
-              onChange={handleChange}
-              className="input input-bordered w-full p-3 rounded-md"
-              placeholder="Số điện thoại"
-              required
-            />
-          </div>
+        <div className="space-y-2">
+          <label className="block text-sm font-semibold text-gray-700">
+            Giá *
+          </label>
+          <input
+            type="number"
+            name="price"
+            value={formData.price}
+            onChange={handleChange}
+            className="input input-bordered w-full p-3 rounded-md"
+            placeholder="Nhập giá (VNĐ)"
+            required
+          />
+        </div>
 
-          <div className="space-y-2">
-            <label className="block text-sm font-semibold text-gray-700">
-              Địa điểm *
-            </label>
-            <select
-              name="location"
-              value={formData.location}
-              onChange={handleLocationChange}
-              className="input input-bordered w-full p-3 rounded-md"
-              required
-            >
-              <option value="">Chọn địa điểm</option>
-              {loadingProvinces ? (
-                <option disabled>Loading provinces...</option>
-              ) : (
-                provinces.map((province) => (
-                  <option key={province.id} value={province.id}>
-                    {province.name}
-                  </option>
-                ))
-              )}
-            </select>
-          </div>
+        <div className="space-y-2">
+          <label className="block text-sm font-semibold text-gray-700">
+            Liên lạc *
+          </label>
+          <input
+            type="text"
+            name="contact"
+            value={formData.contact}
+            onChange={handleChange}
+            className="input input-bordered w-full p-3 rounded-md"
+            placeholder="Số điện thoại hoặc email"
+            readOnly
+          />
+        </div>
 
-          <div className="space-y-2">
-            <label className="block text-sm font-semibold text-gray-700">
-              Chọn ảnh *
-            </label>
-            <input
-              type="file"
-              name="image"
-              accept="image/*"
-              onChange={handleImageChange}
-              className="input input-bordered w-full p-3 rounded-md"
-            />
-          </div>
+        <div className="space-y-2">
+          <label className="block text-sm font-semibold text-gray-700">
+            Danh mục *
+          </label>
+          <input
+            type="text"
+            name="category"
+            value={formData.category}
+            onChange={handleChange}
+            className="input input-bordered w-full p-3 rounded-md"
+            placeholder="Danh mục bài đăng (VD: Bất động sản)"
+            required
+          />
+        </div>
 
-          <button
-            type="submit"
-            className={`btn w-full p-3 rounded-md ${
-              isCreating
-                ? "btn-disabled loading"
-                : "btn-primary hover:bg-blue-600"
-            }`}
-            disabled={isCreating}
-          >
-            {isCreating ? "Đang tạo bài..." : "Đăng bài"}
-          </button>
-        </form>
-      )}
+        <div className="space-y-2">
+          <label className="block text-sm font-semibold text-gray-700">
+            Địa điểm *
+          </label>
+          <input
+            type="text"
+            name="location"
+            value={formData.location}
+            onChange={handleChange}
+            className="input input-bordered w-full p-3 rounded-md"
+            placeholder="Địa chỉ hoặc khu vực"
+            disabled
+          />
+        </div>
+
+        <div className="space-y-2">
+          <label className="block text-sm font-semibold text-gray-700">
+            Chọn ảnh *
+          </label>
+          <input
+            type="file"
+            name="images"
+            accept="image/*"
+            ref={fileInputRef}
+            onChange={handleImageChange}
+            className="input input-bordered w-full p-3 rounded-md"
+          />
+        </div>
+
+        <button
+          type="submit"
+          className={`btn w-full p-3 rounded-md ${
+            isCreating
+              ? "btn-disabled loading"
+              : "btn-primary hover:bg-blue-600"
+          }`}
+          disabled={isCreating}
+        >
+          {isCreating ? "Đang tạo bài..." : "Đăng bài"}
+        </button>
+      </form>
     </div>
   );
 };

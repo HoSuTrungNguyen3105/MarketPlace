@@ -2,7 +2,7 @@ import { Outlet } from "react-router-dom";
 import "./App.css";
 import Navbar from "./components/Navigation/Navbar";
 import Sidebar from "./components/Navigation/Sidebar";
-import { Toaster } from "react-hot-toast";
+import { ToastBar, Toaster, ToastIcon } from "react-hot-toast";
 import { useAuthStore } from "./store/useAuthStore";
 import { useEffect } from "react";
 import useCheckUserStatus from "./lib/check";
@@ -37,11 +37,9 @@ function App() {
       <header>
         <Navbar />
       </header>
-
       <div className="flex flex-1">
         {/* Sidebar cố định bên trái */}
         <Sidebar />
-
         {/* Nội dung chính */}
         <main className="flex-1 p-7">
           <Outlet />

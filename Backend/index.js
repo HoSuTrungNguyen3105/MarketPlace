@@ -6,6 +6,8 @@ import cookieParser from "cookie-parser";
 import cors from "cors";
 import UserRoute from "./routes/UserRoute.js";
 import AuthRoute from "./routes/AuthRoute.js";
+import PostRoute from "./routes/PostRoute.js";
+
 const app = express();
 const port = process.env.PORT || 5000;
 app.use(bodyparser.json({ limit: "20mb", extended: true }));
@@ -33,3 +35,4 @@ mongoose.connect(process.env.MONGO_URL).then(() => {
 // Routes
 app.use("/api/user", UserRoute);
 app.use("/api/auth", AuthRoute);
+app.use("/api/post", PostRoute);

@@ -2,7 +2,6 @@ import React, { useEffect, useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { TypeAnimation } from "react-type-animation";
 import { ArrowBigDown, LetterTextIcon, LogOut, Search } from "lucide-react";
-import ShareModal from "../Modal/ShareModal";
 import { useAuthStore } from "../../store/useAuthStore";
 import { usePostStore } from "../../store/userPostStore";
 
@@ -17,17 +16,6 @@ const Navbar = () => {
 
   // Xử lý điều hướng đến trang tìm kiếm
   const redirectToSearchPage = () => navigate("/search");
-  const handleSubmit = async (formData) => {
-    const newPost = await createPost(formData);
-    if (newPost) {
-      setModalOpened(false);
-    }
-  };
-  // Điều hướng đến route được chọn trong modal
-  const handleSelect = (route) => {
-    navigate(route);
-    setModalOpened(false);
-  };
 
   // Xử lý thay đổi trong ô tìm kiếm
   const handleSearchChange = (e) => {
@@ -108,19 +96,15 @@ const Navbar = () => {
       </div>
 
       {/* Nút thêm bài đăng */}
-      <button className="button r-button" onClick={() => setModalOpened(true)}>
-        <LetterTextIcon />
-        Thêm Bài Đăng mới
-      </button>
-
-      {/* Modal thêm bài đăng */}
-      {modalOpened && (
-        <ShareModal
-          modalOpened={modalOpened}
-          setModalOpened={setModalOpened}
-          onSubmit={handleSubmit}
-        />
-      )}
+      <Link to="/post">
+        <button
+          className="button r-button"
+          onClick={() => setModalOpened(true)}
+        >
+          <LetterTextIcon />
+          Thêm Bài Đăng mới
+        </button>
+      </Link>
 
       {/* Đăng xuất */}
       {authUser && (

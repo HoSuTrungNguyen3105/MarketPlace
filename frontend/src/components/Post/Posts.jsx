@@ -21,13 +21,12 @@ const Posts = () => {
   }, [createPostSuccess]); // Chỉ chạy khi createPostSuccess thay đổi
 
   // Lọc danh sách bài viết đã duyệt
-  const approvedPosts = posts.filter((post) => !post.isApproved && post.userId);
 
   return (
     <div className="Posts">
       {isLoading && <Loader />}
       <div>
-        {approvedPosts.map((item, i) => (
+        {posts.map((item, i) => (
           <Post
             key={i}
             data={item}
@@ -35,7 +34,7 @@ const Posts = () => {
             authUserId={authUser._id}
           />
         ))}
-        {approvedPosts.length === 0 && !isLoading && (
+        {posts.length === 0 && !isLoading && (
           <p>Hiện không có bài đăng nào được phê duyệt.</p>
         )}
       </div>

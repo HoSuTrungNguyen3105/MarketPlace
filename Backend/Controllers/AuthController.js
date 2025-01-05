@@ -204,7 +204,7 @@ export const deleteAccount = async (req, res) => {
     const deletedUser = await UserModel.findByIdAndDelete(userId);
 
     if (!deletedUser) {
-      return res.status(404).json({ message: "User not found" });
+      return res.status(404).json({ message: "User không tìm thấy" });
     }
     // Xóa tất cả các đoạn chat liên quan đến user
     await messageModel.deleteMany({
