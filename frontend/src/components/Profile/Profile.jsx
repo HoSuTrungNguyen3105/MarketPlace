@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { useAuthStore } from "../../store/useAuthStore";
 import { Link } from "react-router-dom";
-
+import "./Profile.css";
 const Profile = () => {
   const { authUser } = useAuthStore(); // Lấy thông tin người dùng từ store
   const { updateProfileInfo, isUpdatingProfile, errorMessage } = useAuthStore(); // Lấy hàm updateProfile và trạng thái từ store zustand
@@ -14,6 +14,12 @@ const Profile = () => {
     lastname: authUser?.lastname || "",
     phone: authUser?.phone || "",
     location: authUser?.location || "",
+    role: authUser?.role || "",
+    profilePic: authUser?.profilePic || "",
+    isBlocked: authUser?.isBlocked || false,
+    loginAttempts: authUser?.loginAttempts || 0,
+    lastLogin: authUser?.lastLogin || "",
+    isVerified: authUser?.isVerified || false,
   });
 
   // State quản lý chế độ chỉnh sửa
@@ -46,23 +52,23 @@ const Profile = () => {
             {/* Hiển thị ảnh đại diện của người dùng */}
             <img
               src={
-                authUser?.profilePic ||
+                formData.profilePic ||
                 "https://pbs.twimg.com/media/Eu9fXIRU4AEafZy?format=jpg&name=4096x4096"
               }
               alt="Profile"
               className="size-32 rounded-full object-cover border-4 "
             />
           </div>
-          <p className="text-sm text-zinc-400">{authUser?.email}</p>
+          <p className="text-sm text-zinc-400">{formData.email}</p>
         </div>
       </div>
 
       <div className="ProfileName">
-        <span>@{authUser?.username}</span>
+        <span>@{formData.username}</span>
         <span style={{ fontSize: "23px" }}></span>
 
         {/* Hiển thị "Tôi là admin" nếu role là admin */}
-        {authUser?.role === "admin" && (
+        {formData.role === "admin" && (
           <p className="text-red-900 font-extrabold mt-2">Admin</p>
         )}
       </div>
@@ -87,6 +93,7 @@ const Profile = () => {
               disabled={!isEditing} // Disabled khi không chỉnh sửa
             />
           </div>
+
           <div className="Follow">
             <span>Số điện thoại:</span>
             <input
@@ -97,6 +104,7 @@ const Profile = () => {
               disabled={!isEditing} // Disabled khi không chỉnh sửa
             />
           </div>
+
           <div className="Follow">
             <span>Địa chỉ:</span>
             <input
@@ -105,6 +113,64 @@ const Profile = () => {
               value={formData.location}
               onChange={handleChange}
               disabled={!isEditing} // Disabled khi không chỉnh sửa
+            />
+          </div>
+
+          <div className="Follow">
+            <span>Quyền:</span>
+            <input
+              type="text"
+              name="role"
+              value={formData.role}
+              onChange={handleChange}
+              disabled={!isEditing} // Disabled khi không chỉnh sửa
+            />
+          </div>
+
+          <div className="Follow">
+            <span>Trạng thái bị chặn:</span>
+            <input
+              type="checkbox"
+              name="isBlocked"
+              checked={formData.isBlocked}
+              onChange={(e) =>
+                setFormData({ ...formData, isBlocked: e.target.checked })
+              }
+              disabled={!isEditing}
+            />
+          </div>
+
+          <div className="Follow">
+            <span>Số lần đăng nhập sai:</span>
+            <input
+              type="number"
+              name="loginAttempts"
+              value={formData.loginAttempts}
+              onChange={handleChange}
+              disabled
+            />
+          </div>
+
+          <div className="Follow">
+            <span>Ngày đăng nhập lần cuối:</span>
+            <input
+              type="text"
+              name="lastLogin"
+              value={new Date(formData.lastLogin).toLocaleString()}
+              disabled
+            />
+          </div>
+
+          <div className="Follow">
+            <span>Đã xác minh:</span>
+            <input
+              type="checkbox"
+              name="isVerified"
+              checked={formData.isVerified}
+              onChange={(e) =>
+                setFormData({ ...formData, isVerified: e.target.checked })
+              }
+              disabled={!isEditing}
             />
           </div>
 
@@ -118,33 +184,6 @@ const Profile = () => {
         </form>
         <hr />
       </div>
-
-      {/* Các liên kết khác */}
-      <span>
-        <div className="profile-menu">
-          <ul>
-            <li className="i-profile">
-              <Link to="/profile">Trang Cá Nhân</Link>
-            </li>
-          </ul>
-          <ul>
-            <li className="i-profile"></li>
-          </ul>
-          <ul>
-            <button className="i-profile">Đăng xuất</button>
-          </ul>
-          <ul>
-            <li className="i-profile">
-              <Link to="/delete-account">Xóa tài khoản</Link>
-            </li>
-          </ul>
-          <ul>
-            <li className="i-profile">
-              <Link to="/change-password">Đổi mật khẩu</Link>
-            </li>
-          </ul>
-        </div>
-      </span>
     </div>
   );
 };

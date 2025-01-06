@@ -2,10 +2,10 @@ import express from "express";
 import {
   createPost,
   getAllPosts,
+  getCategories,
   getPost,
   reportPost,
 } from "../Controllers/PostController.js";
-import { protectRoute } from "../lib/check.js";
 
 const router = express.Router();
 
@@ -16,6 +16,7 @@ router.get("/posts/:id", getPost); // Để lấy một bài viết theo id
 // router.delete("/posts/:id", protectRoute, deletePost); // Để xóa bài viết
 // router.delete("/user/:id", protectRoute, delete1UserPost); // Để xóa bài viết
 
+router.get("/categories", getCategories);
 router.get("/postsId/allItems", getAllPosts); // Để lấy tất cả bài viết
 // router.get("/provinces", (req, res) => {
 //   res.json(provinces); // Trả về dữ liệu tỉnh thành

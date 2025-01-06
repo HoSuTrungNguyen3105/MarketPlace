@@ -27,7 +27,6 @@ const postSchema = mongoose.Schema(
     },
     location: {
       type: String, // Địa chỉ hoặc vị trí rao bán
-      required: true,
     },
     images: {
       type: [String], // Mảng chứa URL các hình ảnh sản phẩm
@@ -35,7 +34,6 @@ const postSchema = mongoose.Schema(
     },
     contact: {
       type: String,
-      required: true,
     },
     isAvailable: {
       type: Boolean, // Trạng thái còn hàng hay đã bán

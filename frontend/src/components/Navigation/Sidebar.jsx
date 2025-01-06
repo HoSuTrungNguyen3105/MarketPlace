@@ -5,39 +5,40 @@ import {
   Settings2Icon,
 } from "lucide-react";
 import React from "react";
+import { Link } from "react-router-dom"; // Import Link từ react-router-dom
 
 const Sidebar = () => {
   return (
-    <div className=" top-0 left-0 z-[99] h-full w-64 bg-white">
+    <div className="sticky top-0 left-0 z-[99] h-full w-64 bg-white">
       <div className="p-4 overflow-y-auto h-full">
         <nav>
           <ul>
             <li>
-              <a href="#">
+              <Link to="/feed" className="flex items-center">
                 <FileEdit />
                 <span>Feed</span>
-              </a>
+              </Link>
             </li>
             <li>
-              <a href="#">
+              <Link to="/favorites" className="flex items-center">
                 <FileArchiveIcon />
                 <span>Favorites</span>
-              </a>
+              </Link>
             </li>
             <li>
-              <a href="#">
+              <Link to="/friends" className="flex items-center">
                 <EggFried />
                 <span>Friends</span>
-              </a>
+              </Link>
             </li>
           </ul>
           <div className="mt-6 border-t pt-3">
             <ul>
               <li>
-                <a href="#">
+                <Link to="/settings" className="flex items-center">
                   <Settings2Icon className="inline-block mr-2" />
                   <span>Settings</span>
-                </a>
+                </Link>
               </li>
             </ul>
           </div>

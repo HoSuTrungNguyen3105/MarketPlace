@@ -52,9 +52,6 @@ const userSchema = mongoose.Schema(
       default: false, // Mặc định người dùng không bị chặn
     },
     blockExpires: { type: Date },
-    provider: {
-      type: String,
-    },
     loginAttempts: { type: Number, default: 0 },
     lastLogin: {
       type: Date,

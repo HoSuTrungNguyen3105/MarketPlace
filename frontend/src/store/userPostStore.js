@@ -10,26 +10,31 @@ export const usePostStore = create((set, get) => ({
   isCreating: false, // Trạng thái đang tạo bài viết
   createPostError: null,
   createPostSuccess: false,
+  errorMessages: [], // Lưu danh sách lỗi
   approvedPosts: [],
   pendingPosts: [],
+  categories: [], // Danh sách các category
   isLoading: false, // Trạng thái đang tải
+  loading: false, // Trạng thái loading
   error: null, // Lưu thông báo lỗi nếu có
+
   // Hàm tạo bài đăng
   createPost: async (formData) => {
     try {
-      set({ isCreating: true });
+      set({ isCreating: true, errorMessages: [] });
       const response = await axiosInstance.post("/post/posts", formData);
       set((state) => ({
         posts: [response.data, ...state.posts], // Thêm bài viết mới vào danh sách
         createPostSuccess: true,
       }));
-      toast.success("Bài viết đã được đăng thành công !");
       set({ isCreating: false });
       return response.data; // Trả về bài viết mới tạo
     } catch (error) {
+      const errors = error.response?.data?.errors || [];
       set({
         isCreating: false,
         createPostSuccess: false,
+        errorMessages: errors,
       });
 
       // Kiểm tra và hiển thị tất cả lỗi từ backend
@@ -63,6 +68,16 @@ export const usePostStore = create((set, get) => ({
       set({ error: "Error loading post", post: null }); // Nếu có lỗi
     } finally {
       set({ isLoading: false }); // Kết thúc loading
+    }
+  },
+  // Hàm lấy danh mục từ API
+  fetchCategories: async () => {
+    set({ loading: true, error: null }); // Set loading true khi bắt đầu fetch
+    try {
+      const response = await axiosInstance.get("/post/categories"); // Gọi API danh mục
+      set({ categories: response.data, loading: false }); // Cập nhật danh mục khi thành công
+    } catch (error) {
+      set({ error: "Lỗi khi lấy danh mục", loading: false }); // Set lỗi nếu có
     }
   },
   // Phương thức để fetch bài đăng

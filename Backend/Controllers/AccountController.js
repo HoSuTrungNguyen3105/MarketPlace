@@ -215,22 +215,34 @@ export const updateProfile = async (req, res) => {
 // Cập nhật thông tin người dùng
 export const updateUserInfo = async (req, res) => {
   try {
-    const { username, firstname, lastname, email, phone, location } = req.body;
+    // Lấy thông tin từ body request
+    const { username, firstname, lastname, email, phone, location, role } =
+      req.body;
+
     const userId = req.user._id;
 
-    // Cập nhật các thông tin người dùng (không có ảnh)
+    // Cập nhật thông tin người dùng
     const updatedUser = await UserModel.findByIdAndUpdate(
       userId,
-      { username, firstname, lastname, email, phone, location },
-      { new: true }
+      {
+        username,
+        firstname,
+        lastname,
+        email,
+        phone,
+        location,
+        role, // Cập nhật quyền
+      },
+      { new: true } // Trả về người dùng đã được cập nhật
     );
 
-    res.status(200).json(updatedUser);
+    res.status(200).json(updatedUser); // Trả về thông tin người dùng đã được cập nhật
   } catch (error) {
     console.log("error in update user info:", error);
-    res.status(500).json({ message: "Internal server error" });
+    res.status(500).json({ message: "Internal server error" }); // Trả về lỗi nếu có
   }
 };
+
 export const changePassword = async (req, res) => {
   const { oldPassword, newPassword } = req.body;
   const userId = req.user._id;

@@ -8,7 +8,6 @@ import router from "./routes/index.js";
 const root = ReactDOM.createRoot(document.getElementById("root"));
 root.render(
   <StrictMode>
-    {/* Bao bọc RouterProvider trong MantineProvider */}
     <RouterProvider router={router} />
   </StrictMode>
 );

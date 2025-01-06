@@ -3,12 +3,23 @@ import axios from "axios";
 import toast from "react-hot-toast";
 import { usePostStore } from "../../store/userPostStore";
 import { useAuthStore } from "../../store/useAuthStore";
+import { useLocation, useNavigate } from "react-router-dom";
 
 const PostShare = ({ onPostCreateSuccess }) => {
   const { authUser } = useAuthStore();
-  const { createPost, isCreating } = usePostStore();
+  const location = useLocation();
+  const {
+    createPost,
+    isCreating,
+    categories,
+    fetchCategories,
+    isLoading,
+    errorMessages, // Lấy danh sách lỗi từ store
+    error: categoryError,
+  } = usePostStore();
+  const navigate = useNavigate();
   const fileInputRef = useRef();
-
+  const selectedCategory = location.state?.category || {};
   const [error, setError] = useState(null);
   const [formData, setFormData] = useState({
     userId: authUser?._id || "",
@@ -17,27 +28,14 @@ const PostShare = ({ onPostCreateSuccess }) => {
     description: "",
     contact: authUser?.phone || "", // Tự động lấy từ user
     location: authUser?.location || "", // Tự động lấy từ user
-    images: null,
+    images: "",
     price: "",
-    category: "",
+    category: selectedCategory.id || "",
   });
 
-  const [provinces, setProvinces] = useState([]);
-  const [loadingProvinces, setLoadingProvinces] = useState(true);
-
   useEffect(() => {
-    axios
-      .get("http://localhost:5001/api/post/provinces")
-      .then((response) => {
-        setProvinces(response.data);
-        setLoadingProvinces(false);
-      })
-      .catch((error) => {
-        console.error("Error fetching provinces:", error);
-        setLoadingProvinces(false);
-      });
-  }, []);
-
+    fetchCategories();
+  }, [fetchCategories]);
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
@@ -52,12 +50,28 @@ const PostShare = ({ onPostCreateSuccess }) => {
       reader.readAsDataURL(file);
     }
   };
+  // const handleImageChange = (e) => {
+  //   const files = e.target.files;
+  //   if (files && files.length > 0) {
+  //     const imagesArray = Array.from(files).map((file) =>
+  //       URL.createObjectURL(file)
+  //     );
+  //     setFormData((prevFormData) => ({
+  //       ...prevFormData,
+  //       images: imagesArray,
+  //     }));
+  //   }
+  // };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setError(null);
+    console.log("Submitting..."); // Thêm dòng này để kiểm tra
+    setError("");
     try {
-      const success = await createPost(formData);
+      // Gọi API để tạo bài đăng
+      const success = await createPost({ ...formData });
+
+      // Kiểm tra xem API có trả về true không
       if (success) {
         setFormData({
           userId: authUser?._id || "",
@@ -66,17 +80,21 @@ const PostShare = ({ onPostCreateSuccess }) => {
           description: "",
           contact: authUser?.contact || "",
           location: authUser?.location || "",
-          images: null,
+          images: "",
           price: "",
           category: "",
         });
+
         if (fileInputRef.current) {
           fileInputRef.current.value = "";
         }
+
         if (onPostCreateSuccess) {
-          onPostCreateSuccess();
+          onPostCreateSuccess(); // Callback sau khi tạo bài thành công
         }
-        toast.success("Bài đăng đã được tạo thành công!");
+        navigate("/post");
+      } else {
+        toast.error("Đã xảy ra lỗi khi đăng bài.");
       }
     } catch (error) {
       console.error("Lỗi khi tạo bài viết:", error);
@@ -87,8 +105,23 @@ const PostShare = ({ onPostCreateSuccess }) => {
   return (
     <div className="post-share-container">
       <form onSubmit={handleSubmit} className="space-y-6 max-w-xl mx-auto">
-        <h2 className="text-lg font-bold text-gray-800">Tạo bài đăng mới</h2>
+        {errorMessages.length > 0 && (
+          <div className="p-4 mb-4 bg-red-100 text-red-700 rounded-md">
+            <ul>
+              {errorMessages.map((err, index) => (
+                <li key={index}>{err.message}</li>
+              ))}
+            </ul>
+          </div>
+        )}
 
+        <h2 className="text-lg font-bold text-gray-800">Tạo bài đăng mới</h2>
+        {selectedCategory.name && (
+          <p className="text-sm text-gray-600">
+            Bạn đang tạo bài đăng trong danh mục:{" "}
+            <strong>{selectedCategory.name}</strong>
+          </p>
+        )}
         <div className="space-y-2">
           <label className="block text-sm font-semibold text-gray-700">
             Tiêu đề *
@@ -148,19 +181,40 @@ const PostShare = ({ onPostCreateSuccess }) => {
           />
         </div>
 
+        {/* Danh mục */}
         <div className="space-y-2">
           <label className="block text-sm font-semibold text-gray-700">
             Danh mục *
           </label>
-          <input
-            type="text"
-            name="category"
-            value={formData.category}
-            onChange={handleChange}
-            className="input input-bordered w-full p-3 rounded-md"
-            placeholder="Danh mục bài đăng (VD: Bất động sản)"
-            required
-          />
+          {selectedCategory.name ? (
+            <p className="p-3 rounded-md bg-gray-100 text-gray-700">
+              {selectedCategory.name}
+            </p>
+          ) : isLoading ? (
+            <p>Đang tải danh mục...</p>
+          ) : categoryError ? (
+            <p className="text-red-500">{categoryError}</p>
+          ) : (
+            <select
+              name="category"
+              value={formData.category}
+              onChange={handleChange}
+              className="select select-bordered w-full p-3 rounded-md"
+              required
+            >
+              {categories &&
+              Array.isArray(categories) &&
+              categories.length > 0 ? (
+                categories.map((category) => (
+                  <option key={category.id} value={category.id}>
+                    {category.name}
+                  </option>
+                ))
+              ) : (
+                <option value="">Không có danh mục nào</option>
+              )}
+            </select>
+          )}
         </div>
 
         <div className="space-y-2">
@@ -189,7 +243,22 @@ const PostShare = ({ onPostCreateSuccess }) => {
             ref={fileInputRef}
             onChange={handleImageChange}
             className="input input-bordered w-full p-3 rounded-md"
+            multiple // Cho phép chọn nhiều ảnh
           />
+          <div className="mt-2">
+            {formData.images && formData.images.length > 0 && (
+              <div className="flex flex-wrap gap-2">
+                {formData.images.map((image, index) => (
+                  <img
+                    key={index}
+                    src={image}
+                    alt={`selected-image-${index}`}
+                    className="w-20 h-20 object-cover"
+                  />
+                ))}
+              </div>
+            )}
+          </div>
         </div>
 
         <button

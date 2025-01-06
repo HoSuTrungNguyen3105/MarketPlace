@@ -1,13 +1,13 @@
 import PostModel from "../models/postModel.js";
 import UserModel from "../models/userModel.js";
-import cloudinary from "cloudinary"; // Đảm bảo đã cấu hình Cloudinary
+import cloudinary from "../lib/cloudinary.js"; // Đảm bảo đã cấu hình Cloudinary
 
 export const createPost = async (req, res) => {
   try {
     const {
       title,
       description,
-      category, // category giờ là số (1, 2, 3, 4, 5)
+      category,
       price,
       location,
       contact,
@@ -15,7 +15,7 @@ export const createPost = async (req, res) => {
       userId,
     } = req.body;
 
-    // Kiểm tra người dùng
+    // User validation
     const user = await UserModel.findById(userId);
     if (!user) {
       return res
@@ -23,8 +23,8 @@ export const createPost = async (req, res) => {
         .json({ message: "Người dùng không tồn tại", field: "userId" });
     }
 
-    // Kiểm tra các trường bắt buộc
-    if (!title || title.trim().length === 0) {
+    // Required fields validation
+    if (!title?.trim()) {
       return res
         .status(400)
         .json({ message: "Tiêu đề là bắt buộc", field: "title" });
@@ -36,56 +36,39 @@ export const createPost = async (req, res) => {
         .json({ message: "Giá phải lớn hơn 0", field: "price" });
     }
 
-    // Kiểm tra category là một số hợp lệ
-    const allowedCategories = [1, 2, 3, 4, 5]; // Sử dụng ID category là số
-    if (!allowedCategories.includes(category)) {
+    // Category validation
+    const cate = Number(category);
+    const allowedCategories = Array.from({ length: 20 }, (_, i) => i + 1);
+    if (isNaN(cate) || !allowedCategories.includes(cate)) {
       return res
         .status(400)
         .json({ message: "Danh mục không hợp lệ", field: "category" });
     }
 
-    // Mảng ánh xạ từ số sang tên danh mục
-    const categoryMapping = {
-      1: "Đồ điện tử",
-      2: "Dụng cụ trong nhà",
-      3: "Thời trang",
-      4: "Đồ ăn, thực phẩm",
-      5: "Đồ dùng văn phòng",
-      6: "Thú cưng",
-      7: "Thiết bị chơi Game ,đồ sưu tầm,.. ",
-      8: "Đồ thể thao",
-      9: "Đồ dùng cá nhân",
-      10: "Du lịch",
-    };
-
-    // Lấy tên category từ số category
-    const categoryName = categoryMapping[category];
-
-    // Upload hình ảnh lên Cloudinary (nếu có)
-    const uploadedImages = [];
-    if (Array.isArray(images) && images.length > 0) {
-      for (const image of images) {
-        try {
-          const uploadResponse = await cloudinary.uploader.upload(image, {
-            resource_type: "image",
-          });
-          uploadedImages.push(uploadResponse.secure_url);
-        } catch (uploadError) {
-          console.error("Lỗi khi tải lên ảnh:", uploadError);
-          return res.status(500).json({
-            message: "Lỗi khi tải lên hình ảnh",
-            error: uploadError.message,
-          });
-        }
-      }
+    // Images validation
+    if (!images || !Array.isArray(images) || images.length === 0) {
+      return res.status(400).json({
+        message: "Cần có ít nhất một hình ảnh",
+        field: "images",
+      });
     }
 
-    // Lưu bài đăng vào cơ sở dữ liệu
+    // `req.files` sẽ là một mảng các ảnh đã được tải lên
+    const uploadedImages = [];
+
+    // Nếu bạn có nhiều ảnh, `req.files` sẽ là một mảng
+    for (const image of req.files) {
+      const uploadResponse = await cloudinary.uploader.upload(image.path, {
+        resource_type: "auto",
+      });
+      uploadedImages.push(uploadResponse.secure_url);
+    }
+
+    // Create and save new post
     const newPost = new PostModel({
       title,
       description,
-      category,
-      categoryName, // Lưu tên category vào cơ sở dữ liệu
+      category: cate,
       price,
       location,
       contact,
@@ -95,7 +78,6 @@ export const createPost = async (req, res) => {
 
     await newPost.save();
 
-    // Trả về phản hồi thành công
     return res.status(201).json({
       message: "Bài đăng đã được tạo thành công",
       post: newPost,
@@ -106,6 +88,29 @@ export const createPost = async (req, res) => {
       message: "Có lỗi xảy ra khi tạo bài đăng",
       error: error.message,
     });
+  }
+};
+
+// API để lấy danh sách danh mục
+export const getCategories = async (req, res) => {
+  try {
+    // Mảng danh mục (có thể lấy từ cơ sở dữ liệu hoặc lưu cứng)
+    const categories = [
+      { id: 1, name: "Đồ điện tử" },
+      { id: 2, name: "Dụng cụ trong nhà" },
+      { id: 3, name: "Thời trang" },
+      { id: 4, name: "Đồ ăn, thực phẩm" },
+      { id: 5, name: "Đồ dùng văn phòng" },
+      { id: 6, name: "Thú cưng" },
+      { id: 7, name: "Thiết bị chơi Game, đồ sưu tầm" },
+      { id: 8, name: "Đồ thể thao" },
+      { id: 9, name: "Đồ dùng cá nhân" },
+      { id: 10, name: "Du lịch" },
+    ];
+    return res.status(200).json(categories);
+  } catch (error) {
+    console.error("Lỗi khi lấy danh mục:", error);
+    return res.status(500).json({ message: "Lỗi khi lấy danh mục" });
   }
 };
 

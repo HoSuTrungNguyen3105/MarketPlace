@@ -30,6 +30,7 @@ function Auth() {
     phone: "", // Đảm bảo bạn có trường phone
     firstname: "",
     lastname: "",
+    role: "buyer", // Thêm trường role, mặc định là "buyer"
   });
 
   const { signup, verifyEmail, isSigningUp, isVerifying, registerError } =
@@ -120,6 +121,19 @@ function Auth() {
                 setFormData({ ...formData, email: e.target.value })
               }
             />
+          </div>
+          <div>
+            <select
+              className="infoInput"
+              value={formData.role}
+              onChange={(e) =>
+                setFormData({ ...formData, role: e.target.value })
+              }
+            >
+              <option value="buyer">Buyer</option>
+              <option value="seller">Seller</option>
+              <option value="admin">Admin</option>
+            </select>
           </div>
 
           {/* Phone */}

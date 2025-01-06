@@ -1,9 +1,9 @@
-import { sendEmail } from "../lib/sendEmail.js";
 import { generateToken } from "../lib/util.js";
 import UserModel from "../models/userModel.js";
 import bcrypt from "bcryptjs";
 import crypto from "crypto";
 import nodemailer from "nodemailer";
+import jwt from "jsonwebtoken";
 
 export const checkAuth = (req, res) => {
   try {
@@ -25,7 +25,8 @@ export const dataRoute = async (req, res) => {
   }
 };
 export const registerUser = async (req, res) => {
-  const { username, password, firstname, lastname, email, phone } = req.body;
+  const { username, password, firstname, lastname, email, phone, role } =
+    req.body;
 
   try {
     const existingUser = await UserModel.findOne({ email });
@@ -63,6 +64,8 @@ export const registerUser = async (req, res) => {
       email,
       firstname,
       lastname,
+      role, // Lưu vai trò vào cơ sở dữ liệu
+
       verificationCode,
       verificationCodeExpires,
     });
@@ -247,13 +250,39 @@ export const forgetPassword = async (req, res) => {
     if (!user) {
       return res.json({ message: "Tài khoản chưa đăng ký" });
     }
-    const token = jwt.sign({ id: user._id }, process.env.JWT_KEY, {
+    const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, {
       expiresIn: "1h",
     });
-    // Gửi email đặt lại mật khẩu
-    await sendEmail(email, token);
+    // Add your logic for password reset here (e.g., sending a reset link)
+    var transporter = nodemailer.createTransport({
+      service: "gmail",
+      auth: {
+        user: "trungnguyenhs3105@gmail.com",
+        pass: "ugtu fnsp xbqa vdff",
+      },
+    });
 
-    res.json({ message: "Email đặt lại mật khẩu đã được gửi" });
+    var mailOptions = {
+      from: "trungnguyenhs3105@gmail.com",
+      to: email,
+      subject: "Gửi token để đặt lại mã",
+      html: `
+        <p>Chúng tôi đã nhận được yêu cầu đặt lại mật khẩu của bạn. Để thay đổi mật khẩu, vui lòng bấm vào nút dưới đây:</p>
+        <a href="${process.env.FRONTEND_URL}/reset-password/${token}" 
+           style="display:inline-block; padding: 10px 20px; background-color: #007bff; color: white; text-align: center; text-decoration: none; border-radius: 5px;">
+           Bấm vào để thay đổi mật khẩu
+        </a>
+        <p>Nếu bạn không yêu cầu thay đổi mật khẩu, vui lòng bỏ qua email này.</p>
+      `,
+    };
+
+    transporter.sendMail(mailOptions, function (error, info) {
+      if (error) {
+        console.log(error);
+      } else {
+        console.log("Email sent: " + info.response);
+      }
+    });
   } catch (err) {
     console.log(err);
     res.status(500).json({ message: "Internal server error" });
@@ -298,7 +327,7 @@ export const resetPasswordFromForget = async (req, res) => {
   const { token } = req.params;
   const { password } = req.body;
   try {
-    const decoded = await jwt.verify(token, process.env.JWT_KEY);
+    const decoded = await jwt.verify(token, process.env.JWT_SECRET);
     const id = decoded.id;
     const hashPassword = await bcrypt.hash(password, 10);
     await UserModel.findByIdAndUpdate({ _id: id }, { password: hashPassword });

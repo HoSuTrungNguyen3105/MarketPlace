@@ -4,6 +4,8 @@ import toast from "react-hot-toast";
 
 export const useAuthStore = create((set, get) => ({
   authUser: null,
+  password: "",
+  setPassword: (password) => set({ password }),
   setAuthUser: (user) => set({ authUser: user }), // Hàm cập nhật authUser
   isSigningUp: false,
   isLoggingIn: false,
@@ -23,7 +25,6 @@ export const useAuthStore = create((set, get) => ({
   checkAuth: async () => {
     try {
       const res = await axiosInstance.get("/auth/check");
-
       set({ authUser: res.data });
     } catch (error) {
       console.log("Error in checkAuth:", error);

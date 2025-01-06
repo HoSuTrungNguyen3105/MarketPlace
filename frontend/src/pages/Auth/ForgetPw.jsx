@@ -1,111 +1,67 @@
-import React from "react";
-
+import React, { useState } from "react";
+import { TfiEmail } from "react-icons/tfi";
+import { axiosInstance } from "../../lib/axios";
+import toast from "react-hot-toast";
+import { useNavigate } from "react-router-dom";
 const ForgetPw = () => {
-  const [formData, setFormData] = useState({
-    email: "",
-    password: "",
-  });
-
-  const { login, isLoggingIn, user, fetchDataByRole } = useAuthStore();
+  const [email, setEmail] = useState("");
+  const [loading, setLoading] = useState(false); // Trạng thái loading
   const navigate = useNavigate();
-  const [error, setError] = useState(""); // Thêm state để lưu lỗi
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = (e) => {
     e.preventDefault();
-    setError(""); // Reset lỗi khi bắt đầu submit
 
-    try {
-      // Gửi yêu cầu đăng nhập với tham số isAdminLogin
-      await login({ ...formData, isAdminLogin });
-
-      if (user) {
-        const expectedRole = isAdminLogin ? "admin" : "user"; // Vai trò mong muốn
-
-        if (user.role === expectedRole) {
-          // Vai trò khớp
-          await fetchDataByRole(user.role); // Lấy dữ liệu theo vai trò
-        } else {
-          // Vai trò không khớp
-          setError(
-            `Bạn không có quyền truy cập vào trang ${
-              isAdminLogin ? "Admin" : "User"
-            }!`
-          );
-        }
-      }
-    } catch (err) {
-      // Xử lý lỗi từ server
-      setError(err.response?.data?.message || "Đăng nhập thất bại!");
+    // Kiểm tra email không trống
+    if (!email) {
+      toast.error("Vui lòng nhập email!");
+      return;
     }
+
+    setLoading(true);
+    const toastId = toast.loading("Đang gửi email..."); // Hiện thông báo loading
+
+    axiosInstance
+      .post("/auth/forgot-password", { email })
+      .then((response) => {
+        console.log("API Response:", response.data); // Log phản hồi từ API
+        setLoading(false);
+        toast.dismiss(toastId); // Ẩn thông báo loading
+
+        if (response.data.status) {
+          toast.success("Email gửi thành công! Kiểm tra email của bạn.");
+          navigate("/sign-in");
+        } else {
+          toast.error(response.data.message || "Có lỗi xảy ra!");
+        }
+      })
+      .catch((error) => {
+        console.error("API Error:", error.response); // Log lỗi từ API
+        setLoading(false);
+        toast.dismiss(toastId); // Ẩn thông báo loading
+        const errorMessage =
+          error.response?.data?.message || "Có lỗi xảy ra khi gửi email!";
+        toast.error(errorMessage);
+      });
   };
 
   return (
     <div className="a-right">
       <form className="infoForm authForm" onSubmit={handleSubmit}>
-        <h3 style={{ fontSize: "20px" }}>
-          {isAdminLogin ? "Đăng Nhập Admin" : "Đăng Nhập Người Dùng"}
-        </h3>
-        {error && <p style={{ color: "red", fontSize: "12px" }}>{error}</p>}
+        <h3>Quên mật khẩu</h3>
         <div>
           <input
-            placeholder="you@example.com"
+            type="email"
+            placeholder="Nhập email của bạn"
             className="infoInput"
-            value={formData.email}
-            onChange={(e) =>
-              setFormData({ ...formData, email: e.target.value })
-            }
+            autoComplete="off"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
           />
-        </div>
-        <div>
-          <input
-            className="infoInput"
-            name="password"
-            type="password"
-            placeholder="••••••••"
-            value={formData.password}
-            onChange={(e) =>
-              setFormData({ ...formData, password: e.target.value })
-            }
-          />
-        </div>
-        <button
-          type="submit"
-          className="button infoButton"
-          disabled={isLoggingIn}
-        >
-          {isLoggingIn ? (
-            <>
-              <Loader2 className="h-5 w-5 animate-spin" />
-              Đang xử lý...
-            </>
-          ) : (
-            "Đăng nhập"
-          )}
-        </button>
-        <div>
-          <p className="text-base-content/60" style={{ fontSize: "12px" }}>
-            Chưa có tài khoản?{" "}
-            <Link
-              to="/sign-up"
-              className="link link-primary"
-              style={{ color: "blue" }}
-            >
-              Đăng Ký
-            </Link>
-          </p>
         </div>
 
-        <div>
-          <p className="text-base-content/60" style={{ fontSize: "12px" }}>
-            <Link
-              to="/forget-password"
-              className="link link-primary"
-              style={{ color: "blue" }}
-            >
-              Quên mật khẩu?
-            </Link>
-          </p>
-        </div>
+        <button type="submit" className="button infoButton" disabled={loading}>
+          {loading ? "Sending..." : "Submit"}
+        </button>
       </form>
     </div>
   );

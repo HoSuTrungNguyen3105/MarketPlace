@@ -4,7 +4,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { usePostStore } from "../../store/userPostStore";
 
 const Post = ({ data, currentUserId }) => {
-  const { provinces, fetchProvinces, reportPost, deletePost } = usePostStore();
+  const { reportPost, deletePost } = usePostStore();
   const [isLoading, setIsLoading] = useState(false);
   const [isFollowing, setIsFollowing] = useState(false);
 
@@ -14,9 +14,9 @@ const Post = ({ data, currentUserId }) => {
   const username = data.userId?.username || "Người dùng ẩn danh";
 
   // Lấy danh sách tỉnh thành
-  useEffect(() => {
-    if (provinces.length === 0) fetchProvinces();
-  }, [provinces, fetchProvinces]);
+  // useEffect(() => {
+  //   if (provinces.length === 0) fetchProvinces();
+  // }, [provinces, fetchProvinces]);
 
   const handleDeletePost = async () => {
     if (!window.confirm("Bạn có chắc chắn muốn xóa bài đăng này không?"))
@@ -63,10 +63,10 @@ const Post = ({ data, currentUserId }) => {
     }
   };
 
-  const getProvinceName = (location) => {
-    const province = provinces.find((p) => p.id === Number(location));
-    return province?.name || "Không xác định";
-  };
+  // const getProvinceName = (location) => {
+  //   const province = provinces.find((p) => p.id === Number(location));
+  //   return province?.name || "Không xác định";
+  // };
 
   const formatTimeAgo = (timestamp) => {
     const now = new Date();
@@ -102,8 +102,8 @@ const Post = ({ data, currentUserId }) => {
           Mô tả: {data.description || "Không có mô tả"}
         </p>
         <p>Danh mục: {data.category}</p>
-        <p>Giá: {data.price.toLocaleString()} VND</p>
-        <p>Địa điểm: {getProvinceName(data.location)}</p>
+        <p>Giá: {data.price} VND</p>
+        <p>Địa điểm:{data.location}</p>
         <p>Ngày đăng: {formatTimeAgo(data.createdAt)}</p>
         <p>Người đăng: {username}</p>
       </div>

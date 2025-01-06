@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { usePostStore } from "../../store/userPostStore";
 import { useAuthStore } from "../../store/useAuthStore";
 import Post from "./Post";
-import Loader from "../Main/Loader";
+import Loader from "../Another/Loader";
 
 const Posts = () => {
   const { posts, isLoading, fetchPosts, createPostSuccess } = usePostStore();

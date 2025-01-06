@@ -12,18 +12,16 @@ function App() {
   const { authUser, checkAuth, isCheckingAuth } = useAuthStore();
   const { checkStatus } = useCheckUserStatus();
 
-  // Kiểm tra trạng thái bị chặn sau khi đã xác thực
   useEffect(() => {
     if (authUser) {
-      checkStatus(); // Kiểm tra tài khoản bị chặn
+      checkStatus();
     }
-  }, [authUser]);
+  }, [authUser, checkStatus]);
 
   useEffect(() => {
     checkAuth();
   }, [checkAuth]);
 
-  // Hiển thị loader khi đang kiểm tra xác thực
   if (isCheckingAuth && !authUser) {
     return (
       <div className="flex items-center justify-center h-screen">
@@ -31,16 +29,14 @@ function App() {
       </div>
     );
   }
+
   return (
     <div className="flex flex-col">
-      {/* Navbar ở trên cùng */}
       <header>
         <Navbar />
       </header>
       <div className="flex flex-1">
-        {/* Sidebar cố định bên trái */}
         <Sidebar />
-        {/* Nội dung chính */}
         <main className="flex-1 p-7">
           <Outlet />
         </main>
