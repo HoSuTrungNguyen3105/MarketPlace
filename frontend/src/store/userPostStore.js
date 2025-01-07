@@ -60,7 +60,7 @@ export const usePostStore = create((set, get) => ({
   getPostById: async (id) => {
     set({ isLoading: true, error: null }); // Bắt đầu loading
     try {
-      const response = await axiosInstance.get(`/post/posts/detail/${id}`);
+      const response = await axiosInstance.get(`/post/detail/${id}`);
       if (response.data.status === "Success") {
         set({ post: response.data.data }); // Cập nhật bài viết vào state
       }

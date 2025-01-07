@@ -32,8 +32,25 @@ const postSchema = mongoose.Schema(
       type: [String], // Mảng chứa URL các hình ảnh sản phẩm
       default: [],
     },
+
     contact: {
       type: String,
+    },
+    condition: {
+      type: String, // Tình trạng sản phẩm (mới/đã qua sử dụng)
+      enum: ["new", "used"],
+      default: "used",
+    },
+    sellerRating: {
+      type: Number, // Điểm đánh giá người bán
+      default: 0,
+      min: 0,
+      max: 5,
+    },
+    paymentMethods: {
+      type: [String], // Các phương thức thanh toán được chấp nhận
+      enum: ["cash", "bank transfer", "paypal", "credit card"],
+      default: ["cash"],
     },
     isAvailable: {
       type: Boolean, // Trạng thái còn hàng hay đã bán
@@ -52,7 +69,6 @@ const postSchema = mongoose.Schema(
       ],
       default: [], // Thêm giá trị mặc định là mảng rỗng
     },
-    isApproved: { type: Boolean, default: false },
   },
   {
     timestamps: true, // Tự động thêm `createdAt` và `updatedAt`

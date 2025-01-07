@@ -27,7 +27,7 @@
   margin-bottom: 10px;
 }
 
-button {
+/* button {
   padding: 8px 12px;
   background-color: #3498db;
   color: white;
@@ -39,7 +39,7 @@ button {
 
 button:hover {
   background-color: #2980b9;
-}
+} */
 
 input {
   padding: 8px;

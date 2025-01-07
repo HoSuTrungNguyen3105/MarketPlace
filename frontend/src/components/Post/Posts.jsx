@@ -3,11 +3,27 @@ import { usePostStore } from "../../store/userPostStore";
 import { useAuthStore } from "../../store/useAuthStore";
 import Post from "./Post";
 import Loader from "../Another/Loader";
+import { axiosInstance } from "../../lib/axios.js";
 
 const Posts = () => {
   const { posts, isLoading, fetchPosts, createPostSuccess } = usePostStore();
   const { authUser } = useAuthStore();
   const currentUserId = authUser?._id;
+
+  // Hàm xử lý khi bấm vào bài viết
+  const handleViewPost = async (postId) => {
+    try {
+      // Gửi request để tăng số lượt xem
+      const response = await axiosInstance.get(`/post/detail/${postId}`);
+
+      // Truyền lại dữ liệu bài đăng đã được cập nhật vào post mới
+      // Có thể cập nhật lại trạng thái bài viết nếu cần
+      // Ví dụ, bạn có thể cập nhật lại danh sách bài viết
+      fetchPosts(); // Cập nhật lại danh sách bài viết sau khi lượt xem được tăng lên
+    } catch (error) {
+      console.error("Lỗi khi cập nhật lượt xem:", error);
+    }
+  };
 
   useEffect(() => {
     fetchPosts(); // Lấy danh sách bài viết khi component mount
@@ -20,8 +36,6 @@ const Posts = () => {
     }
   }, [createPostSuccess]); // Chỉ chạy khi createPostSuccess thay đổi
 
-  // Lọc danh sách bài viết đã duyệt
-
   return (
     <div className="Posts">
       {isLoading && <Loader />}
@@ -32,6 +46,7 @@ const Posts = () => {
             data={item}
             currentUserId={currentUserId}
             authUserId={authUser._id}
+            handleViewPost={handleViewPost} // Truyền hàm handleViewPost vào Post
           />
         ))}
         {posts.length === 0 && !isLoading && (

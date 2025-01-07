@@ -3,7 +3,7 @@ import toast from "react-hot-toast";
 import { Link, useNavigate } from "react-router-dom";
 import { usePostStore } from "../../store/userPostStore";
 
-const Post = ({ data, currentUserId }) => {
+const Post = ({ data, currentUserId, authUserId, handleViewPost }) => {
   const { reportPost, deletePost } = usePostStore();
   const [isLoading, setIsLoading] = useState(false);
   const [isFollowing, setIsFollowing] = useState(false);
@@ -12,11 +12,6 @@ const Post = ({ data, currentUserId }) => {
 
   const isCurrentUserPost = currentUserId === (data.userId?._id || data.userId);
   const username = data.userId?.username || "Người dùng ẩn danh";
-
-  // Lấy danh sách tỉnh thành
-  // useEffect(() => {
-  //   if (provinces.length === 0) fetchProvinces();
-  // }, [provinces, fetchProvinces]);
 
   const handleDeletePost = async () => {
     if (!window.confirm("Bạn có chắc chắn muốn xóa bài đăng này không?"))
@@ -86,7 +81,7 @@ const Post = ({ data, currentUserId }) => {
     <div className="post-container border rounded-lg p-4 mb-4">
       {/* Hình ảnh bài đăng */}
       {data.images && data.images.length > 0 && (
-        <Link to={`/post/${data._id}`}>
+        <Link to={`/post/${data._id}`} onClick={() => handleViewPost(data._id)}>
           <img
             src={data.images[0]}
             alt="Hình ảnh bài đăng"
@@ -94,7 +89,9 @@ const Post = ({ data, currentUserId }) => {
           />
         </Link>
       )}
-
+      <Link to={`/post/${data._id}`} onClick={() => handleViewPost(data._id)}>
+        <button>Chi tiết</button>
+      </Link>
       {/* Thông tin bài đăng */}
       <div>
         <h2 className="text-xl font-bold">{data.title}</h2>
@@ -103,7 +100,7 @@ const Post = ({ data, currentUserId }) => {
         </p>
         <p>Danh mục: {data.category}</p>
         <p>Giá: {data.price} VND</p>
-        <p>Địa điểm:{data.location}</p>
+        <p>Số lượt xem: {data.views}</p> {/* Hiển thị số lượt xem */}
         <p>Ngày đăng: {formatTimeAgo(data.createdAt)}</p>
         <p>Người đăng: {username}</p>
       </div>

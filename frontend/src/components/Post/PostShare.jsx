@@ -98,18 +98,8 @@ const PostShare = ({ onPostCreateSuccess }) => {
       <form
         onSubmit={handleSubmit}
         className="space-y-6 max-w-xl mx-auto"
-        enctype="multipart/form-data"
+        encType="multipart/form-data"
       >
-        {/* {errorMessages.length > 0 && (
-          <div className="p-4 mb-4 bg-red-100 text-red-700 rounded-md">
-            <ul>
-              {errorMessages.map((err, index) => (
-                <li key={index}>{err.message}</li>
-              ))}
-            </ul>
-          </div>
-        )} */}
-
         <h2 className="text-lg font-bold text-gray-800">Tạo bài đăng mới</h2>
         {selectedCategory.name && (
           <p className="text-sm text-gray-600">

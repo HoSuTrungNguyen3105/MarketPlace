@@ -1,7 +1,7 @@
 import PostModel from "../models/postModel.js";
 import UserModel from "../models/userModel.js";
 import cloudinary from "../lib/cloudinary.js"; // Đảm bảo đã cấu hình Cloudinary
-import fetch from "node-fetch";
+import fs from "fs";
 
 export const createPost = async (req, res) => {
   try {
@@ -105,48 +105,14 @@ export const createPost = async (req, res) => {
     });
   }
 };
-// const handleImageUpload = async (images) => {
-//   const imageUrls = [];
-
-//   for (let i = 0; i < images.length; i++) {
-//     try {
-//       const uploadResponse = await cloudinary.uploader.upload(images[i], {
-//         resource_type: "auto", // Tự động nhận dạng loại tệp
-//       });
-//       imageUrls.push(uploadResponse.secure_url); // Lưu URL của ảnh vào mảng
-//     } catch (error) {
-//       console.error("Lỗi khi upload ảnh:", error);
-//       throw new Error("Có lỗi xảy ra khi upload ảnh");
-//     }
-//   }
-
-//   return imageUrls;
-// };
 const handleImageUpload = async (images) => {
   const imageUrls = [];
 
-  // Kiểm tra xem images có phải là mảng không
-  if (!Array.isArray(images)) {
-    throw new Error("Dữ liệu ảnh không hợp lệ");
-  }
-
-  // Upload từng ảnh
   for (let i = 0; i < images.length; i++) {
     try {
-      let image = images[i];
-
-      if (typeof image === "string") {
-        // Nếu là URL, có thể cần tải ảnh trước khi upload lên Cloudinary
-        image = await downloadImage(image); // Download ảnh từ URL
-      }
-
-      // Kiểm tra nếu image là một buffer và upload trực tiếp từ Buffer
-      const uploadResponse = await cloudinary.uploader.upload(image, {
-        resource_type: "image", // Đảm bảo rằng resource_type là 'image'
-        public_id: `posts/${Date.now()}`, // Thêm public_id nếu cần thiết
-        folder: "posts", // Đặt ảnh vào thư mục 'posts'
+      const uploadResponse = await cloudinary.uploader.upload(images[i], {
+        resource_type: "auto", // Tự động nhận dạng loại tệp
       });
-
       imageUrls.push(uploadResponse.secure_url); // Lưu URL của ảnh vào mảng
     } catch (error) {
       console.error("Lỗi khi upload ảnh:", error);
@@ -156,22 +122,6 @@ const handleImageUpload = async (images) => {
 
   return imageUrls;
 };
-
-const downloadImage = async (imageUrl) => {
-  try {
-    const response = await fetch(imageUrl); // Lấy phản hồi từ URL ảnh
-    if (!response.ok) {
-      throw new Error("Không thể tải ảnh từ URL");
-    }
-    const buffer = await response.arrayBuffer(); // Sử dụng arrayBuffer thay vì buffer()
-    const file = Buffer.from(buffer);
-    return file;
-  } catch (error) {
-    console.error("Lỗi khi tải ảnh:", error);
-    throw new Error("Có lỗi xảy ra khi tải ảnh");
-  }
-};
-
 // API để lấy danh sách danh mục
 export const getCategories = async (req, res) => {
   try {
@@ -327,5 +277,25 @@ export const reportPost = async (req, res) => {
   } catch (error) {
     res.status(500).json({ message: "Có lỗi xảy ra khi báo cáo bài viết." });
     console.error(error); // Ghi log lỗi
+  }
+};
+export const getPostbyid = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const post = await PostModel.findById(id);
+
+    if (!post) {
+      return res.status(404).json({ message: "Post not found" });
+    }
+    post.views += 1;
+    await post.save();
+
+    return res.json({
+      status: "Success",
+      data: post,
+    });
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({ message: "Error" });
   }
 };

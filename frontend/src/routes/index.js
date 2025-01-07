@@ -11,8 +11,8 @@ import CategorySelection from "../components/Post/CategorySelection.jsx";
 import ForgetPw from "../pages/Auth/ForgetPw.jsx";
 import ResetPw from "../pages/Auth/ResetPw.jsx";
 import { createBrowserRouter, Navigate } from "react-router-dom";
-import AdminSidebar from "../components/Admin/AdminSidebar.jsx";
 import AdminLayout from "../components/Admin/AdminLayout.jsx";
+import PostDetail from "../components/Post/PostDetail.jsx";
 
 // Tạo PrivateRoute cho các trang yêu cầu đăng nhập
 const PrivateRoute = ({ children }) => {
@@ -85,6 +85,14 @@ const router = createBrowserRouter([
         element: (
           <PrivateRoute>
             <Posts />
+          </PrivateRoute>
+        ),
+      },
+      {
+        path: "/post/:id",
+        element: (
+          <PrivateRoute>
+            <PostDetail />
           </PrivateRoute>
         ),
       },

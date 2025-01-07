@@ -1,0 +1,50 @@
+/* Container của ảnh */
+.image-container {
+  position: relative;
+  width: 100%;
+  max-width: 600px; /* Bạn có thể tùy chỉnh kích thước này */
+  margin: 0 auto;
+  background-color: #f0f0f0; /* Màu nền khi ảnh không lấp đầy hết khung */
+  padding: 10px; /* Khoảng cách bên trong khung ảnh */
+  display: flex;
+  justify-content: center; /* Căn giữa ảnh trong container */
+  align-items: center; /* Căn giữa ảnh theo chiều dọc */
+}
+
+/* Đảm bảo ảnh không bị bóp méo và không bị cắt */
+.post-image {
+  width: 100%; /* Chiếm toàn bộ chiều rộng của container */
+  height: auto; /* Chiều cao tự động theo tỉ lệ của ảnh */
+  max-height: 300px; /* Giới hạn chiều cao ảnh */
+  object-fit: contain; /* Giữ nguyên tỉ lệ ảnh mà không bị cắt */
+  border-radius: 10px;
+  transition: transform 0.3s ease-in-out;
+}
+
+/* Các nút mũi tên */
+.arrow-button {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  background: rgba(0, 0, 0, 0.5);
+  color: white;
+  border: none;
+  font-size: 30px;
+  padding: 10px;
+  cursor: pointer;
+  border-radius: 50%;
+  z-index: 10;
+}
+
+.left-arrow {
+  left: 10px;
+}
+
+.right-arrow {
+  right: 10px;
+}
+
+/* Khi mũi tên hover */
+.arrow-button:hover {
+  background: rgba(0, 0, 0, 0.8);
+}
