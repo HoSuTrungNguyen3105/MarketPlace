@@ -242,7 +242,23 @@ export const updateUserInfo = async (req, res) => {
     res.status(500).json({ message: "Internal server error" }); // Trả về lỗi nếu có
   }
 };
+export const getUserById = async (req, res) => {
+  try {
+    const { userId } = req.params; // Lấy userId từ req.params
 
+    // Tìm kiếm người dùng trong cơ sở dữ liệu, ẩn mật khẩu
+    const user = await UserModel.findById(userId).select("-password");
+
+    if (!user) {
+      return res.status(404).json({ message: "Người dùng không tồn tại." });
+    }
+
+    res.status(200).json(user); // Trả về thông tin người dùng
+  } catch (error) {
+    console.error("Lỗi khi lấy thông tin người dùng:", error);
+    res.status(500).json({ message: "Lỗi máy chủ nội bộ." });
+  }
+};
 export const changePassword = async (req, res) => {
   const { oldPassword, newPassword } = req.body;
   const userId = req.user._id;

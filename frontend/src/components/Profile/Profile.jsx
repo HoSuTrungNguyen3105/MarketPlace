@@ -16,8 +16,6 @@ const Profile = () => {
     location: authUser?.location || "",
     role: authUser?.role || "",
     profilePic: authUser?.profilePic || "",
-    isBlocked: authUser?.isBlocked || false,
-    loginAttempts: authUser?.loginAttempts || 0,
     lastLogin: authUser?.lastLogin || "",
     isVerified: authUser?.isVerified || false,
   });
@@ -124,30 +122,6 @@ const Profile = () => {
               value={formData.role}
               onChange={handleChange}
               disabled={!isEditing} // Disabled khi không chỉnh sửa
-            />
-          </div>
-
-          <div className="Follow">
-            <span>Trạng thái bị chặn:</span>
-            <input
-              type="checkbox"
-              name="isBlocked"
-              checked={formData.isBlocked}
-              onChange={(e) =>
-                setFormData({ ...formData, isBlocked: e.target.checked })
-              }
-              disabled={!isEditing}
-            />
-          </div>
-
-          <div className="Follow">
-            <span>Số lần đăng nhập sai:</span>
-            <input
-              type="number"
-              name="loginAttempts"
-              value={formData.loginAttempts}
-              onChange={handleChange}
-              disabled
             />
           </div>
 

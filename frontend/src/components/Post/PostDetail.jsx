@@ -1,223 +1,210 @@
 import React, { useEffect, useState } from "react";
 import { usePostStore } from "../../store/userPostStore";
-import { useLocation, useNavigate, useParams } from "react-router-dom";
+import { Link, useLocation, useNavigate, useParams } from "react-router-dom";
 import { useAuthStore } from "../../store/useAuthStore";
+import {
+  MapPin,
+  Phone,
+  MessageSquare,
+  Heart,
+  Share2,
+  ChevronLeft,
+  ChevronRight,
+  Clock,
+} from "lucide-react";
 import "./Detail.css";
+
 const PostDetail = () => {
   const { id } = useParams();
   const navigate = useNavigate();
-  const location = useLocation(); // Lấy query string từ URL
+  const location = useLocation();
   const { getPostById, post, isLoading, error, updatePost, deletePost } =
-    usePostStore(); // Add deletePost
+    usePostStore();
   const { authUser } = useAuthStore();
-  const [user, setUserId] = useState(null);
-  useEffect(() => {
-    const queryParams = new URLSearchParams(location.search);
-    const fetchedUserId = queryParams.get("userId");
-    setUserId(fetchedUserId);
-  }, [location]);
-  const [isEditing, setIsEditing] = useState(false);
-  const [editedPost, setEditedPost] = useState({
-    description: "",
-    title: "",
-    contact: "",
-    category: "",
-    location: "",
-    images: "",
-  });
-  const [isUserFollowing, setIsUserFollowing] = useState(false);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
 
-  const handleNextImage = () => {
-    if (currentImageIndex < post.images.length - 1) {
-      setCurrentImageIndex(currentImageIndex + 1);
-    } else {
-      setCurrentImageIndex(0); // Quay lại ảnh đầu tiên nếu đã hết
-    }
-  };
-
-  const handlePrevImage = () => {
-    if (currentImageIndex > 0) {
-      setCurrentImageIndex(currentImageIndex - 1);
-    } else {
-      setCurrentImageIndex(post.images.length - 1); // Quay lại ảnh cuối cùng nếu ở ảnh đầu
-    }
-  };
   useEffect(() => {
     if (id) {
       getPostById(id);
     }
-  }, [id, getPostById]);
+  }, [id]);
 
-  useEffect(() => {
-    if (post) {
-      setEditedPost({
-        desc: post.desc,
-        contact: post.contact,
-        location: post.location,
-        image: post.image,
-      });
-    }
-  }, [post]);
-
-  const handleGoBack = () => navigate(-1);
-
-  const handleEditClick = () => {
-    setIsEditing(true);
+  const handlePrevImage = () => {
+    setCurrentImageIndex((prevIndex) =>
+      prevIndex > 0 ? prevIndex - 1 : post.images.length - 1
+    );
   };
 
-  const handleInputChange = (e) => {
-    const { name, value } = e.target;
-    setEditedPost((prevState) => ({
-      ...prevState,
-      [name]: value,
-    }));
-  };
-
-  const handleSave = () => {
-    updatePost({ ...post, ...editedPost });
-    setIsEditing(false);
-  };
-
-  const handleCancel = () => {
-    setEditedPost({
-      desc: post.desc,
-      contact: post.contact,
-      location: post.location,
-      image: post.image,
-    });
-    setIsEditing(false);
-  };
-
-  const handleImageChange = (e) => {
-    const file = e.target.files[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setEditedPost((prevState) => ({
-          ...prevState,
-          image: reader.result, // Lưu base64 vào state
-        }));
-      };
-      reader.readAsDataURL(file); // Chuyển file sang base64
-    }
+  const handleNextImage = () => {
+    setCurrentImageIndex((prevIndex) =>
+      prevIndex < post.images.length - 1 ? prevIndex + 1 : 0
+    );
   };
 
   const handleMessage = () => {
-    if (!isUserFollowing) {
-      alert("Bạn cần theo dõi trước khi nhắn tin!");
-    } else {
-      navigate("/chatbox");
-    }
+    navigate("/chatbox");
   };
 
-  const handleDelete = async () => {
-    if (window.confirm("Bạn chắc chắn muốn xóa bài đăng này?")) {
-      try {
-        await deletePost(post._id); // Call deletePost to remove the post
-        navigate("/"); // Navigate to the homepage or any other page
-      } catch (error) {
-        console.error("Error deleting post:", error);
-      }
-    }
-  };
-
-  if (isLoading) return <div>Loading...</div>;
-  if (error) return <div>{error}</div>;
-  if (!post) return <div>Post not found!</div>;
+  if (isLoading) return <div className="text-center py-10">Loading...</div>;
+  if (error)
+    return <div className="text-center py-10 text-red-500">{error}</div>;
+  if (!post) return <div className="text-center py-10">Post not found!</div>;
 
   return (
-    <div className="post-detail">
-      <div className="post-header">
-        {user && (
-          <p>
-            <b>Người đăng:</b> {user}
-          </p>
-        )}
-        {authUser && (
-          <button className="button btn-back" onClick={handleGoBack}>
-            Quay lại
-          </button>
-        )}
-      </div>
+    <div className="max-w-7xl mx-auto px-4">
+      {/* Breadcrumb */}
+      <nav className="flex items-center gap-2 text-sm py-4">
+        <Link to="/" className="text-blue-600">
+          Chợ Tốt Xe
+        </Link>
+        <span>›</span>
+        <Link to="/xe-dien" className="text-blue-600">
+          Xe điện
+        </Link>
+        <span>›</span>
+        <Link to="/xe-dien-tp-ho-chi-minh" className="text-blue-600">
+          Xe điện Tp Hồ Chí Minh
+        </Link>
+        <span>›</span>
+        <Link to="/xe-dien-quan-3" className="text-blue-600">
+          Xe điện Quận 3
+        </Link>
+        <span>›</span>
+        <span className="text-gray-600">{post.title}</span>
+      </nav>
 
-      {isEditing ? (
-        <div className="edit-form">
-          <textarea
-            name="desc"
-            value={editedPost.description}
-            onChange={handleInputChange}
-            placeholder="Mô tả"
-          />
-          <input
-            type="text"
-            name="contact"
-            value={editedPost.contact}
-            onChange={handleInputChange}
-            placeholder="Liên hệ"
-          />
+      <div className="grid md:grid-cols-2 gap-8">
+        {/* Image Gallery */}
+        <div className="relative">
+          <div className="relative aspect-square">
+            <img
+              src={post.images[currentImageIndex]}
+              alt="Product"
+              className="w-full h-full object-contain rounded-lg"
+            />
 
-          <input type="file" accept="image/*" onChange={handleImageChange} />
-
-          <div className="edit-actions">
-            <button onClick={handleSave}>Lưu</button>
-            <button onClick={handleCancel}>Hủy</button>
-          </div>
-        </div>
-      ) : (
-        <div className="post-info">
-          <p className="post-description">{post.description}</p>
-          {post.images && post.images.length > 0 && (
-            <div className="image-container">
-              <button
-                className="arrow-button left-arrow"
-                onClick={handlePrevImage}
-              >
-                &lt;
-              </button>
-              <img
-                src={post.images[currentImageIndex]}
-                alt={`Post image ${currentImageIndex + 1}`}
-                className="post-image"
-              />
-              <button
-                className="arrow-button right-arrow"
-                onClick={handleNextImage}
-              >
-                &gt;
+            <button
+              onClick={handlePrevImage}
+              className="absolute left-2 top-1/2 -translate-y-1/2 bg-white/80 rounded-full p-2"
+            >
+              <ChevronLeft className="w-6 h-6" />
+            </button>
+            <button
+              onClick={handleNextImage}
+              className="absolute right-2 top-1/2 -translate-y-1/2 bg-white/80 rounded-full p-2"
+            >
+              <ChevronRight className="w-6 h-6" />
+            </button>
+            <div className="absolute top-4 right-4 flex gap-2">
+              <button className="bg-white/80 p-2 rounded-full">
+                <Share2 className="w-5 h-5" />
               </button>
             </div>
-          )}
+            <div className="absolute bottom-4 left-1/2 -translate-x-1/2 bg-black/60 text-white px-3 py-1 rounded-full text-sm">
+              {currentImageIndex + 1} / {post.images.length}
+            </div>
+          </div>
 
-          <p className="post-contact">
-            <button className="contact-button">
-              Liên lạc qua số: {post.contact}
-            </button>
-          </p>
-          <p className="post-location"></p>
+          {/* Thumbnails */}
+          {/* Thumbnails */}
+          <div className="flex gap-2 mt-4">
+            {post.images.map((img, index) => (
+              <button
+                key={index}
+                onClick={() => setCurrentImageIndex(index)}
+                className={`flex-none w-16 h-16 rounded-lg overflow-hidden border-2 ${
+                  currentImageIndex === index
+                    ? "border-primary"
+                    : "border-transparent"
+                }`}
+              >
+                <img
+                  src={img}
+                  alt={`Thumbnail ${index + 1}`}
+                  className="w-full h-full object-cover"
+                />
+              </button>
+            ))}
+          </div>
         </div>
-      )}
 
-      {/* Edit Button */}
-      {authUser && authUser._id === post.userId && !isEditing && (
-        <div className="postReact">
-          <button className="button fc-button" onClick={handleEditClick}>
-            Sửa
-          </button>
-          <button className="button fc-button" onClick={handleDelete}>
-            Xóa
-          </button>
-        </div>
-      )}
-
-      <div className="postReact">
-        {authUser && authUser._id !== post.userId && (
-          <>
-            <button className="button fc-button" onClick={handleMessage}>
-              Nhắn Tin
+        {/* Product Info */}
+        <div>
+          <h1 className="text-2xl font-bold mb-4">{post.title}</h1>
+          <div className="text-2xl font-bold text-red-500 mb-6">
+            {post.price} đ
+          </div>
+          {post.views} Người xem
+          <div className="space-y-4 mb-6">
+            <div className="flex items-center gap-2">
+              <MapPin className="w-5 h-5 text-gray-500" />
+              <span>{post.location}</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <Clock className="w-5 h-5 text-gray-500" />
+              <span>Đăng {post.createdAt}</span>
+            </div>
+          </div>
+          {/* Seller Info */}
+          <div className="flex items-center gap-4 mb-6">
+            <img
+              src={
+                post.userId.profilePic || "/placeholder.svg?height=48&width=48"
+              }
+              alt="img"
+              className="w-12 h-12 rounded-full"
+            />
+            <div>
+              <h3 className="font-semibold flex items-center gap-2">
+                {post.userId}
+                {authUser.isVerified && (
+                  <span className="text-green-500">✓</span>
+                )}
+                {!authUser.isVerified && (
+                  <span className="text-blue-500">Chưa xác thực </span>
+                )}
+              </h3>
+              <div className="text-sm text-gray-500 flex items-center gap-4">
+                <span>{authUser.soldItems} đã bán</span>
+                <span>{authUser.activeListings} đang bán</span>
+              </div>
+              <div className="text-sm text-gray-500">
+                Hoạt động {authUser.lastActive} • Phản hồi:{" "}
+                {authUser.responseRate}%
+              </div>
+            </div>
+          </div>
+          {/* Action Buttons */}
+          <div className="space-y-3">
+            <button className="w-full bg-green-500 text-white py-3 rounded-lg flex items-center justify-center gap-2">
+              <Phone className="w-5 h-5" />
+              Gọi điện
             </button>
-          </>
-        )}
+            <button
+              className="w-full border border-green-500 text-green-500 py-3 rounded-lg flex items-center justify-center gap-2"
+              onClick={handleMessage}
+            >
+              <MessageSquare className="w-5 h-5" />
+              Chat
+            </button>
+          </div>
+          {/* Status */}
+          <div className="flex justify-between mt-6">
+            <button className="text-gray-500">Xe còn hay đã bán rồi?</button>
+            <button className="text-gray-500">Xe chính chủ</button>
+          </div>
+          {/* Help & Report */}
+          <div className="flex justify-between mt-6">
+            <button className="flex items-center gap-2 text-gray-500">
+              <span className="w-5 h-5">🎧</span>
+              Cần trợ giúp
+            </button>
+            <button className="flex items-center gap-2 text-gray-500">
+              <span className="w-5 h-5">⚠️</span>
+              Báo cáo tin đăng
+            </button>
+          </div>
+        </div>
       </div>
     </div>
   );

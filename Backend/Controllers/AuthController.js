@@ -65,7 +65,6 @@ export const registerUser = async (req, res) => {
       firstname,
       lastname,
       role, // Lưu vai trò vào cơ sở dữ liệu
-
       verificationCode,
       verificationCodeExpires,
     });
@@ -146,25 +145,6 @@ export const loginUser = async (req, res) => {
         message: `Sai mật khẩu! Bạn đã nhập sai ${user.loginAttempts} lần.`,
       });
     }
-
-    // // Kiểm tra vai trò đăng nhập
-    // if (isAuthorityLogin) {
-    //   if (user.role !== "admin") {
-    //     return res.status(403).json({
-    //       message: "Bạn không có quyền truy cập Admin hoặc không phải Admin.",
-    //     });
-    //   }
-    // } else if (user.role !== "seller") {
-    //   return res.status(403).json({
-    //     message: "Bạn không có quyền truy cập Seller hoặc không phải Seller.",
-    //   });
-    // } else {
-    //   if (user.role === "admin") {
-    //     return res.status(403).json({
-    //       message: "Vui lòng truy cập trang đăng nhập Admin để đăng nhập.",
-    //     });
-    //   }
-    // }
 
     // Reset số lần đăng nhập sai nếu thành công
     user.loginAttempts = 0;

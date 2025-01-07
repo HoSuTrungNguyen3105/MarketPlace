@@ -1,66 +1,29 @@
-import React, { useState, useEffect } from "react";
-import toast from "react-hot-toast";
-import { Link, useNavigate } from "react-router-dom";
-import { usePostStore } from "../../store/userPostStore";
+import { Link } from "react-router-dom";
+import "./Detail.css";
 
-const Post = ({ data, currentUserId, authUserId, handleViewPost }) => {
-  const { reportPost, deletePost } = usePostStore();
-  const [isLoading, setIsLoading] = useState(false);
-  const [isFollowing, setIsFollowing] = useState(false);
+const Post = ({ data, currentUserId }) => {
+  // const handleDeletePost = async () => {
+  //   if (!window.confirm("Bạn có chắc chắn muốn xóa bài đăng này không?"))
+  //     return;
+  //   try {
+  //     setIsLoading(true);
+  //     await deletePost(data._id);
+  //     toast.success("Bài đăng đã bị xóa.");
+  //   } catch (error) {
+  //     console.error("Error deleting post:", error);
+  //     toast.error("Không thể xóa bài đăng.");
+  //   } finally {
+  //     setIsLoading(false);
+  //   }
+  // };
 
-  const navigate = useNavigate();
-
-  const isCurrentUserPost = currentUserId === (data.userId?._id || data.userId);
-  const username = data.userId?.username || "Người dùng ẩn danh";
-
-  const handleDeletePost = async () => {
-    if (!window.confirm("Bạn có chắc chắn muốn xóa bài đăng này không?"))
-      return;
-    try {
-      setIsLoading(true);
-      await deletePost(data._id);
-      toast.success("Bài đăng đã bị xóa.");
-    } catch (error) {
-      console.error("Error deleting post:", error);
-      toast.error("Không thể xóa bài đăng.");
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const handleFollowToggle = async () => {
-    if (!currentUserId || !data.userId) return;
-    setIsLoading(true);
-    try {
-      if (isFollowing) {
-        await (currentUserId, data.userId);
-        toast.success("Đã bỏ theo dõi.");
-      } else {
-        await (currentUserId, data.userId);
-        toast.success("Đã theo dõi.");
-      }
-      setIsFollowing(!isFollowing);
-    } catch (error) {
-      console.error("Error toggling follow:", error);
-      toast.error("Có lỗi xảy ra khi thay đổi trạng thái theo dõi.");
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const handleReport = async () => {
-    try {
-      await reportPost(data._id, currentUserId);
-      toast.success("Đã báo cáo bài đăng.");
-    } catch (error) {
-      console.error("Error reporting post:", error);
-      toast.error("Không thể báo cáo bài đăng.");
-    }
-  };
-
-  // const getProvinceName = (location) => {
-  //   const province = provinces.find((p) => p.id === Number(location));
-  //   return province?.name || "Không xác định";
+  // Hàm xử lý khi bấm vào bài viết
+  // const handleViewPost = async (postId) => {
+  //   try {
+  //     await axiosInstance.get(`/post/detail/${postId}`);
+  //   } catch (error) {
+  //     console.error("Lỗi khi cập nhật lượt xem:", error);
+  //   }
   // };
 
   const formatTimeAgo = (timestamp) => {
@@ -78,62 +41,38 @@ const Post = ({ data, currentUserId, authUserId, handleViewPost }) => {
   };
 
   return (
-    <div className="post-container border rounded-lg p-4 mb-4">
+    <div className="contain border rounded-lg p-4 mb-4 shadow-sm hover:shadow-lg transition-shadow duration-200">
       {/* Hình ảnh bài đăng */}
       {data.images && data.images.length > 0 && (
-        <Link to={`/post/${data._id}`} onClick={() => handleViewPost(data._id)}>
+        <Link to={`/post/${data._id}`}>
           <img
             src={data.images[0]}
             alt="Hình ảnh bài đăng"
-            className="w-full h-64 object-cover rounded-lg mb-4"
+            className="w-full h-48 object-cover rounded-lg mb-2"
           />
         </Link>
       )}
-      <Link to={`/post/${data._id}`} onClick={() => handleViewPost(data._id)}>
-        <button>Chi tiết</button>
-      </Link>
+
       {/* Thông tin bài đăng */}
-      <div>
-        <h2 className="text-xl font-bold">{data.title}</h2>
-        <p className="text-gray-600">
-          Mô tả: {data.description || "Không có mô tả"}
+      <div className="flex flex-col">
+        <h2 className="text-base font-bold mb-1 text-gray-800 truncate">
+          {data.title}
+        </h2>
+        <p className="text-sm text-gray-600 mb-1 truncate">
+          {data.category} - {data.description || "Không có mô tả"}
         </p>
-        <p>Danh mục: {data.category}</p>
-        <p>Giá: {data.price} VND</p>
-        <p>Số lượt xem: {data.views}</p> {/* Hiển thị số lượt xem */}
-        <p>Ngày đăng: {formatTimeAgo(data.createdAt)}</p>
-        <p>Người đăng: {username}</p>
+        <p className="text-red-500 font-bold text-lg mb-1">{data.price} VND</p>
+        <p className="text-gray-500 text-xs">
+          {formatTimeAgo(data.createdAt)} - {data.location || "Không rõ"}
+        </p>
       </div>
 
-      {/* Nút chức năng */}
-      <div className="flex mt-4 space-x-2">
-        {!isCurrentUserPost && (
-          <>
-            <button
-              onClick={handleFollowToggle}
-              disabled={isLoading}
-              className={`px-4 py-2 rounded ${
-                isFollowing ? "bg-red-500" : "bg-blue-500"
-              } text-white`}
-            >
-              {isFollowing ? "Bỏ theo dõi" : "Theo dõi"}
-            </button>
-            <button
-              onClick={handleReport}
-              className="px-4 py-2 bg-yellow-500 text-white rounded"
-            >
-              Báo cáo
-            </button>
-          </>
-        )}
-        {isCurrentUserPost && (
-          <button
-            onClick={handleDeletePost}
-            className="px-4 py-2 bg-red-500 text-white rounded"
-          >
-            Xóa bài
-          </button>
-        )}
+      {/* Biểu tượng yêu thích và nút thêm */}
+      <div className="flex justify-between items-center mt-3">
+        <button className="p-1 rounded-full hover:bg-gray-100">❤️</button>
+        <div className="text-gray-500 cursor-pointer">
+          <span>⋮</span>
+        </div>
       </div>
     </div>
   );

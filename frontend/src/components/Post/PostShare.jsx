@@ -12,7 +12,6 @@ const PostShare = ({ onPostCreateSuccess }) => {
     categories,
     fetchCategories,
     isLoading,
-    errorMessages, // Lấy danh sách lỗi từ store
     error: categoryError,
   } = usePostStore();
   const navigate = useNavigate();

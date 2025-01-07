@@ -7,20 +7,18 @@ import { useAuthStore } from "./store/useAuthStore";
 import { useEffect } from "react";
 import useCheckUserStatus from "./lib/check";
 import { Loader } from "lucide-react";
+import Chat from "./pages/Chat/Chat";
 
 function App() {
   const { authUser, checkAuth, isCheckingAuth } = useAuthStore();
   const { checkStatus } = useCheckUserStatus();
 
   useEffect(() => {
+    checkAuth();
     if (authUser) {
       checkStatus();
     }
-  }, [authUser, checkStatus]);
-
-  useEffect(() => {
-    checkAuth();
-  }, [checkAuth]);
+  }, []); // Chạy chỉ một lần
 
   if (isCheckingAuth && !authUser) {
     return (
@@ -40,6 +38,7 @@ function App() {
         <main className="flex-1 p-7">
           <Outlet />
         </main>
+        <Chat />
         <Toaster />
       </div>
     </div>

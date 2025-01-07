@@ -7,6 +7,7 @@ import cors from "cors";
 import UserRoute from "./routes/UserRoute.js";
 import AuthRoute from "./routes/AuthRoute.js";
 import PostRoute from "./routes/PostRoute.js";
+import MessageRoute from "./routes/MessageRoute.js";
 
 const app = express();
 const port = process.env.PORT || 5000;
@@ -36,3 +37,4 @@ mongoose.connect(process.env.MONGO_URL).then(() => {
 app.use("/api/user", UserRoute);
 app.use("/api/auth", AuthRoute);
 app.use("/api/post", PostRoute);
+app.use("/api/message", MessageRoute);

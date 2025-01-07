@@ -17,10 +17,10 @@ const ResetPw = () => {
   // Đánh giá độ mạnh mật khẩu
   const getPasswordStrength = (password) => {
     if (password.length === 0) return "";
-    if (lengthCheck && letterCheck && specialCheck) return "Cực mạnh";
-    if (lengthCheck && (letterCheck || specialCheck)) return "Mạnh";
-    if (password.length >= 4) return "Trung bình";
-    return password.length > 0 ? "Yếu" : "Rất yếu";
+    if (lengthCheck && letterCheck && specialCheck) return "Cũng mạnh";
+    if (lengthCheck && (letterCheck || specialCheck)) return "Hơi mạnh 1 xí";
+    if (password.length >= 4) return "Thường thôi";
+    return password.length > 0 ? "Yếu quá" : "Rất yếu";
   };
 
   const handleSubmit = (e) => {
@@ -93,13 +93,13 @@ const ResetPw = () => {
             Đánh giá mật khẩu:{" "}
             <span
               className={`${
-                getPasswordStrength(password) === "Cực mạnh"
+                getPasswordStrength(password) === "Cũng mạnh"
                   ? "text-green-500"
-                  : getPasswordStrength(password) === "Mạnh"
+                  : getPasswordStrength(password) === "Hơi mạnh 1 xí"
                   ? "text-lime-500"
-                  : getPasswordStrength(password) === "Trung bình"
+                  : getPasswordStrength(password) === "Thường thôi"
                   ? "text-yellow-500"
-                  : getPasswordStrength(password) === "Yếu"
+                  : getPasswordStrength(password) === "Yếu quá"
                   ? "text-orange-800"
                   : "text-orange-500"
               }`}

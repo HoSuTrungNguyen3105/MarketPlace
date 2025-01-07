@@ -1,50 +1,106 @@
-/* Container của ảnh */
 .image-container {
-  position: relative;
-  width: 100%;
-  max-width: 600px; /* Bạn có thể tùy chỉnh kích thước này */
-  margin: 0 auto;
-  background-color: #f0f0f0; /* Màu nền khi ảnh không lấp đầy hết khung */
-  padding: 10px; /* Khoảng cách bên trong khung ảnh */
   display: flex;
-  justify-content: center; /* Căn giữa ảnh trong container */
-  align-items: center; /* Căn giữa ảnh theo chiều dọc */
-}
-
-/* Đảm bảo ảnh không bị bóp méo và không bị cắt */
-.post-image {
-  width: 100%; /* Chiếm toàn bộ chiều rộng của container */
-  height: auto; /* Chiều cao tự động theo tỉ lệ của ảnh */
-  max-height: 300px; /* Giới hạn chiều cao ảnh */
-  object-fit: contain; /* Giữ nguyên tỉ lệ ảnh mà không bị cắt */
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  max-width: 100%;
+  margin: 20px auto;
+  overflow: hidden;
+  border: 1px solid #ddd;
   border-radius: 10px;
-  transition: transform 0.3s ease-in-out;
 }
 
-/* Các nút mũi tên */
+.post-image {
+  max-width: 100%;
+  max-height: 500px;
+  object-fit: cover;
+  border-radius: 10px;
+}
+
 .arrow-button {
   position: absolute;
   top: 50%;
   transform: translateY(-50%);
-  background: rgba(0, 0, 0, 0.5);
+  background-color: rgba(0, 0, 0, 0.5);
   color: white;
   border: none;
-  font-size: 30px;
-  padding: 10px;
-  cursor: pointer;
   border-radius: 50%;
-  z-index: 10;
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 20px;
+  cursor: pointer;
+  z-index: 2;
+  transition: background-color 0.3s ease;
 }
 
-.left-arrow {
+.arrow-button.left-arrow {
   left: 10px;
 }
 
-.right-arrow {
+.arrow-button.right-arrow {
   right: 10px;
 }
 
-/* Khi mũi tên hover */
 .arrow-button:hover {
-  background: rgba(0, 0, 0, 0.8);
+  background-color: rgba(0, 0, 0, 0.8);
+}
+/* CSS chung cho các thông báo */
+.message-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 200px; /* Chiều cao tối thiểu cho các thông báo */
+  background-color: #f9f9f9;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  padding: 20px;
+  margin: 20px;
+  font-size: 18px;
+  font-weight: 500;
+  color: #333;
+  text-align: center;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+/* Thông báo loading */
+.message-loading {
+  background-color: #e0f7fa;
+  color: #00796b;
+}
+
+/* Thông báo lỗi */
+.message-error {
+  background-color: #ffebee;
+  color: #c62828;
+}
+
+/* Thông báo không tìm thấy */
+.message-not-found {
+  background-color: #f3e5f5;
+  color: #6a1b9a;
+}
+.contain {
+  width: 250px; /* Điều chỉnh theo kích thước hình ảnh */
+  background-color: white;
+}
+
+.contain img {
+  border-radius: 5px;
+}
+
+.contain:hover {
+  transform: scale(1.02);
+}
+
+.contain h2 {
+  line-height: 1.4;
+}
+
+.contain .truncate {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }

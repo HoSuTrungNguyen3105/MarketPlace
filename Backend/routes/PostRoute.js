@@ -1,6 +1,7 @@
 import express from "express";
 import {
   createPost,
+  delete1UserPost,
   getAllPosts,
   getCategories,
   getPost,
@@ -8,6 +9,7 @@ import {
   reportPost,
 } from "../Controllers/PostController.js";
 import { uploadMiddleware } from "../lib/multer.js";
+import { protectRoute } from "../lib/check.js";
 const router = express.Router();
 
 router.post("/posts", uploadMiddleware, createPost); // Để tạo bài viết
@@ -16,5 +18,6 @@ router.get("/detail/:id", getPostbyid); // Để lấy bài viết theo id
 router.get("/categories", getCategories);
 router.get("/postsId/allItems", getAllPosts); // Để lấy tất cả bài viết
 router.post("/report/:postId", reportPost);
+router.delete("/user/:id", protectRoute, delete1UserPost); // Để xóa bài viết
 
 export default router;

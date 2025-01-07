@@ -299,3 +299,16 @@ export const getPostbyid = async (req, res) => {
     res.status(500).json({ message: "Error" });
   }
 };
+export const delete1UserPost = async (req, res) => {
+  const { id } = req.params;
+  try {
+    // Find and delete the post by ID
+    const post = await PostModel.findByIdAndDelete(id);
+    if (!post) {
+      return res.status(404).json({ message: "Post not found" });
+    }
+    res.status(200).json({ message: "Post deleted successfully" });
+  } catch (error) {
+    res.status(500).json({ message: "Failed to delete post", error });
+  }
+};
