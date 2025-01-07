@@ -22,11 +22,11 @@ const useCheckUserStatus = () => {
 
   const checkStatus = async () => {
     const token = getTokenFromCookie();
-    if (token) {
-      console.log("Token: ", token);
-    } else {
-      console.log("Token không có trong cookie");
-    }
+    // if (token) {
+    //   console.log("Token: ", token);
+    // } else {
+    //   console.log("Token không có trong cookie");
+    // }
 
     try {
       const response = await axiosInstance.get("/auth/check-status", {

@@ -1,6 +1,4 @@
 import React, { useEffect, useRef, useState } from "react";
-import axios from "axios";
-import toast from "react-hot-toast";
 import { usePostStore } from "../../store/userPostStore";
 import { useAuthStore } from "../../store/useAuthStore";
 import { useLocation, useNavigate } from "react-router-dom";
@@ -28,7 +26,7 @@ const PostShare = ({ onPostCreateSuccess }) => {
     description: "",
     contact: authUser?.phone || "", // Tự động lấy từ user
     location: authUser?.location || "", // Tự động lấy từ user
-    images: "",
+    images: [], // Chuyển từ chuỗi sang mảng
     price: "",
     category: selectedCategory.id || "",
   });
@@ -39,29 +37,23 @@ const PostShare = ({ onPostCreateSuccess }) => {
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
-
   const handleImageChange = (e) => {
-    const file = e.target.files[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setFormData({ ...formData, images: reader.result });
-      };
-      reader.readAsDataURL(file);
-    }
+    const files = Array.from(e.target.files);
+    const readers = files.map((file) => {
+      return new Promise((resolve) => {
+        const reader = new FileReader();
+        reader.onloadend = () => resolve(reader.result);
+        reader.readAsDataURL(file);
+      });
+    });
+
+    Promise.all(readers).then((images) => {
+      setFormData((prevFormData) => ({
+        ...prevFormData,
+        images: [...prevFormData.images, ...images], // Lưu tất cả ảnh đã chọn
+      }));
+    });
   };
-  // const handleImageChange = (e) => {
-  //   const files = e.target.files;
-  //   if (files && files.length > 0) {
-  //     const imagesArray = Array.from(files).map((file) =>
-  //       URL.createObjectURL(file)
-  //     );
-  //     setFormData((prevFormData) => ({
-  //       ...prevFormData,
-  //       images: imagesArray,
-  //     }));
-  //   }
-  // };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -80,7 +72,7 @@ const PostShare = ({ onPostCreateSuccess }) => {
           description: "",
           contact: authUser?.contact || "",
           location: authUser?.location || "",
-          images: "",
+          images: [], // Chuyển từ chuỗi sang mảng
           price: "",
           category: "",
         });
@@ -94,18 +86,21 @@ const PostShare = ({ onPostCreateSuccess }) => {
         }
         navigate("/post");
       } else {
-        toast.error("Đã xảy ra lỗi khi đăng bài.");
+        console.log("Đã xảy ra lỗi khi đăng bài.");
       }
     } catch (error) {
       console.error("Lỗi khi tạo bài viết:", error);
-      toast.error("Đã xảy ra lỗi khi đăng bài.");
     }
   };
 
   return (
     <div className="post-share-container">
-      <form onSubmit={handleSubmit} className="space-y-6 max-w-xl mx-auto">
-        {errorMessages.length > 0 && (
+      <form
+        onSubmit={handleSubmit}
+        className="space-y-6 max-w-xl mx-auto"
+        enctype="multipart/form-data"
+      >
+        {/* {errorMessages.length > 0 && (
           <div className="p-4 mb-4 bg-red-100 text-red-700 rounded-md">
             <ul>
               {errorMessages.map((err, index) => (
@@ -113,7 +108,7 @@ const PostShare = ({ onPostCreateSuccess }) => {
               ))}
             </ul>
           </div>
-        )}
+        )} */}
 
         <h2 className="text-lg font-bold text-gray-800">Tạo bài đăng mới</h2>
         {selectedCategory.name && (
@@ -246,14 +241,14 @@ const PostShare = ({ onPostCreateSuccess }) => {
             multiple // Cho phép chọn nhiều ảnh
           />
           <div className="mt-2">
-            {formData.images && formData.images.length > 0 && (
+            {formData.images.length > 0 && (
               <div className="flex flex-wrap gap-2">
                 {formData.images.map((image, index) => (
                   <img
                     key={index}
                     src={image}
                     alt={`selected-image-${index}`}
-                    className="w-20 h-20 object-cover"
+                    className="w-20 h-20 object-cover rounded-md"
                   />
                 ))}
               </div>

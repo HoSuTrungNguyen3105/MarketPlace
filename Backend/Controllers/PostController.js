@@ -1,6 +1,7 @@
 import PostModel from "../models/postModel.js";
 import UserModel from "../models/userModel.js";
 import cloudinary from "../lib/cloudinary.js"; // Đảm bảo đã cấu hình Cloudinary
+import fetch from "node-fetch";
 
 export const createPost = async (req, res) => {
   try {
@@ -11,11 +12,11 @@ export const createPost = async (req, res) => {
       price,
       location,
       contact,
-      images,
       userId,
+      images,
     } = req.body;
 
-    // User validation
+    // Kiểm tra người dùng
     const user = await UserModel.findById(userId);
     if (!user) {
       return res
@@ -23,7 +24,7 @@ export const createPost = async (req, res) => {
         .json({ message: "Người dùng không tồn tại", field: "userId" });
     }
 
-    // Required fields validation
+    // Kiểm tra các trường bắt buộc
     if (!title?.trim()) {
       return res
         .status(400)
@@ -36,7 +37,7 @@ export const createPost = async (req, res) => {
         .json({ message: "Giá phải lớn hơn 0", field: "price" });
     }
 
-    // Category validation
+    // Kiểm tra danh mục
     const cate = Number(category);
     const allowedCategories = Array.from({ length: 20 }, (_, i) => i + 1);
     if (isNaN(cate) || !allowedCategories.includes(cate)) {
@@ -45,26 +46,40 @@ export const createPost = async (req, res) => {
         .json({ message: "Danh mục không hợp lệ", field: "category" });
     }
 
-    // Images validation
-    if (!images || !Array.isArray(images) || images.length === 0) {
-      return res.status(400).json({
-        message: "Cần có ít nhất một hình ảnh",
-        field: "images",
-      });
-    }
+    // Kiểm tra và xử lý upload ảnh
+    // const uploadedImages = [];
+    // console.log("req.body:", req.body); // Kiểm tra dữ liệu body
+    // console.log("req.files:", req.files); // Kiểm tra dữ liệu files
+    // if (!req.files || !Array.isArray(req.files) || req.files.length === 0) {
+    //   return res.status(400).json({
+    //     message: "Cần có ít nhất một hình ảnh",
+    //     field: "images",
+    //   });
+    // }
 
-    // `req.files` sẽ là một mảng các ảnh đã được tải lên
-    const uploadedImages = [];
+    // for (const file of req.files) {
+    //   try {
+    //     // Tải lên Cloudinary
+    //     const uploadResponse = await cloudinary.uploader.upload(file.path, {
+    //       resource_type: "image",
+    //       folder: "posts",
+    //     });
+    //     uploadedImages.push(uploadResponse.secure_url);
 
-    // Nếu bạn có nhiều ảnh, `req.files` sẽ là một mảng
-    for (const image of req.files) {
-      const uploadResponse = await cloudinary.uploader.upload(image.path, {
-        resource_type: "auto",
-      });
-      uploadedImages.push(uploadResponse.secure_url);
-    }
+    //     // Xóa file tạm sau khi tải thành công
+    //     fs.unlinkSync(file.path);
+    //   } catch (uploadError) {
+    //     console.error("Lỗi khi tải lên ảnh:", uploadError);
+    //     return res.status(500).json({
+    //       message: "Lỗi khi tải lên hình ảnh",
+    //       error: uploadError.message,
+    //     });
+    //   }
+    // }
+    // Upload ảnh lên Cloudinary
+    const imageUrls = await handleImageUpload(images); // Upload ảnh và nhận URL
 
-    // Create and save new post
+    // Tạo bài đăng mới
     const newPost = new PostModel({
       title,
       description,
@@ -72,7 +87,7 @@ export const createPost = async (req, res) => {
       price,
       location,
       contact,
-      images: uploadedImages,
+      images: imageUrls, // Lưu mảng các URL ảnh
       userId,
     });
 
@@ -88,6 +103,72 @@ export const createPost = async (req, res) => {
       message: "Có lỗi xảy ra khi tạo bài đăng",
       error: error.message,
     });
+  }
+};
+// const handleImageUpload = async (images) => {
+//   const imageUrls = [];
+
+//   for (let i = 0; i < images.length; i++) {
+//     try {
+//       const uploadResponse = await cloudinary.uploader.upload(images[i], {
+//         resource_type: "auto", // Tự động nhận dạng loại tệp
+//       });
+//       imageUrls.push(uploadResponse.secure_url); // Lưu URL của ảnh vào mảng
+//     } catch (error) {
+//       console.error("Lỗi khi upload ảnh:", error);
+//       throw new Error("Có lỗi xảy ra khi upload ảnh");
+//     }
+//   }
+
+//   return imageUrls;
+// };
+const handleImageUpload = async (images) => {
+  const imageUrls = [];
+
+  // Kiểm tra xem images có phải là mảng không
+  if (!Array.isArray(images)) {
+    throw new Error("Dữ liệu ảnh không hợp lệ");
+  }
+
+  // Upload từng ảnh
+  for (let i = 0; i < images.length; i++) {
+    try {
+      let image = images[i];
+
+      if (typeof image === "string") {
+        // Nếu là URL, có thể cần tải ảnh trước khi upload lên Cloudinary
+        image = await downloadImage(image); // Download ảnh từ URL
+      }
+
+      // Kiểm tra nếu image là một buffer và upload trực tiếp từ Buffer
+      const uploadResponse = await cloudinary.uploader.upload(image, {
+        resource_type: "image", // Đảm bảo rằng resource_type là 'image'
+        public_id: `posts/${Date.now()}`, // Thêm public_id nếu cần thiết
+        folder: "posts", // Đặt ảnh vào thư mục 'posts'
+      });
+
+      imageUrls.push(uploadResponse.secure_url); // Lưu URL của ảnh vào mảng
+    } catch (error) {
+      console.error("Lỗi khi upload ảnh:", error);
+      throw new Error("Có lỗi xảy ra khi upload ảnh");
+    }
+  }
+
+  return imageUrls;
+};
+
+const downloadImage = async (imageUrl) => {
+  try {
+    const response = await fetch(imageUrl); // Lấy phản hồi từ URL ảnh
+    if (!response.ok) {
+      throw new Error("Không thể tải ảnh từ URL");
+    }
+    const buffer = await response.arrayBuffer(); // Sử dụng arrayBuffer thay vì buffer()
+    const file = Buffer.from(buffer);
+    return file;
+  } catch (error) {
+    console.error("Lỗi khi tải ảnh:", error);
+    throw new Error("Có lỗi xảy ra khi tải ảnh");
   }
 };
 
