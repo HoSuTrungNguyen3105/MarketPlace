@@ -55,9 +55,6 @@ export const useMessageStore = create((set, get) => ({
         .split("; ")
         .find((row) => row.startsWith("jwt="))
         ?.split("=")[1];
-
-      console.log(token); // Xem token có hợp lệ không
-
       const response = await axiosInstance.get("/message/users", {
         headers: {
           Authorization: `Bearer ${token}`, // Gửi token trong header
@@ -78,16 +75,20 @@ export const useMessageStore = create((set, get) => ({
 
     const socket = useAuthStore.getState().socket;
 
-    socket.on("newMessage", (newMessage) => {
-      set({
-        messages: [...get().messages, newMessage],
-      });
-    });
+    // socket.off("newMessage", (newMessage) => {
+    //   const isMessageSentFromSelectedUser =
+    //     newMessage.senderId === selectedUser._id;
+    //   if (!isMessageSentFromSelectedUser) return;
+
+    //   set({
+    //     messages: [...get().messages, newMessage],
+    //   });
+    // });
   },
 
   unsubscribeFromMessages: () => {
     const socket = useAuthStore.getState().socket;
-    socket.off("newMessage");
+    // socket.off("newMessage");
   },
   // setSelectedUser: (selectedUser) => set({ selectedUser }),
   setSelectedUser: (user) => set({ selectedUser: user }),

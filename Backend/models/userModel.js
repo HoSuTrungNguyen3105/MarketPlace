@@ -41,12 +41,8 @@ const userSchema = mongoose.Schema(
       type: String,
       default: "",
     },
-    connect: [
-      {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: "User",
-      },
-    ],
+    followers: [],
+    following: [],
     isBlocked: {
       type: Boolean,
       default: false, // Mặc định người dùng không bị chặn
@@ -57,6 +53,9 @@ const userSchema = mongoose.Schema(
       type: Date,
       default: Date.now,
     },
+    soldItems: { type: Number, default: 0 },
+    activeListings: { type: Number, default: 0 },
+    responseRate: { type: Number, default: 0 },
     isVerified: { type: Boolean, default: false },
     verificationCode: { type: String },
     verificationCodeExpires: { type: Date },

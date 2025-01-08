@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { usePostStore } from "../../store/userPostStore";
 import { Link, useLocation, useNavigate, useParams } from "react-router-dom";
 import { useAuthStore } from "../../store/useAuthStore";
@@ -13,64 +13,103 @@ import {
   Clock,
 } from "lucide-react";
 import "./Detail.css";
+import { useMessageStore } from "../../store/useMessageStore";
+import { useUserStore } from "../../store/useUserStore";
 
 const PostDetail = () => {
   const { id } = useParams();
   const navigate = useNavigate();
-  const location = useLocation();
-  const { getPostById, post, isLoading, error, updatePost, deletePost } =
+  const {
+    getContacts,
+    contacts,
+    isLoading: isContactsLoading,
+    selectedUser,
+    setSelectedUser,
+  } = useMessageStore();
+  const [isUserFollowing, setIsUserFollowing] = useState(false);
+  const [isFollowLoading, setIsFollowLoading] = useState(false);
+  const { getPostById, post, isLoading, fetchOtherPosts, otherPosts } =
     usePostStore();
   const { authUser } = useAuthStore();
+  const { followUser, unfollowUser, fetchFollowingStatus } = useUserStore();
+
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
 
   useEffect(() => {
     if (id) {
       getPostById(id);
+      getContacts();
     }
-  }, [id]);
+  }, [id, getPostById, getContacts]);
+
+  useEffect(() => {
+    const checkFollowStatus = async () => {
+      if (authUser && post && post.userId) {
+        const status = await fetchFollowingStatus(authUser._id, post.userId);
+        setIsUserFollowing(status);
+      }
+    };
+    if (authUser && post) {
+      checkFollowStatus();
+    }
+  }, [authUser, post, fetchFollowingStatus]);
+
+  const handleFollowToggle = async () => {
+    if (!authUser || !post.userId) return;
+    setIsFollowLoading(true);
+    try {
+      if (isUserFollowing) {
+        await unfollowUser(authUser._id, post.userId);
+        setIsUserFollowing(false);
+      } else {
+        await followUser(authUser._id, post.userId);
+        setIsUserFollowing(true);
+      }
+    } catch (error) {
+      console.error("Failed to toggle follow status:", error);
+    } finally {
+      setIsFollowLoading(false);
+    }
+  };
 
   const handlePrevImage = () => {
     setCurrentImageIndex((prevIndex) =>
-      prevIndex > 0 ? prevIndex - 1 : post.images.length - 1
+      prevIndex > 0 ? prevIndex - 1 : post?.images?.length - 1
     );
   };
 
   const handleNextImage = () => {
     setCurrentImageIndex((prevIndex) =>
-      prevIndex < post.images.length - 1 ? prevIndex + 1 : 0
+      prevIndex < post?.images?.length - 1 ? prevIndex + 1 : 0
     );
   };
 
-  const handleMessage = () => {
-    navigate("/chatbox");
+  const handleChat = (user) => {
+    setSelectedUser(user); // Cập nhật người dùng được chọn
+    navigate(`/message/${user._id}`); // Chuyển hướng đến trang nhắn tin (nếu cần)
   };
 
+  const breadcrumbs = useMemo(() => {
+    return [
+      { name: "Home", path: "/" },
+      { name: "Bài viết", path: "/post" },
+      { name: post?.title || "Post", path: `/post/${id}` },
+    ];
+  }, [post, id]);
+
   if (isLoading) return <div className="text-center py-10">Loading...</div>;
-  if (error)
-    return <div className="text-center py-10 text-red-500">{error}</div>;
   if (!post) return <div className="text-center py-10">Post not found!</div>;
 
   return (
     <div className="max-w-7xl mx-auto px-4">
       {/* Breadcrumb */}
-      <nav className="flex items-center gap-2 text-sm py-4">
-        <Link to="/" className="text-blue-600">
-          Chợ Tốt Xe
-        </Link>
-        <span>›</span>
-        <Link to="/xe-dien" className="text-blue-600">
-          Xe điện
-        </Link>
-        <span>›</span>
-        <Link to="/xe-dien-tp-ho-chi-minh" className="text-blue-600">
-          Xe điện Tp Hồ Chí Minh
-        </Link>
-        <span>›</span>
-        <Link to="/xe-dien-quan-3" className="text-blue-600">
-          Xe điện Quận 3
-        </Link>
-        <span>›</span>
-        <span className="text-gray-600">{post.title}</span>
+      <nav>
+        {breadcrumbs.map((crumb, index) => (
+          <span key={index}>
+            <Link to={crumb.path}>{crumb.name}</Link>
+            {index < breadcrumbs.length - 1 && " › "}
+          </span>
+        ))}
       </nav>
 
       <div className="grid md:grid-cols-2 gap-8">
@@ -82,7 +121,6 @@ const PostDetail = () => {
               alt="Product"
               className="w-full h-full object-contain rounded-lg"
             />
-
             <button
               onClick={handlePrevImage}
               className="absolute left-2 top-1/2 -translate-y-1/2 bg-white/80 rounded-full p-2"
@@ -105,7 +143,6 @@ const PostDetail = () => {
             </div>
           </div>
 
-          {/* Thumbnails */}
           {/* Thumbnails */}
           <div className="flex gap-2 mt-4">
             {post.images.map((img, index) => (
@@ -156,21 +193,21 @@ const PostDetail = () => {
             />
             <div>
               <h3 className="font-semibold flex items-center gap-2">
-                {post.userId}
-                {authUser.isVerified && (
+                {post.userId.username}
+                {post.userId.isVerified && (
                   <span className="text-green-500">✓</span>
                 )}
-                {!authUser.isVerified && (
-                  <span className="text-blue-500">Chưa xác thực </span>
+                {!post.userId.isVerified && (
+                  <span className="text-blue-500">Chưa xác thực</span>
                 )}
               </h3>
               <div className="text-sm text-gray-500 flex items-center gap-4">
-                <span>{authUser.soldItems} đã bán</span>
-                <span>{authUser.activeListings} đang bán</span>
+                <span>{post.userId.soldItems} đã bán</span>
+                <span>{post.userId.activeListings} đang bán</span>
               </div>
               <div className="text-sm text-gray-500">
-                Hoạt động {authUser.lastActive} • Phản hồi:{" "}
-                {authUser.responseRate}%
+                Hoạt động {post.userId.lastActive} • Phản hồi:{" "}
+                {post.userId.responseRate}%
               </div>
             </div>
           </div>
@@ -180,29 +217,81 @@ const PostDetail = () => {
               <Phone className="w-5 h-5" />
               Gọi điện
             </button>
+            {contacts.map((contact) => (
+              <button
+                key={contact._id}
+                onClick={() => handleChat(contact)}
+                className={`w-full p-3 flex items-center gap-3 hover:bg-base-300 transition-colors ${
+                  selectedUser?._id === contact._id
+                    ? "bg-base-300 ring-1 ring-base-300"
+                    : ""
+                }`}
+              >
+                <MessageSquare className="w-5 h-5" />
+                Chat với {contact.username}
+              </button>
+            ))}
+          </div>
+          {/* Follow Button */}
+          {authUser && authUser._id !== post.userId && (
             <button
-              className="w-full border border-green-500 text-green-500 py-3 rounded-lg flex items-center justify-center gap-2"
-              onClick={handleMessage}
+              className={`button fc-button ${
+                isUserFollowing ? "unfollow" : "follow"
+              }`}
+              onClick={handleFollowToggle}
+              disabled={isFollowLoading}
             >
-              <MessageSquare className="w-5 h-5" />
-              Chat
+              {isFollowLoading
+                ? "Loading..."
+                : isUserFollowing
+                ? "Đã theo dõi"
+                : "Theo dõi"}
             </button>
+          )}
+          {/* Hiển thị mô tả với xử lý khoảng trắng và xuống dòng */}
+          {/* <div
+            className="mt-6 text-gray-700"
+            dangerouslySetInnerHTML={{
+              __html: post.description
+                .replace(/\n/g, "<br />") // Thay dấu xuống dòng bằng <br />
+                .replace(/ /g, "&nbsp;"), // Thay khoảng trắng bằng &nbsp;
+            }}
+          />{" "} */}
+          {/* Hiển thị mô tả với việc thay thế {{newline}} thành dấu xuống dòng */}
+          {/* Description */}
+          <div className="mt-10">
+            <h2 className="text-xl font-semibold mb-4">Mô tả sản phẩm</h2>
+            <div className="text-gray-700">
+              {post.description.split("{{newline}}").map((line, index) => (
+                <span key={index}>
+                  {line}
+                  <br />
+                </span>
+              ))}
+            </div>
           </div>
-          {/* Status */}
-          <div className="flex justify-between mt-6">
-            <button className="text-gray-500">Xe còn hay đã bán rồi?</button>
-            <button className="text-gray-500">Xe chính chủ</button>
-          </div>
-          {/* Help & Report */}
-          <div className="flex justify-between mt-6">
-            <button className="flex items-center gap-2 text-gray-500">
-              <span className="w-5 h-5">🎧</span>
-              Cần trợ giúp
-            </button>
-            <button className="flex items-center gap-2 text-gray-500">
-              <span className="w-5 h-5">⚠️</span>
-              Báo cáo tin đăng
-            </button>
+          {/* Other Posts */}
+          <div className="mt-10">
+            <h2 className="text-xl font-semibold mb-4">Sản phẩm khác</h2>
+            <div className="grid md:grid-cols-3 lg:grid-cols-4 gap-6">
+              {/* {otherPosts.map((item) => (
+                <Link
+                  to={`/post/${item._id}`}
+                  key={item._id}
+                  className="block border rounded-lg overflow-hidden shadow-sm hover:shadow-md transition"
+                >
+                  <img
+                    src={item.images[0]}
+                    alt={item.title}
+                    className="w-full h-48 object-cover"
+                  />
+                  <div className="p-4">
+                    <h3 className="font-semibold text-lg">{item.title}</h3>
+                    <p className="text-red-500 font-bold">{item.price} đ</p>
+                  </div>
+                </Link>
+              ))} */}
+            </div>
           </div>
         </div>
       </div>

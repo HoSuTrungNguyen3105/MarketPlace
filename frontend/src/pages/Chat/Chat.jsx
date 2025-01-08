@@ -1,15 +1,28 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom"; // Import useNavigate
-import ChatContainer from "../../components/ChatBox/ChatContainer";
 import NoChatSelected from "../../components/ChatBox/NoChatSelected";
 import { useMessageStore } from "../../store/useMessageStore";
 import "./Chat.css";
 
 const Chat = () => {
-  const { selectedUser } = useMessageStore();
   const [isChatVisible, setIsChatVisible] = useState(true);
   const navigate = useNavigate(); // Hook điều hướng
+  const { selectedUser, messages, getMessages, sendMessage } =
+    useMessageStore();
+  const [newMessage, setNewMessage] = useState("");
 
+  useEffect(() => {
+    if (selectedUser) {
+      getMessages(selectedUser._id);
+    }
+  }, [selectedUser, getMessages]);
+
+  const handleSendMessage = async () => {
+    if (newMessage.trim()) {
+      await sendMessage({ content: newMessage });
+      setNewMessage(""); // Xóa nội dung sau khi gửi
+    }
+  };
   // Hàm để toggle hiển thị chatbox
   const toggleChatVisibility = () => {
     setIsChatVisible(!isChatVisible);
@@ -19,7 +32,9 @@ const Chat = () => {
   const openFullChat = () => {
     navigate("/message"); // Điều hướng đến trang /message
   };
-
+  // if (!selectedUser) {
+  //   return <NoChatSelected />;
+  // }
   return (
     <div className="fixed bottom-4 right-4">
       {/* Chỉ hiển thị nút "Mở rộng Chat" nếu chatbox nhỏ không hiển thị */}
@@ -45,7 +60,26 @@ const Chat = () => {
         </button>
 
         {/* Hiển thị ChatContainer nếu có người dùng đã chọn */}
-        {!selectedUser ? <NoChatSelected /> : <ChatContainer />}
+        <h1>Nhắn tin với {selectedUser}</h1>
+        <div className="messages">
+          {messages.map((message, index) => (
+            <div
+              key={index}
+              className={`message ${message.isMine ? "mine" : ""}`}
+            >
+              {message.content}
+            </div>
+          ))}
+        </div>
+        <div className="input-area">
+          <input
+            type="text"
+            value={newMessage}
+            onChange={(e) => setNewMessage(e.target.value)}
+            placeholder="Nhập tin nhắn..."
+          />
+          <button onClick={handleSendMessage}>Gửi</button>
+        </div>
       </div>
     </div>
   );

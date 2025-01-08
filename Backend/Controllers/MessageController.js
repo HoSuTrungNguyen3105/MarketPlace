@@ -91,6 +91,25 @@ export const getUsersForSidebar = async (req, res) => {
     res.status(500).json({ error: "Internal server error" });
   }
 };
+export const getChatWithUser = async (req, res) => {
+  try {
+    const { userId } = req.params; // ID của user được chọn để chat
+    const currentUserId = req.user._id; // ID của user hiện tại
+
+    // Tìm tất cả tin nhắn giữa user hiện tại và user được chọn
+    const messages = await MessageModel.find({
+      $or: [
+        { senderId: currentUserId, receiverId: userId },
+        { senderId: userId, receiverId: currentUserId },
+      ],
+    }).sort({ createdAt: 1 }); // Sắp xếp tin nhắn theo thời gian gửi (cũ -> mới)
+
+    res.status(200).json(messages);
+  } catch (error) {
+    console.error("Error in getChatWithUser:", error.message);
+    res.status(500).json({ error: "Internal server error" });
+  }
+};
 
 export const getMessages = async (req, res) => {
   try {

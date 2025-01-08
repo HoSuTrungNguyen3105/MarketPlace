@@ -5,7 +5,7 @@ import toast from "react-hot-toast";
 import { useMessageStore } from "../../store/useMessageStore";
 import { formatMessageTime } from "../../lib/utils.js";
 import { useAuthStore } from "../../store/useAuthStore.js";
-
+import "./Chat.css";
 const ChatContainer = () => {
   const {
     messages,

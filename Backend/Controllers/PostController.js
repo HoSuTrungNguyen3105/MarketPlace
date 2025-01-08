@@ -46,43 +46,17 @@ export const createPost = async (req, res) => {
         .json({ message: "Danh mục không hợp lệ", field: "category" });
     }
 
-    // Kiểm tra và xử lý upload ảnh
-    // const uploadedImages = [];
-    // console.log("req.body:", req.body); // Kiểm tra dữ liệu body
-    // console.log("req.files:", req.files); // Kiểm tra dữ liệu files
-    // if (!req.files || !Array.isArray(req.files) || req.files.length === 0) {
-    //   return res.status(400).json({
-    //     message: "Cần có ít nhất một hình ảnh",
-    //     field: "images",
-    //   });
-    // }
-
-    // for (const file of req.files) {
-    //   try {
-    //     // Tải lên Cloudinary
-    //     const uploadResponse = await cloudinary.uploader.upload(file.path, {
-    //       resource_type: "image",
-    //       folder: "posts",
-    //     });
-    //     uploadedImages.push(uploadResponse.secure_url);
-
-    //     // Xóa file tạm sau khi tải thành công
-    //     fs.unlinkSync(file.path);
-    //   } catch (uploadError) {
-    //     console.error("Lỗi khi tải lên ảnh:", uploadError);
-    //     return res.status(500).json({
-    //       message: "Lỗi khi tải lên hình ảnh",
-    //       error: uploadError.message,
-    //     });
-    //   }
-    // }
     // Upload ảnh lên Cloudinary
     const imageUrls = await handleImageUpload(images); // Upload ảnh và nhận URL
 
+    // Thay thế dấu xuống hàng và khoảng trắng bằng các ký tự đặc biệt
+    const formattedDescription = description
+      .replace(/\n/g, "{{newline}}") // Thay thế xuống dòng bằng {{newline}}
+      .replace(/ /g, "{{space}}"); // Thay thế khoảng trắng bằng {{space}}
     // Tạo bài đăng mới
     const newPost = new PostModel({
       title,
-      description,
+      description: formattedDescription, // Lưu description đã giữ nguyên khoảng trắng và xuống dòng
       category: cate,
       price,
       location,
@@ -281,8 +255,7 @@ export const reportPost = async (req, res) => {
 };
 export const getPostbyid = async (req, res) => {
   try {
-    const { id } = req.params;
-    const post = await PostModel.findById(id);
+    const post = await PostModel.findById(req.params.id).populate("userId");
 
     if (!post) {
       return res.status(404).json({ message: "Post not found" });

@@ -141,7 +141,7 @@ const router = createBrowserRouter([
     ],
   },
   {
-    path: "/message",
+    path: "/message/:id",
     element: <FullSizeChat />,
 
     children: [

@@ -1,5 +1,7 @@
 import { Link } from "react-router-dom";
 import "./Detail.css";
+import { useUserStore } from "../../store/useUserStore";
+import { useEffect, useState } from "react";
 
 const Post = ({ data, currentUserId }) => {
   // const handleDeletePost = async () => {
@@ -25,7 +27,61 @@ const Post = ({ data, currentUserId }) => {
   //     console.error("Lỗi khi cập nhật lượt xem:", error);
   //   }
   // };
+  // Lấy trạng thái theo dõi
+  // Kiểm tra xem bài viết có thuộc về người dùng hiện tại không
+  const isCurrentUserPost = currentUserId === (data.userId?._id || data.userId);
+  const {
+    following,
+    fetchFollowingStatus,
+    followUser,
+    unfollowUser,
+    setFollowing,
+  } = useUserStore();
+  const userId = data?.userId?._id || null;
+  const [isLoading, setIsLoading] = useState(true);
 
+  useEffect(() => {
+    const fetchFollowStatus = async () => {
+      try {
+        const isFollowing = await fetchFollowingStatus(currentUserId, userId);
+        setFollowing(userId, isFollowing);
+      } catch (error) {
+        console.error("Failed to fetch follow status:", error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    if (currentUserId && userId) fetchFollowStatus();
+  }, [currentUserId, userId, fetchFollowingStatus, setFollowing]);
+  const isUserFollowing = following[userId] || false;
+
+  // Xử lý theo dõi người dùng
+  const handleFollow = async () => {
+    if (!currentUserId || !userId) return;
+    setIsLoading(true);
+    try {
+      await followUser(currentUserId, userId);
+      setFollowing(userId, true);
+    } catch (error) {
+      console.error("Failed to follow user:", error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // Xử lý bỏ theo dõi người dùng
+  const handleUnfollow = async () => {
+    if (!currentUserId || !userId) return;
+    setIsLoading(true);
+    try {
+      await unfollowUser(currentUserId, userId);
+      setFollowing(userId, false);
+    } catch (error) {
+      console.error("Failed to unfollow user:", error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
   const formatTimeAgo = (timestamp) => {
     const now = new Date();
     const difference = now - new Date(timestamp);
@@ -52,7 +108,9 @@ const Post = ({ data, currentUserId }) => {
           />
         </Link>
       )}
-
+      <Link to={`/post/${data._id}`}>
+        <div>Chi tiết</div>
+      </Link>
       {/* Thông tin bài đăng */}
       <div className="flex flex-col">
         <h2 className="text-base font-bold mb-1 text-gray-800 truncate">
@@ -66,7 +124,26 @@ const Post = ({ data, currentUserId }) => {
           {formatTimeAgo(data.createdAt)} - {data.location || "Không rõ"}
         </p>
       </div>
-
+      {/* Nút tương tác */}
+      <div className="postReact">
+        {currentUserId && !isCurrentUserPost && (
+          <>
+            <button
+              className={`report-btn button btn-danger ${
+                isUserFollowing ? "unfollow" : "follow"
+              }`}
+              onClick={isUserFollowing ? handleUnfollow : handleFollow}
+              disabled={isLoading}
+            >
+              {isLoading
+                ? "Đang tải..."
+                : isUserFollowing
+                ? "Đã theo dõi"
+                : "Theo dõi"}
+            </button>
+          </>
+        )}
+      </div>
       {/* Biểu tượng yêu thích và nút thêm */}
       <div className="flex justify-between items-center mt-3">
         <button className="p-1 rounded-full hover:bg-gray-100">❤️</button>

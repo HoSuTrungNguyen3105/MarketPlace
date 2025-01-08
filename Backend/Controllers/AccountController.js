@@ -40,129 +40,98 @@ export const deleteUser = async (req, res) => {
   }
 };
 
-// export const followUser = async (req, res) => {
-//   const userId = req.params.id; // Lấy userId từ URL (người dùng được follow)
-//   const { _id } = req.body; // Lấy ID người theo dõi từ body (người follow)
+export const followUser = async (req, res) => {
+  const userId = req.params.id; // Lấy userId từ URL (người dùng được follow)
+  const { _id } = req.body; // Lấy ID người theo dõi từ body (người follow)
 
-//   if (!userId || !_id) {
-//     return res.status(400).json({ message: "Missing user IDs" });
-//   }
+  if (!userId || !_id) {
+    return res.status(400).json({ message: "Missing user IDs" });
+  }
 
-//   try {
-//     // Tìm người dùng được follow
-//     const followUser = await UserModel.findById(userId);
-//     // Tìm người dùng đang follow
-//     const followingUser = await UserModel.findById(_id);
+  try {
+    // Tìm người dùng được follow
+    const followUser = await UserModel.findById(userId);
+    // Tìm người dùng đang follow
+    const followingUser = await UserModel.findById(_id);
 
-//     if (!followUser) {
-//       return res
-//         .status(404)
-//         .json({ message: "Người dùng không tìm thấy hoặc đã xóa tài khoản" });
-//     }
+    if (!followUser) {
+      return res
+        .status(404)
+        .json({ message: "Người dùng không tìm thấy hoặc đã xóa tài khoản" });
+    }
 
-//     if (!followingUser) {
-//       return res.status(404).json({ message: "Người theo dõi không tìm thấy" });
-//     }
+    if (!followingUser) {
+      return res.status(404).json({ message: "Người theo dõi không tìm thấy" });
+    }
 
-//     if (!followUser.followers.includes(_id)) {
-//       // Cập nhật danh sách followers và following
-//       await followUser.updateOne({ $push: { followers: _id } });
-//       await followingUser.updateOne({ $push: { following: userId } });
+    if (!followUser.followers.includes(_id)) {
+      // Cập nhật danh sách followers và following
+      await followUser.updateOne({ $push: { followers: _id } });
+      await followingUser.updateOne({ $push: { following: userId } });
+    } else {
+      // Nếu người dùng đã theo dõi
+      return res.status(403).json({ message: "Bạn đã theo dõi người này rồi" });
+    }
+  } catch (error) {
+    return res.status(500).json({ message: error.message });
+  }
+};
 
-//       // Tạo thông báo cho người được follow
-//       const notification = new Notification({
-//         userId: userId, // Người nhận thông báo
-//         senderId: _id, // Người gửi thông báo (người follow)
-//         message: `${followingUser.username} đã follow bạn`, // Nội dung thông báo
-//         type: "follow",
-//       });
-//       await notification.save();
+// Controller bỏ theo dõi user
+export const unfollowUser = async (req, res) => {
+  const id = req.params.id;
+  const { _id } = req.body;
 
-//       return res.status(200).json({
-//         message: "Follow successful and notification created",
-//         data: notification,
-//       });
-//     } else {
-//       // Nếu người dùng đã theo dõi
-//       return res.status(403).json({ message: "Bạn đã theo dõi người này rồi" });
-//     }
-//   } catch (error) {
-//     return res.status(500).json({ message: error.message });
-//   }
-// };
-// export const getNotifications = async (req, res) => {
-//   try {
-//     const { userId } = req.params; // userId là ID của người dùng muốn lấy thông báo
+  if (_id === id) {
+    return res.status(403).json({ message: "Bạn ko thể unfollow chính mình" });
+  }
 
-//     // Lấy tất cả thông báo cho người dùng
-//     const notifications = await Notification.find({ userId })
-//       .sort({ createdAt: -1 }) // Sắp xếp thông báo mới nhất lên đầu
-//       .limit(10); // Giới hạn 10 thông báo gần nhất
+  try {
+    const followUser = await UserModel.findById(id);
+    const followingUser = await UserModel.findById(_id);
 
-//     return res.status(200).json({
-//       message: "Notifications fetched successfully",
-//       data: notifications,
-//     });
-//   } catch (error) {
-//     console.error(error);
-//     return res.status(500).json({ message: "Error in fetching notifications" });
-//   }
-// };
-// // Controller bỏ theo dõi user
-// export const unfollowUser = async (req, res) => {
-//   const id = req.params.id;
-//   const { _id } = req.body;
+    if (followUser.followers.includes(_id)) {
+      await followUser.updateOne({ $pull: { followers: _id } });
+      await followingUser.updateOne({ $pull: { following: id } });
 
-//   if (_id === id) {
-//     return res.status(403).json({ message: "Bạn ko thể unfollow chính mình" });
-//   }
+      return res.status(200).json({ message: "Bỏ theo dõi thành công!" });
+    } else {
+      return res.status(403).json({ message: "Bạn chưa theo dõi người này!" });
+    }
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ message: "Failed to unfollow the user!" });
+  }
+};
+// Kiểm tra trạng thái follow giữa hai người dùng
+export const fetchFollowingStatus = async (req, res) => {
+  const { currentUserId } = req.query; // Lấy currentUserId từ query
+  const { targetUserId } = req.params; // Lấy targetUserId từ params
 
-//   try {
-//     const followUser = await UserModel.findById(id);
-//     const followingUser = await UserModel.findById(_id);
+  try {
+    // Kiểm tra nếu cả hai userId được truyền
+    if (!currentUserId || !targetUserId) {
+      return res.status(400).send({ message: "Missing parameters" });
+    }
 
-//     if (followUser.followers.includes(_id)) {
-//       await followUser.updateOne({ $pull: { followers: _id } });
-//       await followingUser.updateOne({ $pull: { following: id } });
+    // Tìm user được theo dõi
+    const targetUser = await UserModel.findById(targetUserId);
 
-//       return res.status(200).json({ message: "Bỏ theo dõi thành công!" });
-//     } else {
-//       return res.status(403).json({ message: "Bạn chưa theo dõi người này!" });
-//     }
-//   } catch (error) {
-//     console.error(error);
-//     return res.status(500).json({ message: "Failed to unfollow the user!" });
-//   }
-// };
-// // Kiểm tra trạng thái follow giữa hai người dùng
-// export const fetchFollowingStatus = async (req, res) => {
-//   const { currentUserId } = req.query; // Lấy currentUserId từ query
-//   const { targetUserId } = req.params; // Lấy targetUserId từ params
+    if (!targetUser) {
+      return res.status(404).json({ message: "Target user not found." });
+    }
 
-//   try {
-//     // Kiểm tra nếu cả hai userId được truyền
-//     if (!currentUserId || !targetUserId) {
-//       return res.status(400).send({ message: "Missing parameters" });
-//     }
+    // Kiểm tra currentUserId có trong danh sách followers không
+    const isFollowing = targetUser.followers.includes(currentUserId);
 
-//     // Tìm user được theo dõi
-//     const targetUser = await UserModel.findById(targetUserId);
-
-//     if (!targetUser) {
-//       return res.status(404).json({ message: "Target user not found." });
-//     }
-
-//     // Kiểm tra currentUserId có trong danh sách followers không
-//     const isFollowing = targetUser.followers.includes(currentUserId);
-
-//     return res.status(200).json({ isFollowing }); // Trả về trạng thái follow
-//   } catch (error) {
-//     console.error("Error fetching follow status:", error);
-//     return res
-//       .status(500)
-//       .json({ message: "Lỗi user đã xóa tài khoản hoặc không kết nối được." });
-//   }
-// };
+    return res.status(200).json({ isFollowing }); // Trả về trạng thái follow
+  } catch (error) {
+    console.error("Error fetching follow status:", error);
+    return res
+      .status(500)
+      .json({ message: "Lỗi user đã xóa tài khoản hoặc không kết nối được." });
+  }
+};
 export const searchUser = async (req, res) => {
   try {
     const query = req.query.q || "";

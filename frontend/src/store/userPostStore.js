@@ -1,7 +1,6 @@
 import { create } from "zustand";
 import { axiosInstance } from "../lib/axios";
 import toast from "react-hot-toast";
-import axios from "axios";
 
 export const usePostStore = create((set, get) => ({
   posts: [], // Lưu danh sách bài đăng

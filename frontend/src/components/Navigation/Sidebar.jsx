@@ -6,14 +6,16 @@ import {
   FileEdit,
   Settings2Icon,
 } from "lucide-react";
-import { MdResetTv } from "react-icons/md";
+import { MdPostAdd, MdResetTv } from "react-icons/md";
 
 const Sidebar = () => {
   const location = useLocation(); // Lấy đường dẫn hiện tại
   const currentPath = location.pathname;
 
   return (
-    <div className="sticky top-0 left-0 z-[99] h-full w-64 bg-white shadow-lg">
+    <div className="sticky top-0 left-0 z-[99] h-full w-64 bg-white shadow-lg m-4">
+      {" "}
+      {/* Thêm margin xung quanh */}
       <div className="p-4 overflow-y-auto h-full">
         <nav>
           <ul>
@@ -24,8 +26,8 @@ const Sidebar = () => {
                   currentPath === "/post" ? "bg-gray-200 font-bold" : ""
                 }`}
               >
-                <FileEdit className="mr-2" />
-                <span>Feed</span>
+                <MdPostAdd className="mr-2" />
+                <span>New Feed</span>
               </Link>
             </li>
             <li>
@@ -36,7 +38,7 @@ const Sidebar = () => {
                 }`}
               >
                 <FileArchiveIcon className="mr-2" />
-                <span>Favorites</span>
+                <span>Profile</span>
               </Link>
             </li>
             <li>
@@ -57,7 +59,7 @@ const Sidebar = () => {
             <ul>
               <li>
                 <Link
-                  to="/message"
+                  to="/message/:id"
                   className={`flex items-center p-2 rounded-lg ${
                     currentPath === "/settings" ? "bg-gray-200 font-bold" : ""
                   }`}

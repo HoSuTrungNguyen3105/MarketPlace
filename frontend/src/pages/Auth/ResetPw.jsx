@@ -32,12 +32,11 @@ const ResetPw = () => {
           toast.success("Bạn đã đổi pass thành công!");
           navigate("/login");
         } else {
-          toast.error(response.data.message || "Có lỗi xảy ra!");
+          toast.error("Có lỗi ngoài ý muốn !");
         }
       })
       .catch((error) => {
-        const errorMessage = error.response?.data?.message || "Có lỗi xảy ra!";
-        toast.error(errorMessage);
+        toast.error("Có lỗi xảy ra!");
       });
   };
 

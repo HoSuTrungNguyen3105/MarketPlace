@@ -1,12 +1,9 @@
 import { useEffect, useState } from "react";
 import { MessageCircle } from "lucide-react";
-import { useNavigate } from "react-router-dom";
-import { FaArrowLeft } from "react-icons/fa"; // Import icon mũi tên từ react-icons
 import { useMessageStore } from "../../store/useMessageStore";
-import { useAuthStore } from "../../store/useAuthStore";
 import SidebarSkeleton from "../Another/SidebarSkeleton";
 
-const Sidebar = ({ includeReturnButton }) => {
+const Sidebar = () => {
   const {
     getContacts,
     contacts,
@@ -14,10 +11,8 @@ const Sidebar = ({ includeReturnButton }) => {
     selectedUser,
     setSelectedUser,
   } = useMessageStore();
-  const { onlineUsers } = useAuthStore();
   const [searchQuery, setSearchQuery] = useState("");
   const [showOnlineOnly, setShowOnlineOnly] = useState(false);
-  const navigate = useNavigate();
 
   useEffect(() => {
     getContacts();
@@ -25,27 +20,16 @@ const Sidebar = ({ includeReturnButton }) => {
 
   // Lọc danh sách users
   const filteredContacts = contacts.filter((contact) => {
-    const matchesSearch = contact.username
-      .toLowerCase()
-      .includes(searchQuery.toLowerCase());
-    const isOnline = onlineUsers.includes(contact._id);
+    const matchesSearch = contact.username.toLowerCase();
 
-    return matchesSearch && (showOnlineOnly ? isOnline : true);
+    return matchesSearch;
   });
 
   // Hiển thị skeleton khi đang tải dữ liệu
   if (isContactsLoading) return <SidebarSkeleton />;
 
   return (
-    <aside className="h-full w-20 lg:w-72 border-r border-base-300 flex flex-col transition-all duration-200">
-      {/* Header */}
-      {includeReturnButton && (
-        <button onClick={() => navigate("/")} className="btn text-black">
-          <FaArrowLeft size={20} />
-          Trở về
-        </button>
-      )}
-
+    <aside className="lg:w-60 w-16 border-r border-base-300 flex flex-col transition-all duration-200">
       <div className="border-b border-base-300 w-full p-5">
         <div className="flex items-center gap-2">
           <div className="p-2 bg-white rounded-full shadow-lg">
@@ -55,8 +39,6 @@ const Sidebar = ({ includeReturnButton }) => {
             Tin nhắn
           </span>
         </div>
-
-        {/* Input tìm kiếm người dùng */}
         <input
           type="text"
           placeholder="Nhập tên người dùng để tìm kiếm..."
@@ -64,7 +46,6 @@ const Sidebar = ({ includeReturnButton }) => {
           onChange={(e) => setSearchQuery(e.target.value)}
           className="border-gray-500 rounded-lg p-2 w-full max-w-xs"
         />
-
         <div className="mt-3 hidden lg:flex items-center gap-2">
           <label className="flex items-center gap-2 cursor-pointer">
             <input
@@ -96,8 +77,6 @@ const Sidebar = ({ includeReturnButton }) => {
           <span className="text-xs text-zinc-500"></span>
         </div>
       </div>
-
-      {/* Danh sách contacts */}
       <div className="overflow-y-auto w-full py-3">
         {filteredContacts.length > 0 ? (
           filteredContacts.map((contact) => (
@@ -110,28 +89,15 @@ const Sidebar = ({ includeReturnButton }) => {
                   : ""
               }`}
             >
-              {/* Avatar người dùng */}
               <div className="relative mx-auto lg:mx-0">
                 <img
                   src={contact.profilePic || "/avatar.jpg"}
                   alt={contact.username}
                   className="size-12 object-cover rounded-full"
                 />
-                {onlineUsers.includes(contact._id) && (
-                  <span className="absolute bottom-0 right-0 size-3 bg-green-500 rounded-full ring-2 ring-zinc-900" />
-                )}
               </div>
-
-              {/* Thông tin người dùng */}
               <div className="hidden lg:block text-left min-w-0">
                 <div className="font-medium truncate">{contact.username}</div>
-                <div className="text-sm text-zinc-400">
-                  {contact.latestMessage
-                    ? contact.latestMessage
-                    : onlineUsers.includes(contact._id)
-                    ? "Online"
-                    : "Offline"}
-                </div>
               </div>
             </button>
           ))
