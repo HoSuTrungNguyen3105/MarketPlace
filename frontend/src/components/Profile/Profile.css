@@ -26,20 +26,25 @@
   justify-content: space-between;
   margin-bottom: 10px;
 }
-
-/* button {
-  padding: 8px 12px;
-  background-color: #3498db;
-  color: white;
-  border: none;
-  cursor: pointer;
-  border-radius: 5px;
-  font-size: 14px;
+.profile-page {
+  border-radius: 10px;
+  overflow: hidden;
 }
 
-button:hover {
-  background-color: #2980b9;
-} */
+.banner img {
+  border-bottom: 4px solid #e5e7eb;
+}
+
+.tabs .tab {
+  padding: 10px 20px;
+  font-size: 1rem;
+  cursor: pointer;
+}
+
+.tabs .tab:hover {
+  color: #1d4ed8;
+  font-weight: bold;
+}
 
 input {
   padding: 8px;

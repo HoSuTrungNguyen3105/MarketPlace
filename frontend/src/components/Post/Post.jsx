@@ -4,31 +4,6 @@ import { useUserStore } from "../../store/useUserStore";
 import { useEffect, useState } from "react";
 
 const Post = ({ data, currentUserId }) => {
-  // const handleDeletePost = async () => {
-  //   if (!window.confirm("Bạn có chắc chắn muốn xóa bài đăng này không?"))
-  //     return;
-  //   try {
-  //     setIsLoading(true);
-  //     await deletePost(data._id);
-  //     toast.success("Bài đăng đã bị xóa.");
-  //   } catch (error) {
-  //     console.error("Error deleting post:", error);
-  //     toast.error("Không thể xóa bài đăng.");
-  //   } finally {
-  //     setIsLoading(false);
-  //   }
-  // };
-
-  // Hàm xử lý khi bấm vào bài viết
-  // const handleViewPost = async (postId) => {
-  //   try {
-  //     await axiosInstance.get(`/post/detail/${postId}`);
-  //   } catch (error) {
-  //     console.error("Lỗi khi cập nhật lượt xem:", error);
-  //   }
-  // };
-  // Lấy trạng thái theo dõi
-  // Kiểm tra xem bài viết có thuộc về người dùng hiện tại không
   const isCurrentUserPost = currentUserId === (data.userId?._id || data.userId);
   const {
     following,
@@ -37,7 +12,10 @@ const Post = ({ data, currentUserId }) => {
     unfollowUser,
     setFollowing,
   } = useUserStore();
-  const userId = data?.userId?._id || null;
+  const userId =
+    data?.userId?._id ||
+    (typeof data?.userId === "string" ? data.userId : null);
+
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
@@ -53,6 +31,7 @@ const Post = ({ data, currentUserId }) => {
     };
     if (currentUserId && userId) fetchFollowStatus();
   }, [currentUserId, userId, fetchFollowingStatus, setFollowing]);
+
   const isUserFollowing = following[userId] || false;
 
   // Xử lý theo dõi người dùng
@@ -100,7 +79,7 @@ const Post = ({ data, currentUserId }) => {
     <div className="contain border rounded-lg p-4 mb-4 shadow-sm hover:shadow-lg transition-shadow duration-200">
       {/* Hình ảnh bài đăng */}
       {data.images && data.images.length > 0 && (
-        <Link to={`/post/${data._id}`}>
+        <Link to={`/post/${data._id}?userId=${userId}`}>
           <img
             src={data.images[0]}
             alt="Hình ảnh bài đăng"
@@ -108,7 +87,7 @@ const Post = ({ data, currentUserId }) => {
           />
         </Link>
       )}
-      <Link to={`/post/${data._id}`}>
+      <Link to={`/post/${data._id}?userId=${userId}`}>
         <div>Chi tiết</div>
       </Link>
       {/* Thông tin bài đăng */}

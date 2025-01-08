@@ -17,6 +17,7 @@ import UProfile from "../components/Profile/UProfile.jsx";
 import ChatContainer from "../components/ChatBox/ChatContainer.jsx";
 import Chat from "../pages/Chat/Chat.jsx";
 import FullSizeChat from "../pages/Chat/FullSizeChat.jsx";
+import Post_Share from "../pages/Post/Post_Share.jsx";
 
 // Tạo PrivateRoute cho các trang yêu cầu đăng nhập
 const PrivateRoute = ({ children }) => {
@@ -80,7 +81,7 @@ const router = createBrowserRouter([
         path: "/input/create-post",
         element: (
           <PrivateRoute>
-            <PostShare />
+            <Post_Share />
           </PrivateRoute>
         ),
       },

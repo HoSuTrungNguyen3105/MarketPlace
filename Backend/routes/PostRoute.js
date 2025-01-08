@@ -6,6 +6,7 @@ import {
   getCategories,
   getPost,
   getPostbyid,
+  getPostToProfile,
   reportPost,
 } from "../Controllers/PostController.js";
 import { uploadMiddleware } from "../lib/multer.js";
@@ -19,5 +20,6 @@ router.get("/categories", getCategories);
 router.get("/postsId/allItems", getAllPosts); // Để lấy tất cả bài viết
 router.post("/report/:postId", reportPost);
 router.delete("/user/:id", protectRoute, delete1UserPost); // Để xóa bài viết
+router.get("/user/:id", getPostToProfile); // Để lấy một bài viết theo id
 
 export default router;

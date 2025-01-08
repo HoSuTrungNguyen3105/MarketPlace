@@ -1,17 +1,16 @@
 import React, { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { Camera } from "lucide-react";
+import { axiosInstance } from "../../lib/axios"; // Cấu hình axios
 import "./Profile.css";
-import { axiosInstance } from "../../lib/axios";
 
 const UProfile = () => {
   const { userId } = useParams(); // Lấy userId từ URL
-  const navigate = useNavigate(); // Hook điều hướng trang
-  const [userData, setUserData] = useState(null); // Lưu trữ thông tin người dùng
+  const navigate = useNavigate(); // Điều hướng trang
+  const [userData, setUserData] = useState(null); // Thông tin người dùng
   const [loading, setLoading] = useState(true); // Trạng thái đang tải
-  const [error, setError] = useState(null); // Lỗi nếu có
+  const [error, setError] = useState(null); // Trạng thái lỗi
 
-  // Fetch thông tin người dùng từ API
+  // Lấy thông tin người dùng từ API
   useEffect(() => {
     const fetchUserData = async () => {
       try {
@@ -26,14 +25,17 @@ const UProfile = () => {
     fetchUserData();
   }, [userId]);
 
-  // Xử lý chặn hoặc bỏ chặn người dùng
+  // Xử lý nút quay lại
+  const handleGoBack = () => navigate(-1);
+
+  // Chặn hoặc bỏ chặn người dùng
   const handleBlockUser = async () => {
     try {
       const response = await axiosInstance.put(`/admin/block/${userId}`);
       if (response.status === 200) {
-        setUserData((prevData) => ({
-          ...prevData,
-          isBlocked: !prevData.isBlocked, // Đảo trạng thái chặn
+        setUserData((prev) => ({
+          ...prev,
+          isBlocked: !prev.isBlocked, // Cập nhật trạng thái chặn
         }));
       }
     } catch (err) {
@@ -41,63 +43,136 @@ const UProfile = () => {
     }
   };
 
-  // Xử lý nút quay lại
-  const handleGoBack = () => {
-    navigate(-1);
-  };
-
+  // Hiển thị trạng thái loading và lỗi
   if (loading) return <p>Đang tải thông tin người dùng...</p>;
   if (error) return <p>{error}</p>;
 
   return (
-    <div className="user-profile-container max-w-lg mx-auto p-6 bg-white rounded-lg shadow-md">
-      {/* Nút quay lại */}
-      <div className="flex justify-between items-center mb-4">
-        <button
-          onClick={handleGoBack}
-          className="btn btn-sm btn-outline text-zinc-600 hover:bg-zinc-100"
-        >
-          Quay lại
-        </button>
-      </div>
-
-      {/* Phần hiển thị avatar và thông tin cơ bản */}
-      <div className="profile-header flex flex-col items-center gap-4 p-4">
-        <div className="relative">
+    <div>
+      {/* Hồ sơ người dùng */}
+      <div className="profile-page max-w-4xl mx-auto bg-white rounded-lg shadow-lg">
+        {/* Banner */}
+        <div className="banner w-full h-60">
           <img
             src={userData.profilePic || "/logo512.png"}
-            alt={`${userData.username}'s Avatar`}
-            className="w-32 h-32 rounded-full object-cover border-4 border-zinc-300"
+            alt="Banner"
+            className="w-full h-full object-cover"
           />
-          <Camera className="absolute bottom-0 right-0 p-1 bg-white rounded-full border border-gray-300 cursor-pointer" />
+        </div>
+
+        {/* Thông tin người dùng */}
+        <div className="header p-6">
+          <div className="flex items-center justify-between">
+            {/* Tên và thông tin cơ bản */}
+            <div>
+              <h1 className="text-2xl font-bold">
+                {userData.username || "TOTO MOBILE"}
+              </h1>
+              <p className="text-lg text-gray-600">
+                {userData.location || "Địa chỉ không khả dụng"}
+              </p>
+              <div className="flex items-center gap-2">
+                <span className="text-yellow-500 text-xl">&#9733; 4.7</span>
+                <span className="text-sm text-gray-500">(115 đánh giá)</span>
+              </div>
+            </div>
+
+            {/* Nút hành động */}
+            <div className="flex gap-4">
+              <button
+                onClick={handleBlockUser}
+                className={`btn btn-sm ${
+                  userData.isBlocked ? "bg-red-500" : "bg-green-500"
+                } text-white`}
+              >
+                {userData.isBlocked ? "Bỏ Chặn" : "Chặn"}
+              </button>
+              <button
+                onClick={handleGoBack}
+                className="btn btn-outline btn-sm text-gray-600 hover:bg-gray-100"
+              >
+                Quay lại
+              </button>
+            </div>
+          </div>
+        </div>
+
+        {/* Thanh điều hướng */}
+        <div className="tabs border-t border-b py-2 flex justify-around text-center">
+          <button className="tab text-blue-600 font-semibold">CỬA HÀNG</button>
+          <button className="tab text-gray-500 hover:text-blue-600">
+            HOẠT ĐỘNG
+          </button>
+          <button className="tab text-gray-500 hover:text-blue-600">
+            ĐÁNH GIÁ
+          </button>
+        </div>
+
+        {/* Nội dung chính */}
+        <div className="p-6">
+          <p>
+            Nội dung thông tin của người dùng sẽ hiển thị tại đây. Bạn có thể
+            thêm các phần phụ như lịch sử hoạt động hoặc đánh giá.
+          </p>
         </div>
       </div>
 
-      {/* Thông tin người dùng */}
-      <div className="profile-info text-center mb-6">
-        <h1 className="username text-2xl font-bold text-blue-600">
-          {userData.username}
-        </h1>
-        <p className="text-lg text-zinc-500">
-          {userData.firstname} {userData.lastname}
-        </p>
-        <strong>Ngày tham gia:</strong>{" "}
-        {new Date(userData.createdAt).toLocaleDateString("vi-VN")}
-        <p className="text-md text-rose-500">
-          {userData.role === "admin" && "Đây là admin"}
-        </p>
-      </div>
+      {/* Hiển thị sản phẩm của người dùng */}
+      <UserProducts userId={userId} />
+    </div>
+  );
+};
 
-      {/* Nút chặn / bỏ chặn người dùng */}
-      <div className="block-section mb-6 text-center">
-        <button
-          className={`btn ${
-            userData.isBlocked ? "btn-unblock" : "btn-block"
-          } w-full`}
-          onClick={handleBlockUser}
-        >
-          {userData.isBlocked ? "Bỏ chặn" : "Chặn"}
-        </button>
+const UserProducts = ({ userId }) => {
+  const [products, setProducts] = useState([]); // Lưu trữ danh sách sản phẩm
+  const [loading, setLoading] = useState(true); // Trạng thái tải dữ liệu
+  const [error, setError] = useState(null); // Trạng thái lỗi nếu có
+
+  // Fetch sản phẩm từ API
+  useEffect(() => {
+    const fetchProducts = async () => {
+      setLoading(true);
+      setError(null);
+      try {
+        const response = await axiosInstance.get(`/post/user/${userId}`);
+        setProducts(response.data); // Lưu sản phẩm từ API
+      } catch (error) {
+        console.error("Lỗi khi tải sản phẩm của người dùng:", error);
+        setError("Không thể tải sản phẩm. Vui lòng thử lại sau.");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    if (userId) {
+      fetchProducts();
+    }
+  }, [userId]);
+
+  if (loading) return <p>Đang tải sản phẩm...</p>;
+  if (error) return <p className="text-red-500">{error}</p>;
+  if (products.length === 0) return <p>Không có sản phẩm nào để hiển thị.</p>;
+
+  return (
+    <div className="profile-page max-w-4xl mx-auto bg-white rounded-lg shadow-lg mt-4">
+      <h2 className="text-xl font-bold p-4">Sản phẩm của người dùng</h2>
+      <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 p-4">
+        {products.map((product) => (
+          <div
+            key={product.id}
+            className="border rounded-lg p-4 shadow hover:shadow-md"
+          >
+            <img
+              src={product.images || "/default-product.jpg"}
+              alt={product.name}
+              className="w-full h-32 object-cover mb-2 rounded"
+            />
+            <h3 className="text-lg font-semibold">{product.title}</h3>
+            <p className="text-sm text-gray-500 line-clamp-2">
+              {product.description}
+            </p>
+          </div>
+        ))}
       </div>
     </div>
   );

@@ -20,7 +20,6 @@ const PostDetail = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   const {
-    getContacts,
     contacts,
     isLoading: isContactsLoading,
     selectedUser,
@@ -28,24 +27,24 @@ const PostDetail = () => {
   } = useMessageStore();
   const [isUserFollowing, setIsUserFollowing] = useState(false);
   const [isFollowLoading, setIsFollowLoading] = useState(false);
-  const { getPostById, post, isLoading, fetchOtherPosts, otherPosts } =
-    usePostStore();
+  const { getPostById, post, isLoading } = usePostStore();
   const { authUser } = useAuthStore();
   const { followUser, unfollowUser, fetchFollowingStatus } = useUserStore();
-
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
 
   useEffect(() => {
     if (id) {
       getPostById(id);
-      getContacts();
     }
-  }, [id, getPostById, getContacts]);
+  }, [id, getPostById]);
 
   useEffect(() => {
     const checkFollowStatus = async () => {
       if (authUser && post && post.userId) {
-        const status = await fetchFollowingStatus(authUser._id, post.userId);
+        const status = await fetchFollowingStatus(
+          authUser._id,
+          post.userId._id
+        );
         setIsUserFollowing(status);
       }
     };
@@ -193,7 +192,9 @@ const PostDetail = () => {
             />
             <div>
               <h3 className="font-semibold flex items-center gap-2">
-                {post.userId.username}
+                <Link to={`/user/${post.userId._id}`}>
+                  {post.userId.username}
+                </Link>
                 {post.userId.isVerified && (
                   <span className="text-green-500">✓</span>
                 )}
@@ -248,17 +249,6 @@ const PostDetail = () => {
                 : "Theo dõi"}
             </button>
           )}
-          {/* Hiển thị mô tả với xử lý khoảng trắng và xuống dòng */}
-          {/* <div
-            className="mt-6 text-gray-700"
-            dangerouslySetInnerHTML={{
-              __html: post.description
-                .replace(/\n/g, "<br />") // Thay dấu xuống dòng bằng <br />
-                .replace(/ /g, "&nbsp;"), // Thay khoảng trắng bằng &nbsp;
-            }}
-          />{" "} */}
-          {/* Hiển thị mô tả với việc thay thế {{newline}} thành dấu xuống dòng */}
-          {/* Description */}
           <div className="mt-10">
             <h2 className="text-xl font-semibold mb-4">Mô tả sản phẩm</h2>
             <div className="text-gray-700">
@@ -273,25 +263,7 @@ const PostDetail = () => {
           {/* Other Posts */}
           <div className="mt-10">
             <h2 className="text-xl font-semibold mb-4">Sản phẩm khác</h2>
-            <div className="grid md:grid-cols-3 lg:grid-cols-4 gap-6">
-              {/* {otherPosts.map((item) => (
-                <Link
-                  to={`/post/${item._id}`}
-                  key={item._id}
-                  className="block border rounded-lg overflow-hidden shadow-sm hover:shadow-md transition"
-                >
-                  <img
-                    src={item.images[0]}
-                    alt={item.title}
-                    className="w-full h-48 object-cover"
-                  />
-                  <div className="p-4">
-                    <h3 className="font-semibold text-lg">{item.title}</h3>
-                    <p className="text-red-500 font-bold">{item.price} đ</p>
-                  </div>
-                </Link>
-              ))} */}
-            </div>
+            <div className="grid md:grid-cols-3 lg:grid-cols-4 gap-6"></div>
           </div>
         </div>
       </div>

@@ -62,7 +62,50 @@ const Profile = () => {
       </div>
 
       <div className="ProfileName">
-        <span>@{formData.username}</span>
+        <div className="user-info flex center space-x-2">
+          <span>@{formData.username}</span>
+          <div className="verified-status flex items-center space-x-1">
+            {formData.isVerified && (
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                viewBox="0 0 24 24"
+                fill="currentColor"
+                className="w-5 h-5 text-green-500"
+              >
+                <path
+                  fillRule="evenodd"
+                  d="M2.25 12c0-5.385 4.365-9.75 9.75-9.75s9.75 4.365 9.75 9.75-4.365 9.75-9.75 9.75S2.25 17.385 2.25 12zm13.36-1.814a.75.75 0 10-1.22-.872l-3.236 4.53L9.53 12.22a.75.75 0 00-1.06 1.06l2.25 2.25a.75.75 0 001.14-.094l3.75-5.25z"
+                  clipRule="evenodd"
+                />
+              </svg>
+            )}
+            <span
+              className={`text-sm ${
+                formData.isVerified
+                  ? "text-green-500 font-medium"
+                  : "text-gray-500"
+              }`}
+            >
+              {formData.isVerified ? "Đã xác minh" : "Chưa xác minh"}
+            </span>
+          </div>
+          {isEditing && (
+            <label className="flex items-center space-x-2 cursor-pointer">
+              <input
+                type="checkbox"
+                name="isVerified"
+                checked={formData.isVerified}
+                onChange={(e) =>
+                  setFormData({ ...formData, isVerified: e.target.checked })
+                }
+                className="form-checkbox h-5 w-5 text-green-500"
+              />
+              <span className="text-sm text-gray-700">
+                Thay đổi trạng thái xác minh
+              </span>
+            </label>
+          )}
+        </div>
         <span style={{ fontSize: "23px" }}></span>
 
         {/* Hiển thị "Tôi là admin" nếu role là admin */}
@@ -132,19 +175,6 @@ const Profile = () => {
               name="lastLogin"
               value={new Date(formData.lastLogin).toLocaleString()}
               disabled
-            />
-          </div>
-
-          <div className="Follow">
-            <span>Đã xác minh:</span>
-            <input
-              type="checkbox"
-              name="isVerified"
-              checked={formData.isVerified}
-              onChange={(e) =>
-                setFormData({ ...formData, isVerified: e.target.checked })
-              }
-              disabled={!isEditing}
             />
           </div>
 

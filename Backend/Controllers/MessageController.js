@@ -132,17 +132,18 @@ export const getMessages = async (req, res) => {
 
 export const sendMessage = async (req, res) => {
   try {
-    const { text, image } = req.body;
-    const { id: receiverId } = req.params;
-    const senderId = req.user._id;
+    const { text, image } = req.body; // Nội dung tin nhắn và ảnh (nếu có)
+    const { id: receiverId } = req.params; // Lấy ID người nhận từ URL params
+    const senderId = req.user._id; // Lấy ID người gửi từ thông tin người dùng đăng nhập
 
     let imageUrl;
     if (image) {
-      // Upload base64 image to cloudinary
+      // Upload base64 image lên Cloudinary
       const uploadResponse = await cloudinary.uploader.upload(image);
       imageUrl = uploadResponse.secure_url;
     }
 
+    // Tạo tin nhắn mới
     const newMessage = new MessageModel({
       senderId,
       receiverId,
@@ -150,12 +151,24 @@ export const sendMessage = async (req, res) => {
       image: imageUrl,
     });
 
+    // Lưu tin nhắn vào cơ sở dữ liệu
     await newMessage.save();
 
-    const receiverSocketId = getReceiverSocketId(receiverId);
+    // Cập nhật tỷ lệ phản hồi cho người nhận
+    const receiver = await UserModel.findById(receiverId);
+    if (receiver) {
+      const updatedRate = Math.min(receiver.responseRate + 1, 100); // Tăng tỷ lệ phản hồi lên 1, tối đa là 100
+      receiver.responseRate = updatedRate; // Cập nhật tỷ lệ phản hồi
+      await receiver.save(); // Lưu thay đổi vào cơ sở dữ liệu
+    }
+
+    // Phát tin nhắn đến người nhận qua socket nếu họ đang online
+    const receiverSocketId = getReceiverSocketId(receiverId); // Hàm lấy Socket ID của người nhận
     if (receiverSocketId) {
       io.to(receiverSocketId).emit("newMessage", newMessage);
     }
+
+    // Phản hồi lại client với tin nhắn mới
     res.status(201).json(newMessage);
   } catch (error) {
     console.log("Error in sendMessage controller: ", error.message);

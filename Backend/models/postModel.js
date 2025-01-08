@@ -3,61 +3,58 @@ import mongoose from "mongoose";
 const postSchema = mongoose.Schema(
   {
     userId: {
-      type: mongoose.Schema.Types.ObjectId, // ID người dùng tạo bài viết
-      ref: "User", // Tham chiếu tới model User
-      required: true, // Bắt buộc phải có
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+      required: true,
     },
     title: {
-      type: String, // Tiêu đề bài viết
-      required: true, // Bắt buộc
-      trim: true, // Loại bỏ khoảng trắng thừa
+      type: String,
+      required: true,
+      trim: true,
     },
     description: {
-      type: String, // Mô tả chi tiết sản phẩm/dịch vụ
+      type: String,
       required: true,
     },
     category: {
       type: Number,
       required: true,
-      enum: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10], // ID của các danh mục
     },
     price: {
-      type: Number, // Giá sản phẩm/dịch vụ
+      type: Number,
       required: true,
     },
     location: {
-      type: String, // Địa chỉ hoặc vị trí rao bán
+      type: String,
+    },
+    geoLocation: {
+      latitude: { type: Number },
+      longitude: { type: Number },
     },
     images: {
-      type: [String], // Mảng chứa URL các hình ảnh sản phẩm
+      type: [String],
       default: [],
     },
-
     contact: {
       type: String,
     },
     condition: {
-      type: String, // Tình trạng sản phẩm (mới/đã qua sử dụng)
+      type: String,
       enum: ["new", "used"],
       default: "used",
     },
     sellerRating: {
-      type: Number, // Điểm đánh giá người bán
+      type: Number,
       default: 0,
       min: 0,
       max: 5,
     },
-    paymentMethods: {
-      type: [String], // Các phương thức thanh toán được chấp nhận
-      enum: ["cash", "bank transfer", "paypal", "credit card"],
-      default: ["cash"],
-    },
     isAvailable: {
-      type: Boolean, // Trạng thái còn hàng hay đã bán
+      type: Boolean,
       default: true,
     },
     views: {
-      type: Number, // Số lượt xem bài viết
+      type: Number,
       default: 0,
     },
     reports: {
@@ -67,11 +64,39 @@ const postSchema = mongoose.Schema(
           reportedAt: { type: Date, default: Date.now },
         },
       ],
-      default: [], // Thêm giá trị mặc định là mảng rỗng
+      default: [],
+    },
+    keywords: {
+      type: [String],
+      default: [],
+    },
+    favoritesCount: {
+      type: Number,
+      default: 0,
+    },
+    isPromoted: {
+      type: Boolean,
+      default: false,
+    },
+    moderationStatus: {
+      type: String,
+      enum: ["pending", "approved", "rejected"],
+      default: "pending",
+    },
+    status: {
+      type: String,
+      enum: ["active", "archived", "deleted"],
+      default: "active",
+    },
+    // Bổ sung các fields động theo từng danh mục
+    customFields: {
+      type: Map,
+      of: mongoose.Schema.Types.Mixed,
+      default: {}, // Dữ liệu động cho từng danh mục
     },
   },
   {
-    timestamps: true, // Tự động thêm `createdAt` và `updatedAt`
+    timestamps: true,
   }
 );
 

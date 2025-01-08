@@ -185,8 +185,16 @@ export const updateProfile = async (req, res) => {
 export const updateUserInfo = async (req, res) => {
   try {
     // Lấy thông tin từ body request
-    const { username, firstname, lastname, email, phone, location, role } =
-      req.body;
+    const {
+      username,
+      firstname,
+      lastname,
+      email,
+      phone,
+      location,
+      role,
+      isVerified,
+    } = req.body;
 
     const userId = req.user._id;
 
@@ -200,9 +208,10 @@ export const updateUserInfo = async (req, res) => {
         email,
         phone,
         location,
-        role, // Cập nhật quyền
+        role,
+        isVerified,
       },
-      { new: true } // Trả về người dùng đã được cập nhật
+      { new: true }
     );
 
     res.status(200).json(updatedUser); // Trả về thông tin người dùng đã được cập nhật
@@ -212,20 +221,18 @@ export const updateUserInfo = async (req, res) => {
   }
 };
 export const getUserById = async (req, res) => {
+  const { userId } = req.params; // Lấy userId từ params
   try {
-    const { userId } = req.params; // Lấy userId từ req.params
+    const user = await UserModel.findById(userId);
 
-    // Tìm kiếm người dùng trong cơ sở dữ liệu, ẩn mật khẩu
-    const user = await UserModel.findById(userId).select("-password");
-
-    if (!user) {
-      return res.status(404).json({ message: "Người dùng không tồn tại." });
+    if (user) {
+      const { password, ...otherDetails } = user._doc;
+      res.status(200).json(otherDetails); // Trả về thông tin người dùng (không bao gồm mật khẩu)
+    } else {
+      res.status(404).json({ message: "User not found" });
     }
-
-    res.status(200).json(user); // Trả về thông tin người dùng
   } catch (error) {
-    console.error("Lỗi khi lấy thông tin người dùng:", error);
-    res.status(500).json({ message: "Lỗi máy chủ nội bộ." });
+    res.status(500).json({ message: "Error retrieving user profile" });
   }
 };
 export const changePassword = async (req, res) => {
