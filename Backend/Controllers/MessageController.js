@@ -154,12 +154,11 @@ export const sendMessage = async (req, res) => {
     // Lưu tin nhắn vào cơ sở dữ liệu
     await newMessage.save();
 
-    // Cập nhật tỷ lệ phản hồi cho người nhận
-    const receiver = await UserModel.findById(receiverId);
-    if (receiver) {
-      const updatedRate = Math.min(receiver.responseRate + 1, 100); // Tăng tỷ lệ phản hồi lên 1, tối đa là 100
-      receiver.responseRate = updatedRate; // Cập nhật tỷ lệ phản hồi
-      await receiver.save(); // Lưu thay đổi vào cơ sở dữ liệu
+    // Cập nhật tỷ lệ phản hồi cho người gửi
+    const sender = await UserModel.findById(senderId);
+    if (sender) {
+      sender.responseRate = Math.min((sender.responseRate || 0) + 1, 100); // Tăng tỷ lệ phản hồi lên 1, tối đa là 100
+      await sender.save(); // Lưu thay đổi vào cơ sở dữ liệu
     }
 
     // Phát tin nhắn đến người nhận qua socket nếu họ đang online
@@ -171,7 +170,7 @@ export const sendMessage = async (req, res) => {
     // Phản hồi lại client với tin nhắn mới
     res.status(201).json(newMessage);
   } catch (error) {
-    console.log("Error in sendMessage controller: ", error.message);
+    console.error("Error in sendMessage controller: ", error.message);
     res.status(500).json({ error: "Internal server error" });
   }
 };

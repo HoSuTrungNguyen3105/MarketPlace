@@ -60,9 +60,7 @@ export const createPost = async (req, res) => {
     const imageUrls = await handleImageUpload(images); // Upload ảnh và nhận URL
 
     // Thay thế dấu xuống hàng và khoảng trắng bằng các ký tự đặc biệt
-    const formattedDescription = description
-      .replace(/\n/g, "{{newline}}") // Thay thế xuống dòng bằng {{newline}}
-      .replace(/ /g, "{{space}}"); // Thay thế khoảng trắng bằng {{space}}
+    const formattedDescription = description.replace(/\n/g, "{{newline}}"); // Thay thế xuống dòng bằng {{newline}}
 
     // Tạo bài đăng mới
     const newPost = new PostModel({

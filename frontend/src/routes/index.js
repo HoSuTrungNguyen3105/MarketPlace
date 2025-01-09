@@ -18,6 +18,7 @@ import ChatContainer from "../components/ChatBox/ChatContainer.jsx";
 import Chat from "../pages/Chat/Chat.jsx";
 import FullSizeChat from "../pages/Chat/FullSizeChat.jsx";
 import Post_Share from "../pages/Post/Post_Share.jsx";
+import Transaction from "../components/Transaction/Transaction.jsx";
 
 // Tạo PrivateRoute cho các trang yêu cầu đăng nhập
 const PrivateRoute = ({ children }) => {
@@ -82,6 +83,14 @@ const router = createBrowserRouter([
         element: (
           <PrivateRoute>
             <PostShare />
+          </PrivateRoute>
+        ),
+      },
+      {
+        path: "/transactions",
+        element: (
+          <PrivateRoute>
+            <Transaction />
           </PrivateRoute>
         ),
       },

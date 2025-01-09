@@ -98,9 +98,7 @@ const Post = ({ data, currentUserId }) => {
         <p className="text-sm text-gray-600 mb-1 truncate">
           {data.category} -{" "}
           {(() => {
-            const description = data.description
-              .replace(/{{newline}}/g, " ") // Thay thế {{newline}} thành dấu cách
-              .replace(/{{space}}/g, " "); // Thay thế {{space}} thành khoảng trắng
+            const description = data.description.replace(/{{newline}}/g, " "); // Thay thế {{newline}} thành dấu cách
 
             const words = description.split(" "); // Tách chuỗi thành các từ
             if (words.length > 5) {

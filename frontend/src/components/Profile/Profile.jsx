@@ -1,12 +1,11 @@
 import React, { useState } from "react";
 import { useAuthStore } from "../../store/useAuthStore";
-import { Link } from "react-router-dom";
 import "./Profile.css";
-const Profile = () => {
-  const { authUser } = useAuthStore(); // Lấy thông tin người dùng từ store
-  const { updateProfileInfo, isUpdatingProfile, errorMessage } = useAuthStore(); // Lấy hàm updateProfile và trạng thái từ store zustand
 
-  // State để lưu dữ liệu từ form, bắt đầu từ thông tin người dùng hiện tại
+const Profile = () => {
+  const { authUser } = useAuthStore();
+  const { updateProfileInfo, isUpdatingProfile } = useAuthStore();
+
   const [formData, setFormData] = useState({
     username: authUser?.username || "",
     email: authUser?.email || "",
@@ -18,25 +17,28 @@ const Profile = () => {
     profilePic: authUser?.profilePic || "",
     lastLogin: authUser?.lastLogin || "",
     isVerified: authUser?.isVerified || false,
+    responseRate: authUser?.responseRate || "",
   });
 
-  // State quản lý chế độ chỉnh sửa
   const [isEditing, setIsEditing] = useState(false);
 
-  // Hàm xử lý thay đổi dữ liệu từ các trường input
+  // Định dạng ngày tháng
+  const formatDate = (date) =>
+    date ? new Date(date).toLocaleString("vi-VN") : "N/A";
+
   const handleChange = (e) => {
-    const { name, value } = e.target;
-    setFormData({ ...formData, [name]: value });
+    const { name, value, type, checked } = e.target;
+    setFormData({
+      ...formData,
+      [name]: type === "checkbox" ? checked : value,
+    });
   };
 
-  // Hàm xử lý submit form
   const handleSubmit = async (e) => {
     e.preventDefault();
-
     try {
-      // Gọi updateProfile từ zustand để gửi dữ liệu lên server
       await updateProfileInfo(formData);
-      setIsEditing(false); // Đóng chế độ chỉnh sửa sau khi cập nhật thành công
+      setIsEditing(false);
     } catch (error) {
       console.error("Lỗi khi cập nhật thông tin:", error);
     }
@@ -47,14 +49,13 @@ const Profile = () => {
       <div className="ProfileImg">
         <div className="flex flex-col items-center gap-4 p-4">
           <div className="relative">
-            {/* Hiển thị ảnh đại diện của người dùng */}
             <img
               src={
                 formData.profilePic ||
                 "https://pbs.twimg.com/media/Eu9fXIRU4AEafZy?format=jpg&name=4096x4096"
               }
               alt="Profile"
-              className="size-32 rounded-full object-cover border-4 "
+              className="size-32 rounded-full object-cover border-4"
             />
           </div>
           <p className="text-sm text-zinc-400">{formData.email}</p>
@@ -62,7 +63,7 @@ const Profile = () => {
       </div>
 
       <div className="ProfileName">
-        <div className="user-info flex center space-x-2">
+        <div className="user-info flex items-center space-x-2">
           <span>@{formData.username}</span>
           <div className="verified-status flex items-center space-x-1">
             {formData.isVerified && (
@@ -89,26 +90,7 @@ const Profile = () => {
               {formData.isVerified ? "Đã xác minh" : "Chưa xác minh"}
             </span>
           </div>
-          {isEditing && (
-            <label className="flex items-center space-x-2 cursor-pointer">
-              <input
-                type="checkbox"
-                name="isVerified"
-                checked={formData.isVerified}
-                onChange={(e) =>
-                  setFormData({ ...formData, isVerified: e.target.checked })
-                }
-                className="form-checkbox h-5 w-5 text-green-500"
-              />
-              <span className="text-sm text-gray-700">
-                Thay đổi trạng thái xác minh
-              </span>
-            </label>
-          )}
         </div>
-        <span style={{ fontSize: "23px" }}></span>
-
-        {/* Hiển thị "Tôi là admin" nếu role là admin */}
         {formData.role === "admin" && (
           <p className="text-red-900 font-extrabold mt-2">Admin</p>
         )}
@@ -118,72 +100,73 @@ const Profile = () => {
         <hr />
         <form onSubmit={handleSubmit}>
           <div className="Follow">
-            <span>Họ tên:</span>
+            <label>Họ tên:</label>
             <input
               type="text"
               name="firstname"
               value={formData.firstname}
               onChange={handleChange}
-              disabled={!isEditing} // Disabled khi không chỉnh sửa
+              disabled={!isEditing}
             />
             <input
               type="text"
               name="lastname"
               value={formData.lastname}
               onChange={handleChange}
-              disabled={!isEditing} // Disabled khi không chỉnh sửa
+              disabled={!isEditing}
             />
           </div>
-
           <div className="Follow">
-            <span>Số điện thoại:</span>
+            <label>Tỉ lệ phản hồi:</label>
+            {formData.responseRate}%
+          </div>
+          <div className="Follow">
+            <label>Số điện thoại:</label>
             <input
               type="text"
               name="phone"
               value={formData.phone}
               onChange={handleChange}
-              disabled={!isEditing} // Disabled khi không chỉnh sửa
+              disabled={!isEditing}
             />
           </div>
-
           <div className="Follow">
-            <span>Địa chỉ:</span>
+            <label>Địa chỉ:</label>
             <input
               type="text"
               name="location"
               value={formData.location}
               onChange={handleChange}
-              disabled={!isEditing} // Disabled khi không chỉnh sửa
+              disabled={!isEditing}
             />
           </div>
-
           <div className="Follow">
-            <span>Quyền:</span>
+            <label>Quyền:</label>
             <input
               type="text"
               name="role"
               value={formData.role}
               onChange={handleChange}
-              disabled={!isEditing} // Disabled khi không chỉnh sửa
+              disabled={!isEditing}
             />
           </div>
-
           <div className="Follow">
-            <span>Ngày đăng nhập lần cuối:</span>
+            <label>Ngày đăng nhập lần cuối:</label>
             <input
               type="text"
-              name="lastLogin"
-              value={new Date(formData.lastLogin).toLocaleString()}
+              value={formatDate(formData.lastLogin)}
               disabled
             />
           </div>
-
-          {/* Hiển thị nút "Chỉnh sửa" hoặc "Lưu" */}
           <div className="Follow">
             <button type="button" onClick={() => setIsEditing(!isEditing)}>
               {isEditing ? "Hủy" : "Chỉnh sửa"}
             </button>
-            {isEditing && <button type="submit">Lưu</button>}
+            {isEditing && (
+              <button type="submit" disabled={isUpdatingProfile}>
+                Lưu
+              </button>
+            )}
           </div>
         </form>
         <hr />

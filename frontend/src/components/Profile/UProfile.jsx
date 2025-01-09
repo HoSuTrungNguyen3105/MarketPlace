@@ -112,7 +112,9 @@ const UProfile = () => {
           <p>Số sản phẩm đã bán: {userData.soldItems}</p>
           <p>Số sản phẩm đang hoạt động: {userData.activeListings}</p>
           <p>Tỉ lệ phản hồi: {userData.responseRate}%</p>
-          <p>Đã xác minh: {userData.isVerified ? "Có" : "Không"}</p>
+          <p>
+            Đã xác minh: {userData.isVerified ? "Đã xác minh" : "Chưa xác minh"}
+          </p>
         </div>
 
         {/* Thanh điều hướng */}
@@ -161,7 +163,6 @@ const UserProducts = ({ userId }) => {
         setLoading(false);
       }
     };
-
     if (userId) {
       fetchProducts();
     }

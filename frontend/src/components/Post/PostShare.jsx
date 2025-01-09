@@ -2,6 +2,7 @@ import React, { useCallback, useEffect, useRef, useState } from "react";
 import { usePostStore } from "../../store/userPostStore";
 import { useAuthStore } from "../../store/useAuthStore";
 import { useLocation, useNavigate } from "react-router-dom";
+import ProductDetails from "./ProductDetails";
 
 const PostShare = ({ onPostCreateSuccess }) => {
   const { authUser } = useAuthStore();
@@ -18,8 +19,7 @@ const PostShare = ({ onPostCreateSuccess }) => {
   const fileInputRef = useRef();
   const selectedCategory = location.state?.category || {};
   const [error, setError] = useState(null);
-  const [dynamicFields, setDynamicFields] = useState({});
-  const [customFieldsSchema, setCustomFieldsSchema] = useState([]);
+  const [customFields, setCustomFields] = useState({});
   const [formData, setFormData] = useState({
     userId: authUser?._id || "",
     username: authUser?.username || "",
@@ -31,23 +31,33 @@ const PostShare = ({ onPostCreateSuccess }) => {
     price: "",
     category: selectedCategory.id || "",
     condition: "used",
+    customFields: {},
   });
 
   useEffect(() => {
     fetchCategories();
     if (selectedCategory.id) {
-      setCustomFieldsSchema(selectedCategory.customFields || []);
+      setCustomFields(selectedCategory.customFields || {});
     }
   }, [fetchCategories, selectedCategory]);
 
   const handleChange = useCallback(
     (e) => {
       const { name, value } = e.target;
-      setFormData((prev) => ({ ...prev, [name]: value }));
+      if (name.startsWith("custom_")) {
+        setFormData((prev) => ({
+          ...prev,
+          customFields: {
+            ...prev.customFields,
+            [name.replace("custom_", "")]: value,
+          },
+        }));
+      } else {
+        setFormData((prev) => ({ ...prev, [name]: value }));
+      }
       if (name === "category") {
         const selected = categories.find((cat) => cat.id === value);
-        setCustomFieldsSchema(selected?.customFields || []);
-        setDynamicFields({});
+        setCustomFields(selected?.customFields || {});
       }
     },
     [categories]
@@ -71,14 +81,9 @@ const PostShare = ({ onPostCreateSuccess }) => {
     });
   }, []);
 
-  const handleDynamicFieldChange = useCallback((e) => {
-    const { name, value } = e.target;
-    setDynamicFields((prev) => ({ ...prev, [name]: value }));
-  }, []);
-
   const handleSubmit = async (e) => {
     e.preventDefault();
-    const postData = { ...formData, customFields: dynamicFields };
+    const postData = { ...formData };
     setError("");
     try {
       const success = await createPost(postData);
@@ -94,8 +99,9 @@ const PostShare = ({ onPostCreateSuccess }) => {
           price: "",
           category: "",
           condition: "used",
+          customFields: {},
         });
-        setDynamicFields({});
+        setCustomFields({});
         if (fileInputRef.current) {
           fileInputRef.current.value = "";
         }
@@ -270,27 +276,48 @@ const PostShare = ({ onPostCreateSuccess }) => {
           </select>
         </div>
 
-        {customFieldsSchema.length > 0 && (
-          <div className="space-y-4">
-            <h3 className="text-md font-semibold text-gray-800">
-              Thông tin bổ sung
-            </h3>
-            {customFieldsSchema.map((field) => (
-              <div key={field.name} className="space-y-2">
-                <label className="block text-sm font-semibold text-gray-700">
-                  {field.label}
-                </label>
-                <input
-                  type="text"
-                  name={field.name}
-                  value={dynamicFields[field.name] || ""}
-                  onChange={handleDynamicFieldChange}
-                  placeholder={field.placeholder || "Nhập thông tin..."}
-                  className="input input-bordered w-full p-3 rounded-md"
-                />
-              </div>
-            ))}
-          </div>
+        {selectedCategory.customFields &&
+          Object.keys(selectedCategory.customFields).length > 0 && (
+            <div className="space-y-4">
+              <h3 className="text-md font-semibold text-gray-800">
+                Thông tin bổ sung
+              </h3>
+              {Object.entries(selectedCategory.customFields).map(
+                ([key, field]) => (
+                  <div key={key} className="space-y-2">
+                    <label className="block text-sm font-semibold text-gray-700">
+                      {field.label}
+                    </label>
+                    <input
+                      type="text"
+                      name={`custom_${field.name}`}
+                      value={formData.customFields[field.name] || ""}
+                      onChange={handleChange}
+                      placeholder={
+                        field.placeholder ||
+                        `Nhập ${field.label.toLowerCase()}...`
+                      }
+                      className="input input-bordered w-full p-3 rounded-md"
+                    />
+                  </div>
+                )
+              )}
+            </div>
+          )}
+
+        {formData.category && (
+          <ProductDetails
+            category={formData.category}
+            dynamicFields={formData.customFields}
+            onFieldChange={(e) =>
+              handleChange({
+                target: {
+                  name: `custom_${e.target.name}`,
+                  value: e.target.value,
+                },
+              })
+            }
+          />
         )}
 
         <button

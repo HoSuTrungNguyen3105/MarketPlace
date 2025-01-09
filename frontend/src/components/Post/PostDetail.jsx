@@ -10,6 +10,13 @@ import {
   ChevronLeft,
   ChevronRight,
   Clock,
+  Package,
+  Star,
+  Tag,
+  Clock1,
+  AlertTriangle,
+  Heart,
+  EyeIcon,
 } from "lucide-react";
 import "./Detail.css";
 import { useMessageStore } from "../../store/useMessageStore";
@@ -33,6 +40,15 @@ const PostDetail = () => {
 
   const { followUser, unfollowUser, fetchFollowingStatus } = useUserStore();
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
+  const handleTransaction = () => {
+    navigate(`/transactions`, {
+      state: {
+        postId: post._id,
+        buyerName: authUser.username,
+        sellerName: post.userId.username,
+      },
+    });
+  };
 
   useEffect(() => {
     if (id) {
@@ -170,19 +186,90 @@ const PostDetail = () => {
         <div>
           <h1 className="text-2xl font-bold mb-4">{post.title}</h1>
           <div className="text-2xl font-bold text-red-500 mb-6">
-            {post.price} đ
+            {post.price.toLocaleString()} đ
           </div>
-          {post.views} Người xem
+          {/* New sections */}
+          <div className="flex items-center gap-4 mb-4">
+            <div className="flex items-center">
+              <EyeIcon className="w-5 h-5 text-gray-500 mr-2" />
+              <span>{post.views} Người xem</span>
+            </div>
+            <div className="flex items-center">
+              <Heart className="w-5 h-5 text-gray-500 mr-2" />
+              <span>{post.favoritesCount} Yêu thích</span>
+            </div>
+          </div>
           <div className="space-y-4 mb-6">
             <div className="flex items-center gap-2">
               <MapPin className="w-5 h-5 text-gray-500" />
               <span>{post.location}</span>
             </div>
             <div className="flex items-center gap-2">
-              <Clock className="w-5 h-5 text-gray-500" />
+              <Clock1 className="w-5 h-5 text-gray-500" />
               <span>Đăng {post.createdAt}</span>
             </div>
           </div>
+          <div className="flex items-center gap-2">
+            <Tag className="w-5 h-5 text-gray-500" />
+            <span>
+              Tình trạng: {post.condition === "new" ? "Mới" : "Đã sử dụng"}
+            </span>
+          </div>
+          <div className="flex items-center gap-2">
+            <Star className="w-5 h-5 text-gray-500" />
+            <span>Đánh giá người bán: {post.sellerRating.toFixed(1)}/5</span>
+          </div>
+          <div className="flex items-center gap-2">
+            <Package className="w-5 h-5 text-gray-500" />
+            <span>
+              Còn hàng: {post.stock > 0 ? `${post.stock} sản phẩm` : "Hết hàng"}
+            </span>
+          </div>
+          {post.isPromoted && (
+            <div className="flex items-center gap-2 text-yellow-500">
+              <AlertTriangle className="w-5 h-5" />
+              <span>Bài đăng được quảng cáo</span>
+            </div>
+          )}
+          {/* New status sections */}
+          <div className="mb-6">
+            <h3 className="font-semibold mb-2">Trạng thái:</h3>
+            <div
+              className={`inline-block px-3 py-1 rounded-full ${
+                post.isAvailable
+                  ? "bg-green-100 text-green-800"
+                  : "bg-red-100 text-red-800"
+              }`}
+            >
+              {post.isAvailable ? "Còn hàng" : "Đã bán"}
+            </div>
+          </div>
+          <div className="mb-6">
+            <h3 className="font-semibold mb-2">Trạng thái kiểm duyệt:</h3>
+            <div
+              className={`inline-block px-3 py-1 rounded-full ${
+                post.moderationStatus === "approved"
+                  ? "bg-green-100 text-green-800"
+                  : post.moderationStatus === "pending"
+                  ? "bg-yellow-100 text-yellow-800"
+                  : "bg-red-100 text-red-800"
+              }`}
+            >
+              {post.moderationStatus === "approved"
+                ? "Đã duyệt"
+                : post.moderationStatus === "pending"
+                ? "Đang chờ duyệt"
+                : "Bị từ chối"}
+            </div>
+          </div>
+          {post.reports && post.reports.length > 0 && (
+            <div className="mb-6">
+              <h3 className="font-semibold mb-2">Báo cáo:</h3>
+              <div className="text-red-600">
+                Bài đăng này đã bị báo cáo {post.reports.length} lần
+              </div>
+            </div>
+          )}
           {/* Seller Info */}
           <div className="flex items-center gap-4 mb-6">
             <img
@@ -235,6 +322,14 @@ const PostDetail = () => {
               </button>
             ))}
           </div>
+          {!isAuthUserPost && (
+            <button
+              className="w-full bg-blue-500 text-white py-3 rounded-lg flex items-center justify-center gap-2"
+              onClick={handleTransaction}
+            >
+              Tạo Giao Dịch
+            </button>
+          )}
           {/* Hiển thị nút theo dõi chỉ khi không phải bài của người dùng */}
           {!isAuthUserPost && authUser && (
             <button
@@ -264,6 +359,20 @@ const PostDetail = () => {
               ))}
             </div>
           </div>
+          {/* Custom Fields */}
+          {post.customFields && Object.keys(post.customFields).length > 0 && (
+            <div className="mt-10">
+              <h2 className="text-xl font-semibold mb-4">Thông tin bổ sung</h2>
+              <div className="grid grid-cols-2 gap-4">
+                {Object.entries(post.customFields).map(([key, value]) => (
+                  <div key={key} className="flex items-center gap-2">
+                    <span className="font-semibold">{key}:</span>
+                    <span>{value}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
           {isAuthUserPost && (
             <div className="mt-10">
               <h2 className="text-xl font-semibold mb-4">

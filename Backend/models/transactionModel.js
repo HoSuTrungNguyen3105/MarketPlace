@@ -2,33 +2,20 @@ import mongoose from "mongoose";
 
 const transactionSchema = mongoose.Schema(
   {
-    postId: {
+    orderId: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: "MarketplacePost", // Tham chiếu đến bài viết
+      ref: "Order",
       required: true,
     },
-    buyerId: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "User", // Người mua
-      required: true,
-    },
-    sellerId: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "User", // Người bán
-      required: true,
-    },
-    amount: {
-      type: Number, // Tổng số tiền giao dịch
+    paymentMethod: {
+      type: String,
+      enum: ["credit_card", "paypal", "cod"],
       required: true,
     },
     status: {
       type: String,
-      enum: ["pending", "completed", "cancelled"], // Trạng thái giao dịch
+      enum: ["pending", "completed", "failed"],
       default: "pending",
-    },
-    transactionDate: {
-      type: Date,
-      default: Date.now, // Ngày giao dịch
     },
   },
   {

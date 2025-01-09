@@ -78,6 +78,7 @@ const postSchema = mongoose.Schema(
       type: Boolean,
       default: false,
     },
+    stock: { type: Number, default: 0 }, // Số lượng tồn kho
     moderationStatus: {
       type: String,
       enum: ["pending", "approved", "rejected"],

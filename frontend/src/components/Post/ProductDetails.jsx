@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useCallback } from "react";
+import React, { useMemo } from "react";
 
 const ProductDetails = ({ category, dynamicFields, onFieldChange }) => {
   const categoryFields = useMemo(
