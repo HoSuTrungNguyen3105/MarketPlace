@@ -69,6 +69,19 @@ export const usePostStore = create((set, get) => ({
       set({ isLoading: false }); // Kết thúc loading
     }
   },
+  getPostByIdwithoutUser: async (id) => {
+    set({ isLoading: true, error: null }); // Bắt đầu loading
+    try {
+      const response = await axiosInstance.get(`/post/detail/without/${id}`);
+      if (response.data.status === "Success") {
+        set({ post: response.data.data }); // Cập nhật bài viết vào state
+      }
+    } catch (error) {
+      set({ error: "Error loading post", post: null }); // Nếu có lỗi
+    } finally {
+      set({ isLoading: false }); // Kết thúc loading
+    }
+  },
   // Hàm lấy danh mục từ API
   fetchCategories: async () => {
     set({ loading: true, error: null }); // Set loading true khi bắt đầu fetch

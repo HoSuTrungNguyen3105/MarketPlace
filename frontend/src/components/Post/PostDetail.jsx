@@ -1,12 +1,11 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { usePostStore } from "../../store/userPostStore";
-import { Link, useLocation, useNavigate, useParams } from "react-router-dom";
+import { Link, useNavigate, useParams } from "react-router-dom";
 import { useAuthStore } from "../../store/useAuthStore";
 import {
   MapPin,
   Phone,
   MessageSquare,
-  Heart,
   Share2,
   ChevronLeft,
   ChevronRight,
@@ -25,10 +24,13 @@ const PostDetail = () => {
     selectedUser,
     setSelectedUser,
   } = useMessageStore();
-  const [isUserFollowing, setIsUserFollowing] = useState(false);
-  const [isFollowLoading, setIsFollowLoading] = useState(false);
   const { getPostById, post, isLoading } = usePostStore();
   const { authUser } = useAuthStore();
+  const isAuthUserPost = authUser?._id === post?.userId?._id;
+
+  const [isUserFollowing, setIsUserFollowing] = useState(false);
+  const [isFollowLoading, setIsFollowLoading] = useState(false);
+
   const { followUser, unfollowUser, fetchFollowingStatus } = useUserStore();
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
 
@@ -233,8 +235,8 @@ const PostDetail = () => {
               </button>
             ))}
           </div>
-          {/* Follow Button */}
-          {authUser && authUser._id !== post.userId && (
+          {/* Hiển thị nút theo dõi chỉ khi không phải bài của người dùng */}
+          {!isAuthUserPost && authUser && (
             <button
               className={`button fc-button ${
                 isUserFollowing ? "unfollow" : "follow"
@@ -249,22 +251,29 @@ const PostDetail = () => {
                 : "Theo dõi"}
             </button>
           )}
+          {/* Chỉ xem danh sách bài đăng nếu là bài của người dùng */}
           <div className="mt-10">
             <h2 className="text-xl font-semibold mb-4">Mô tả sản phẩm</h2>
             <div className="text-gray-700">
               {post.description.split("{{newline}}").map((line, index) => (
                 <span key={index}>
-                  {line}
+                  {line.replace(/{{space}}/g, " ")}{" "}
+                  {/* Thay thế {{space}} thành khoảng trắng */}
                   <br />
                 </span>
               ))}
             </div>
           </div>
-          {/* Other Posts */}
-          <div className="mt-10">
-            <h2 className="text-xl font-semibold mb-4">Sản phẩm khác</h2>
-            <div className="grid md:grid-cols-3 lg:grid-cols-4 gap-6"></div>
-          </div>
+          {isAuthUserPost && (
+            <div className="mt-10">
+              <h2 className="text-xl font-semibold mb-4">
+                Danh sách bài đăng của bạn
+              </h2>
+              <div className="grid md:grid-cols-3 lg:grid-cols-4 gap-6">
+                {/* Hiển thị các bài đăng khác của người dùng */}
+              </div>
+            </div>
+          )}
         </div>
       </div>
     </div>

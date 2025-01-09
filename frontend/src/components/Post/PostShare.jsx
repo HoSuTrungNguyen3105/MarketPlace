@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 import { usePostStore } from "../../store/userPostStore";
 import { useAuthStore } from "../../store/useAuthStore";
 import { useLocation, useNavigate } from "react-router-dom";
@@ -18,51 +18,70 @@ const PostShare = ({ onPostCreateSuccess }) => {
   const fileInputRef = useRef();
   const selectedCategory = location.state?.category || {};
   const [error, setError] = useState(null);
+  const [dynamicFields, setDynamicFields] = useState({});
+  const [customFieldsSchema, setCustomFieldsSchema] = useState([]);
   const [formData, setFormData] = useState({
     userId: authUser?._id || "",
     username: authUser?.username || "",
     title: "",
     description: "",
-    contact: authUser?.phone || "", // Tự động lấy từ user
-    location: authUser?.location || "", // Tự động lấy từ user
-    images: [], // Chuyển từ chuỗi sang mảng
+    contact: authUser?.phone || "",
+    location: authUser?.location || "",
+    images: [],
     price: "",
     category: selectedCategory.id || "",
+    condition: "used",
   });
 
   useEffect(() => {
     fetchCategories();
-  }, [fetchCategories]);
-  const handleChange = (e) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
-  };
-  const handleImageChange = (e) => {
-    const files = Array.from(e.target.files);
-    const readers = files.map((file) => {
-      return new Promise((resolve) => {
-        const reader = new FileReader();
-        reader.onloadend = () => resolve(reader.result);
-        reader.readAsDataURL(file);
-      });
-    });
+    if (selectedCategory.id) {
+      setCustomFieldsSchema(selectedCategory.customFields || []);
+    }
+  }, [fetchCategories, selectedCategory]);
 
-    Promise.all(readers).then((images) => {
-      setFormData((prevFormData) => ({
-        ...prevFormData,
-        images: [...prevFormData.images, ...images], // Lưu tất cả ảnh đã chọn
+  const handleChange = useCallback(
+    (e) => {
+      const { name, value } = e.target;
+      setFormData((prev) => ({ ...prev, [name]: value }));
+      if (name === "category") {
+        const selected = categories.find((cat) => cat.id === value);
+        setCustomFieldsSchema(selected?.customFields || []);
+        setDynamicFields({});
+      }
+    },
+    [categories]
+  );
+
+  const handleImageChange = useCallback((e) => {
+    const files = Array.from(e.target.files);
+    Promise.all(
+      files.map((file) => {
+        return new Promise((resolve) => {
+          const reader = new FileReader();
+          reader.onloadend = () => resolve(reader.result);
+          reader.readAsDataURL(file);
+        });
+      })
+    ).then((images) => {
+      setFormData((prev) => ({
+        ...prev,
+        images: [...prev.images, ...images],
       }));
     });
-  };
+  }, []);
+
+  const handleDynamicFieldChange = useCallback((e) => {
+    const { name, value } = e.target;
+    setDynamicFields((prev) => ({ ...prev, [name]: value }));
+  }, []);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    console.log("Submitting..."); // Thêm dòng này để kiểm tra
+    const postData = { ...formData, customFields: dynamicFields };
     setError("");
     try {
-      // Gọi API để tạo bài đăng
-      const success = await createPost({ ...formData });
-
-      // Kiểm tra xem API có trả về true không
+      const success = await createPost(postData);
       if (success) {
         setFormData({
           userId: authUser?._id || "",
@@ -71,24 +90,24 @@ const PostShare = ({ onPostCreateSuccess }) => {
           description: "",
           contact: authUser?.contact || "",
           location: authUser?.location || "",
-          images: [], // Chuyển từ chuỗi sang mảng
+          images: [],
           price: "",
           category: "",
+          condition: "used",
         });
-
+        setDynamicFields({});
         if (fileInputRef.current) {
           fileInputRef.current.value = "";
         }
-
         if (onPostCreateSuccess) {
-          onPostCreateSuccess(); // Callback sau khi tạo bài thành công
+          onPostCreateSuccess();
         }
         navigate("/post");
       } else {
-        console.log("Đã xảy ra lỗi khi đăng bài.");
+        setError("Đã xảy ra lỗi khi đăng bài.");
       }
     } catch (error) {
-      console.error("Lỗi khi tạo bài viết:", error);
+      setError("Lỗi khi tạo bài viết: " + error.message);
     }
   };
 
@@ -106,6 +125,7 @@ const PostShare = ({ onPostCreateSuccess }) => {
             <strong>{selectedCategory.name}</strong>
           </p>
         )}
+        {error && <p className="text-red-500">{error}</p>}
         <div className="space-y-2">
           <label className="block text-sm font-semibold text-gray-700">
             Tiêu đề *
@@ -165,7 +185,6 @@ const PostShare = ({ onPostCreateSuccess }) => {
           />
         </div>
 
-        {/* Danh mục */}
         <div className="space-y-2">
           <label className="block text-sm font-semibold text-gray-700">
             Danh mục *
@@ -186,17 +205,12 @@ const PostShare = ({ onPostCreateSuccess }) => {
               className="select select-bordered w-full p-3 rounded-md"
               required
             >
-              {categories &&
-              Array.isArray(categories) &&
-              categories.length > 0 ? (
-                categories.map((category) => (
-                  <option key={category.id} value={category.id}>
-                    {category.name}
-                  </option>
-                ))
-              ) : (
-                <option value="">Không có danh mục nào</option>
-              )}
+              <option value="">Chọn danh mục</option>
+              {categories?.map((category) => (
+                <option key={category.id} value={category.id}>
+                  {category.name}
+                </option>
+              ))}
             </select>
           )}
         </div>
@@ -227,23 +241,57 @@ const PostShare = ({ onPostCreateSuccess }) => {
             ref={fileInputRef}
             onChange={handleImageChange}
             className="input input-bordered w-full p-3 rounded-md"
-            multiple // Cho phép chọn nhiều ảnh
+            multiple
           />
-          <div className="mt-2">
-            {formData.images.length > 0 && (
-              <div className="flex flex-wrap gap-2">
-                {formData.images.map((image, index) => (
-                  <img
-                    key={index}
-                    src={image}
-                    alt={`selected-image-${index}`}
-                    className="w-20 h-20 object-cover rounded-md"
-                  />
-                ))}
-              </div>
-            )}
+          <div className="mt-2 flex flex-wrap gap-2">
+            {formData.images.map((image, index) => (
+              <img
+                key={index}
+                src={image}
+                alt={`selected-image-${index}`}
+                className="w-20 h-20 object-cover rounded-md"
+              />
+            ))}
           </div>
         </div>
+
+        <div className="space-y-2">
+          <label className="block text-sm font-semibold text-gray-700">
+            Tình trạng
+          </label>
+          <select
+            name="condition"
+            value={formData.condition}
+            onChange={handleChange}
+            className="select select-bordered w-full p-3 rounded-md"
+          >
+            <option value="used">Đã qua sử dụng</option>
+            <option value="new">Mới</option>
+          </select>
+        </div>
+
+        {customFieldsSchema.length > 0 && (
+          <div className="space-y-4">
+            <h3 className="text-md font-semibold text-gray-800">
+              Thông tin bổ sung
+            </h3>
+            {customFieldsSchema.map((field) => (
+              <div key={field.name} className="space-y-2">
+                <label className="block text-sm font-semibold text-gray-700">
+                  {field.label}
+                </label>
+                <input
+                  type="text"
+                  name={field.name}
+                  value={dynamicFields[field.name] || ""}
+                  onChange={handleDynamicFieldChange}
+                  placeholder={field.placeholder || "Nhập thông tin..."}
+                  className="input input-bordered w-full p-3 rounded-md"
+                />
+              </div>
+            ))}
+          </div>
+        )}
 
         <button
           type="submit"

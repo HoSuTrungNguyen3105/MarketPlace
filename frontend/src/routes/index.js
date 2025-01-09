@@ -81,7 +81,7 @@ const router = createBrowserRouter([
         path: "/input/create-post",
         element: (
           <PrivateRoute>
-            <Post_Share />
+            <PostShare />
           </PrivateRoute>
         ),
       },

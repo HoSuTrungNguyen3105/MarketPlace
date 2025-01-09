@@ -76,7 +76,7 @@ const Post = ({ data, currentUserId }) => {
   };
 
   return (
-    <div className="contain border rounded-lg p-4 mb-4 shadow-sm hover:shadow-lg transition-shadow duration-200">
+    <div className="contain border rounded-lg p-5 mb-5 shadow-sm hover:shadow-lg transition-shadow duration-150">
       {/* Hình ảnh bài đăng */}
       {data.images && data.images.length > 0 && (
         <Link to={`/post/${data._id}?userId=${userId}`}>
@@ -96,8 +96,31 @@ const Post = ({ data, currentUserId }) => {
           {data.title}
         </h2>
         <p className="text-sm text-gray-600 mb-1 truncate">
-          {data.category} - {data.description || "Không có mô tả"}
+          {data.category} -{" "}
+          {(() => {
+            const description = data.description
+              .replace(/{{newline}}/g, " ") // Thay thế {{newline}} thành dấu cách
+              .replace(/{{space}}/g, " "); // Thay thế {{space}} thành khoảng trắng
+
+            const words = description.split(" "); // Tách chuỗi thành các từ
+            if (words.length > 5) {
+              return (
+                <>
+                  {words.slice(0, 5).join(" ")}...{" "}
+                  <span
+                    className="text-blue-500 cursor-pointer"
+                    onClick={() => alert(description)}
+                  >
+                    Xem thêm
+                  </span>
+                </>
+              );
+            } else {
+              return description;
+            }
+          })()}
         </p>
+
         <p className="text-red-500 font-bold text-lg mb-1">{data.price} VND</p>
         <p className="text-gray-500 text-xs">
           {formatTimeAgo(data.createdAt)} - {data.location || "Không rõ"}
@@ -121,6 +144,9 @@ const Post = ({ data, currentUserId }) => {
                 : "Theo dõi"}
             </button>
           </>
+        )}
+        {isCurrentUserPost && (
+          <button className="delete-btn button btn-danger ml-2">Xóa bài</button>
         )}
       </div>
       {/* Biểu tượng yêu thích và nút thêm */}

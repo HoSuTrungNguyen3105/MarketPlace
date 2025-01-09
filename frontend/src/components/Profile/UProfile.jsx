@@ -1,7 +1,8 @@
 import React, { useEffect, useState } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams, useNavigate, Link } from "react-router-dom";
 import { axiosInstance } from "../../lib/axios"; // Cấu hình axios
 import "./Profile.css";
+import { usePostStore } from "../../store/userPostStore";
 
 const UProfile = () => {
   const { userId } = useParams(); // Lấy userId từ URL
@@ -9,6 +10,7 @@ const UProfile = () => {
   const [userData, setUserData] = useState(null); // Thông tin người dùng
   const [loading, setLoading] = useState(true); // Trạng thái đang tải
   const [error, setError] = useState(null); // Trạng thái lỗi
+  const { posts } = usePostStore();
 
   // Lấy thông tin người dùng từ API
   useEffect(() => {
@@ -71,6 +73,10 @@ const UProfile = () => {
               <p className="text-lg text-gray-600">
                 {userData.location || "Địa chỉ không khả dụng"}
               </p>
+              <p className="text-sm text-gray-600">Email: {userData.email}</p>
+              <p className="text-sm text-gray-600">
+                Điện thoại: {userData.phone || "Không khả dụng"}
+              </p>
               <div className="flex items-center gap-2">
                 <span className="text-yellow-500 text-xl">&#9733; 4.7</span>
                 <span className="text-sm text-gray-500">(115 đánh giá)</span>
@@ -95,6 +101,18 @@ const UProfile = () => {
               </button>
             </div>
           </div>
+        </div>
+
+        {/* Thông tin bổ sung */}
+        <div className="p-6">
+          <h2 className="text-xl font-bold">Thông tin chi tiết</h2>
+          <p>Vai trò: {userData.role}</p>
+          <p>Người theo dõi: {userData.followers.length}</p>
+          <p>Đang theo dõi: {userData.following.length}</p>
+          <p>Số sản phẩm đã bán: {userData.soldItems}</p>
+          <p>Số sản phẩm đang hoạt động: {userData.activeListings}</p>
+          <p>Tỉ lệ phản hồi: {userData.responseRate}%</p>
+          <p>Đã xác minh: {userData.isVerified ? "Có" : "Không"}</p>
         </div>
 
         {/* Thanh điều hướng */}
@@ -158,20 +176,22 @@ const UserProducts = ({ userId }) => {
       <h2 className="text-xl font-bold p-4">Sản phẩm của người dùng</h2>
       <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 p-4">
         {products.map((product) => (
-          <div
-            key={product.id}
-            className="border rounded-lg p-4 shadow hover:shadow-md"
-          >
-            <img
-              src={product.images || "/default-product.jpg"}
-              alt={product.name}
-              className="w-full h-32 object-cover mb-2 rounded"
-            />
-            <h3 className="text-lg font-semibold">{product.title}</h3>
-            <p className="text-sm text-gray-500 line-clamp-2">
-              {product.description}
-            </p>
-          </div>
+          <Link to={`/post/${product._id}?userId=${userId}`}>
+            <div
+              key={product.id}
+              className="border rounded-lg p-4 shadow hover:shadow-md"
+            >
+              <img
+                src={product.images || "/default-product.jpg"}
+                alt={product.name}
+                className="w-full h-32 object-cover mb-2 rounded"
+              />
+              <h3 className="text-lg font-semibold">{product.title}</h3>
+              <p className="text-sm text-gray-500 line-clamp-2">
+                {product.description}
+              </p>
+            </div>
+          </Link>
         ))}
       </div>
     </div>

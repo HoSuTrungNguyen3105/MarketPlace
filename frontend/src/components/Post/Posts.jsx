@@ -1,9 +1,8 @@
-import React, { useState, useEffect } from "react";
+import React, { useEffect } from "react";
 import { usePostStore } from "../../store/userPostStore";
 import { useAuthStore } from "../../store/useAuthStore";
 import Post from "./Post";
 import Loader from "../Another/Loader";
-import { axiosInstance } from "../../lib/axios.js";
 
 const Posts = () => {
   const { posts, isLoading, fetchPosts } = usePostStore();

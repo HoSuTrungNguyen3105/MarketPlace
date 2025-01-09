@@ -14,6 +14,8 @@ export const createPost = async (req, res) => {
       contact,
       userId,
       images,
+      condition,
+      customFields,
     } = req.body;
 
     // Kiểm tra người dùng
@@ -45,6 +47,14 @@ export const createPost = async (req, res) => {
         .status(400)
         .json({ message: "Danh mục không hợp lệ", field: "category" });
     }
+    if (
+      !Array.isArray(images) ||
+      images.some((img) => typeof img !== "string")
+    ) {
+      return res
+        .status(400)
+        .json({ message: "Dữ liệu ảnh không hợp lệ", field: "images" });
+    }
 
     // Upload ảnh lên Cloudinary
     const imageUrls = await handleImageUpload(images); // Upload ảnh và nhận URL
@@ -53,6 +63,7 @@ export const createPost = async (req, res) => {
     const formattedDescription = description
       .replace(/\n/g, "{{newline}}") // Thay thế xuống dòng bằng {{newline}}
       .replace(/ /g, "{{space}}"); // Thay thế khoảng trắng bằng {{space}}
+
     // Tạo bài đăng mới
     const newPost = new PostModel({
       title,
@@ -62,6 +73,8 @@ export const createPost = async (req, res) => {
       location,
       contact,
       images: imageUrls, // Lưu mảng các URL ảnh
+      condition: condition || "used", // Giá trị mặc định là "used"
+      customFields: customFields || {},
       userId,
     });
 
@@ -256,7 +269,24 @@ export const reportPost = async (req, res) => {
 export const getPostbyid = async (req, res) => {
   try {
     const post = await PostModel.findById(req.params.id).populate("userId");
+    if (!post) {
+      return res.status(404).json({ message: "Post not found" });
+    }
+    post.views += 1;
+    await post.save();
 
+    return res.json({
+      status: "Success",
+      data: post,
+    });
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({ message: "Error" });
+  }
+};
+export const getPostbyidwithoutUser = async (req, res) => {
+  try {
+    const post = await PostModel.findById(req.params.id);
     if (!post) {
       return res.status(404).json({ message: "Post not found" });
     }
