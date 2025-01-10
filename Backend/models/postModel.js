@@ -25,12 +25,14 @@ const postSchema = mongoose.Schema(
       required: true,
     },
     location: {
-      type: String,
+      provinceId: { type: String },
+      city: { type: String },
+      address: { type: String },
     },
-    geoLocation: {
-      latitude: { type: Number },
-      longitude: { type: Number },
-    },
+    // geoLocation: {
+    //   latitude: { type: Number },
+    //   longitude: { type: Number },
+    // },
     images: {
       type: [String],
       default: [],
@@ -66,18 +68,18 @@ const postSchema = mongoose.Schema(
       ],
       default: [],
     },
-    keywords: {
-      type: [String],
-      default: [],
-    },
+    // keywords: {
+    //   type: [String],
+    //   default: [],
+    // },
     favoritesCount: {
       type: Number,
       default: 0,
     },
-    isPromoted: {
-      type: Boolean,
-      default: false,
-    },
+    // isPromoted: {
+    //   type: Boolean,
+    //   default: false,
+    // },
     stock: { type: Number, default: 0 }, // Số lượng tồn kho
     moderationStatus: {
       type: String,

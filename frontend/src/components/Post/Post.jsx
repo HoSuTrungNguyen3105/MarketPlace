@@ -98,7 +98,10 @@ const Post = ({ data, currentUserId }) => {
         <p className="text-sm text-gray-600 mb-1 truncate">
           {data.category} -{" "}
           {(() => {
-            const description = data.description.replace(/{{newline}}/g, " "); // Thay thế {{newline}} thành dấu cách
+            const description = (data.description || "").replace(
+              /{{newline}}/g,
+              " "
+            );
 
             const words = description.split(" "); // Tách chuỗi thành các từ
             if (words.length > 5) {
@@ -120,9 +123,7 @@ const Post = ({ data, currentUserId }) => {
         </p>
 
         <p className="text-red-500 font-bold text-lg mb-1">{data.price} VND</p>
-        <p className="text-gray-500 text-xs">
-          {formatTimeAgo(data.createdAt)} - {data.location || "Không rõ"}
-        </p>
+        <p className="text-gray-500 text-xs">{formatTimeAgo(data.createdAt)}</p>
       </div>
       {/* Nút tương tác */}
       <div className="postReact">

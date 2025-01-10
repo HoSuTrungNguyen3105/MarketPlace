@@ -1,9 +1,11 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useAuthStore } from "../../store/useAuthStore";
 import toast from "react-hot-toast";
 import { Check, Eye, EyeOff, Loader } from "lucide-react";
 import { Link } from "react-router-dom";
 import "./Auth.css";
+import { useUserStore } from "../../store/useUserStore";
+import { usePostStore } from "../../store/userPostStore";
 
 const Register = () => {
   return (
@@ -23,6 +25,8 @@ function Auth() {
   const [showPassword, setShowPassword] = useState(false);
   const [isVerificationStep, setIsVerificationStep] = useState(false);
   const [verificationCode, setVerificationCode] = useState("");
+  const { provinces, isLoading, error, fetchProvinces } = usePostStore(); // Thêm cities vào
+
   const [formData, setFormData] = useState({
     username: "",
     email: "",
@@ -30,12 +34,20 @@ function Auth() {
     phone: "", // Đảm bảo bạn có trường phone
     firstname: "",
     lastname: "",
-    role: "buyer", // Thêm trường role, mặc định là "buyer"
+    role: "buyer",
+    location: {
+      provinceId: "",
+      city: "",
+      address: "",
+    },
   });
 
   const { signup, verifyEmail, isSigningUp, isVerifying, registerError } =
     useAuthStore();
-
+  useEffect(() => {
+    // Gọi fetchProvinces khi component mount
+    fetchProvinces();
+  }, [fetchProvinces]);
   // Regex checks for each requirement
   const lengthCheck = formData.password.length >= 6;
   const letterCheck = /[A-Za-z]/.test(formData.password);
@@ -65,6 +77,7 @@ function Auth() {
   const handlePasswordChange = (e) => {
     setFormData({ ...formData, password: e.target.value });
   };
+  const [districts, setDistricts] = useState([]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -78,6 +91,24 @@ function Auth() {
     } catch (error) {
       toast.error("Đã có lỗi xảy ra, vui lòng thử lại!");
     }
+  };
+
+  const handleProvinceChange = (e) => {
+    const selectedProvinceId = e.target.value;
+    const selectedProvince = provinces.find(
+      (province) => province.id.toString() === selectedProvinceId
+    );
+
+    setFormData({
+      ...formData,
+      location: {
+        ...formData.location,
+        provinceId: selectedProvinceId,
+        city: "", // Reset city when province changes
+      },
+    });
+
+    setDistricts(selectedProvince ? selectedProvince.districts : []);
   };
 
   const handleVerification = async (e) => {
@@ -192,6 +223,60 @@ function Auth() {
               <EyeOff className="size-5 text-base-content/40" />
             )}
           </button>
+          <div>
+            {/* Province selection */}
+            <div>
+              <label htmlFor="province">Tỉnh/Thành phố</label>
+              <select
+                id="province"
+                value={formData.location.provinceId}
+                onChange={handleProvinceChange}
+              >
+                <option value="">Chọn tỉnh/thành phố</option>
+                {provinces.map((province) => (
+                  <option key={province.id} value={province.id}>
+                    {province.name}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <div>
+              <label htmlFor="city">Quận/Huyện</label>
+              <select
+                id="city"
+                value={formData.location.city}
+                onChange={(e) =>
+                  setFormData({
+                    ...formData,
+                    location: { ...formData.location, city: e.target.value },
+                  })
+                }
+              >
+                <option value="">Chọn quận/huyện</option>
+                {districts.map((district) => (
+                  <option key={district.id} value={district.name}>
+                    {district.name}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <div>
+              <input
+                type="text"
+                placeholder="Address"
+                className="w-full p-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                value={formData.location.address}
+                onChange={(e) =>
+                  setFormData({
+                    ...formData,
+                    location: { ...formData.location, address: e.target.value },
+                  })
+                }
+              />
+            </div>
+          </div>
 
           {/* Submit button */}
           <button

@@ -3,30 +3,49 @@ import { axiosInstance } from "../lib/axios";
 import toast from "react-hot-toast";
 export const useUserStore = create((set, get) => ({
   following: {},
-  ads: [],
-  setAds: (ads) => set({ ads }),
-  addAd: (ad) => set((state) => ({ ads: [...state.ads, ad] })),
-  // Phương thức xóa tin nhắn
-  deleteMessage: async (messageId) => {
+  userData: null, // User profile data
+  loading: true, // Loading state
+  error: null, // Error state
+  products: [], // User products
+  productsLoading: true, // Products loading state
+  productsError: null, // Error for products
+  setUserData: (data) => set({ userData: data }),
+  setLoading: (loading) => set({ loading }),
+  setError: (error) => set({ error }),
+  setProducts: (products) => set({ products }),
+  setProductsLoading: (loading) => set({ productsLoading: loading }),
+  setProductsError: (error) => set({ productsError: error }),
+
+  // Fetch user data
+  fetchUserData: async (userId) => {
+    set({ loading: true, error: null });
     try {
-      const response = await axiosInstance.delete(
-        `/admin/message/${messageId}`
-      ); // Gọi API xóa tin nhắn
-      if (response.status === 200) {
-        // Nếu API trả về thành công, xóa tin nhắn trong state
-        set((state) => ({
-          messages: state.messages.filter((msg) => msg._id !== messageId),
-        }));
-        toast.success("Xóa tin nhắn thành công!");
-      }
+      const response = await axiosInstance.get(`/user/profile/${userId}`);
+      set({ userData: response.data });
     } catch (error) {
-      console.error("Lỗi xóa tin nhắn:", error);
-      toast.error("Có lỗi xảy ra khi xóa tin nhắn");
-      throw error; // Ném lỗi để component bắt lỗi
+      set({ error: "Không thể tải thông tin người dùng." });
+    } finally {
+      set({ loading: false });
+    }
+  },
+
+  // Fetch user products
+  fetchUserProducts: async (userId) => {
+    set({ productsLoading: true, productsError: null });
+    try {
+      const response = await axiosInstance.get(`/post/user/${userId}`);
+      set({ products: response.data });
+    } catch (error) {
+      set({ productsError: "Không thể tải sản phẩm của người dùng." });
+    } finally {
+      set({ productsLoading: false });
     }
   },
 
   fetchFollowingStatus: async (currentUserId, targetUserId) => {
+    if (get().following[targetUserId] !== undefined) {
+      return get().following[targetUserId];
+    }
     if (!currentUserId || !targetUserId) {
       console.error("Missing parameters: currentUserId or targetUserId");
       return;
@@ -69,7 +88,7 @@ export const useUserStore = create((set, get) => ({
 
       // Lấy thông báo lỗi từ API, tránh rendering toàn bộ đối tượng lỗi
       const errorMessage =
-        error.response?.data?.message || "Failed to follow the user.";
+        error.res?.data?.message || "Failed to follow the user.";
       toast.error(errorMessage); // Hiển thị thông báo lỗi chính xác
     }
   },
@@ -89,7 +108,7 @@ export const useUserStore = create((set, get) => ({
 
       // Lấy thông báo lỗi từ API, tránh rendering toàn bộ đối tượng lỗi
       const errorMessage =
-        error.response?.data?.message || "Failed to unfollow the user.";
+        error.res?.data?.message || "Failed to unfollow the user.";
       toast.error(errorMessage); // Hiển thị thông báo lỗi chính xác
     }
   },

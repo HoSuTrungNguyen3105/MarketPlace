@@ -9,7 +9,6 @@ import {
   Share2,
   ChevronLeft,
   ChevronRight,
-  Clock,
   Package,
   Star,
   Tag,
@@ -24,6 +23,7 @@ import { useUserStore } from "../../store/useUserStore";
 
 const PostDetail = () => {
   const { id } = useParams();
+  const { userId } = useParams();
   const navigate = useNavigate();
   const {
     contacts,
@@ -31,6 +31,7 @@ const PostDetail = () => {
     selectedUser,
     setSelectedUser,
   } = useMessageStore();
+  const { products } = useUserStore();
   const { getPostById, post, isLoading } = usePostStore();
   const { authUser } = useAuthStore();
   const isAuthUserPost = authUser?._id === post?.userId?._id;
@@ -59,27 +60,23 @@ const PostDetail = () => {
   useEffect(() => {
     const checkFollowStatus = async () => {
       if (authUser && post && post.userId) {
-        const status = await fetchFollowingStatus(
-          authUser._id,
-          post.userId._id
-        );
+        const status = await fetchFollowingStatus(authUser._id, post.userId);
         setIsUserFollowing(status);
       }
     };
-    if (authUser && post) {
-      checkFollowStatus();
-    }
+    checkFollowStatus();
   }, [authUser, post, fetchFollowingStatus]);
 
   const handleFollowToggle = async () => {
-    if (!authUser || !post.userId) return;
+    if (!authUser || !post?.userId) return; // Kiểm tra `post.userId` có hợp lệ
     setIsFollowLoading(true);
     try {
+      const userId = post.userId._id || post.userId; // Lấy ID chuỗi nếu đối tượng tồn tại
       if (isUserFollowing) {
-        await unfollowUser(authUser._id, post.userId);
+        await unfollowUser(authUser._id, userId);
         setIsUserFollowing(false);
       } else {
-        await followUser(authUser._id, post.userId);
+        await followUser(authUser._id, userId);
         setIsUserFollowing(true);
       }
     } catch (error) {
@@ -202,7 +199,7 @@ const PostDetail = () => {
           <div className="space-y-4 mb-6">
             <div className="flex items-center gap-2">
               <MapPin className="w-5 h-5 text-gray-500" />
-              <span>{post.location}</span>
+              {/* <span>{post.location.address}</span> */}
             </div>
             <div className="flex items-center gap-2">
               <Clock1 className="w-5 h-5 text-gray-500" />
@@ -331,62 +328,76 @@ const PostDetail = () => {
             </button>
           )}
           {/* Hiển thị nút theo dõi chỉ khi không phải bài của người dùng */}
-          {!isAuthUserPost && authUser && (
-            <button
-              className={`button fc-button ${
-                isUserFollowing ? "unfollow" : "follow"
-              }`}
-              onClick={handleFollowToggle}
-              disabled={isFollowLoading}
-            >
-              {isFollowLoading
-                ? "Loading..."
-                : isUserFollowing
-                ? "Đã theo dõi"
-                : "Theo dõi"}
-            </button>
+          {authUser && authUser._id !== post.userId && (
+            <>
+              <button
+                className={`button fc-button ${
+                  isUserFollowing ? "unfollow" : "follow"
+                }`}
+                onClick={handleFollowToggle}
+                disabled={isFollowLoading}
+              >
+                {isFollowLoading
+                  ? "Loading..."
+                  : isUserFollowing
+                  ? "Đã theo dõi"
+                  : "Theo dõi"}
+              </button>
+              <button className="button fc-button">Nhắn Tin</button>
+            </>
           )}
-          {/* Chỉ xem danh sách bài đăng nếu là bài của người dùng */}
-          <div className="mt-10">
-            <h2 className="text-xl font-semibold mb-4">Mô tả sản phẩm</h2>
-            <div className="text-gray-700">
-              {post.description.split("{{newline}}").map((line, index) => (
-                <span key={index}>
-                  {line.replace(/{{space}}/g, " ")}{" "}
-                  {/* Thay thế {{space}} thành khoảng trắng */}
-                  <br />
-                </span>
-              ))}
-            </div>
-          </div>
           {/* Custom Fields */}
           {post.customFields && Object.keys(post.customFields).length > 0 && (
             <div className="mt-10">
-              <h2 className="text-xl font-semibold mb-4">Thông tin bổ sung</h2>
+              <h2 className="text-xl font-semibold mb-4">
+                Thông tin chi tiết bổ sung
+              </h2>
               <div className="grid grid-cols-2 gap-4">
                 {Object.entries(post.customFields).map(([key, value]) => (
                   <div key={key} className="flex items-center gap-2">
-                    <span className="font-semibold">{key}:</span>
+                    <span className="font-semibold"> {key}:</span>
                     <span>{value}</span>
                   </div>
                 ))}
               </div>
             </div>
           )}
-          {isAuthUserPost && (
-            <div className="mt-10">
-              <h2 className="text-xl font-semibold mb-4">
-                Danh sách bài đăng của bạn
-              </h2>
-              <div className="grid md:grid-cols-3 lg:grid-cols-4 gap-6">
-                {/* Hiển thị các bài đăng khác của người dùng */}
-              </div>
-            </div>
-          )}
+          {/* Chỉ xem danh sách bài đăng nếu là bài của người dùng */}
+          <div className="mt-10">
+            <h2 className="text-xl font-semibold mb-4">
+              Các bài đăng khác của người bán
+            </h2>
+            <UserProducts userId={userId} products={products} />
+          </div>
         </div>
       </div>
     </div>
   );
 };
+const UserProducts = ({ userId, products }) => {
+  if (products.length === 0) return <p>Không có sản phẩm nào để hiển thị.</p>;
 
+  return (
+    <div className="profile-page max-w-4xl mx-auto bg-white rounded-lg shadow-lg mt-4">
+      <h2 className="text-xl font-bold p-4">Sản phẩm của người dùng</h2>
+      <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 p-4">
+        {products.map((product) => (
+          <Link key={product._id} to={`/post/${product._id}?userId=${userId}`}>
+            <div className="border rounded-lg p-4 shadow hover:shadow-md">
+              <img
+                src={product.images[0] || "/logo512.png"}
+                alt={product.name}
+                className="w-full h-32 object-cover mb-2 rounded"
+              />
+              <h3 className="text-lg font-semibold">{product.title}</h3>
+              <p className="text-sm text-gray-500 line-clamp-2">
+                {product.description}
+              </p>
+            </div>
+          </Link>
+        ))}
+      </div>
+    </div>
+  );
+};
 export default PostDetail;

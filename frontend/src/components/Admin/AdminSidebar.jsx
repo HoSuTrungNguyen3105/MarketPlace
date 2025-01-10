@@ -1,5 +1,5 @@
 import React from "react";
-import { FaUsers, FaNewspaper, FaCogs } from "react-icons/fa";
+import { FaUsers, FaNewspaper, FaCogs, FaPhoneSquareAlt } from "react-icons/fa";
 import { MessageCircleCode, MessageCircleMore, Settings } from "lucide-react";
 import { MdPostAdd, MdReportProblem } from "react-icons/md";
 import { Link, Outlet, useLocation } from "react-router-dom";
@@ -14,11 +14,11 @@ const AdminSidebar = () => {
   const adminSidebarItems = [
     {
       to: "/admin/posts",
-      icon: <MdPostAdd />,
+      icon: <FaPhoneSquareAlt />,
       label: "Quản lý Bài đăng",
     },
     {
-      to: "/admin-dashboard/admin-user",
+      to: "/admin/users",
       icon: <FaUsers />,
       label: "Quản lý Người dùng",
     },

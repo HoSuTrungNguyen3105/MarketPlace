@@ -41,18 +41,16 @@ export const deleteUser = async (req, res) => {
 };
 
 export const followUser = async (req, res) => {
-  const userId = req.params.id; // Lấy userId từ URL (người dùng được follow)
-  const { _id } = req.body; // Lấy ID người theo dõi từ body (người follow)
+  const userId = req.params.id; // Lấy userId từ URL
+  const { _id } = req.body; // Lấy ID người theo dõi từ body
 
   if (!userId || !_id) {
     return res.status(400).json({ message: "Missing user IDs" });
   }
 
   try {
-    // Tìm người dùng được follow
-    const followUser = await UserModel.findById(userId);
-    // Tìm người dùng đang follow
-    const followingUser = await UserModel.findById(_id);
+    const followUser = await UserModel.findOne({ _id: userId }); // Tìm user bằng userId
+    const followingUser = await UserModel.findOne({ _id }); // Tìm user bằng _id (ID người theo dõi)
 
     if (!followUser) {
       return res
@@ -61,19 +59,19 @@ export const followUser = async (req, res) => {
     }
 
     if (!followingUser) {
-      return res.status(404).json({ message: "Người theo dõi không tìm thấy" });
+      return res.status(404).json({ message: "Current user not found" });
     }
 
     if (!followUser.followers.includes(_id)) {
       // Cập nhật danh sách followers và following
       await followUser.updateOne({ $push: { followers: _id } });
       await followingUser.updateOne({ $push: { following: userId } });
+      res.status(200).json("Theo dõi thành công!");
     } else {
-      // Nếu người dùng đã theo dõi
-      return res.status(403).json({ message: "Bạn đã theo dõi người này rồi" });
+      res.status(403).json("Bạn đã theo dõi người này");
     }
   } catch (error) {
-    return res.status(500).json({ message: error.message });
+    res.status(500).json({ message: error.message });
   }
 };
 
@@ -197,7 +195,14 @@ export const updateUserInfo = async (req, res) => {
     } = req.body;
 
     const userId = req.user._id;
-
+    // Kiểm tra nếu trường location được gửi lên
+    const locationUpdate = location
+      ? {
+          provinceId: location.provinceId,
+          city: location.city,
+          address: location.address,
+        }
+      : {};
     // Cập nhật thông tin người dùng
     const updatedUser = await UserModel.findByIdAndUpdate(
       userId,
@@ -207,7 +212,7 @@ export const updateUserInfo = async (req, res) => {
         lastname,
         email,
         phone,
-        location,
+        location: locationUpdate, // Cập nhật location
         role,
         isVerified,
       },

@@ -30,8 +30,22 @@ const userSchema = mongoose.Schema(
       type: Number,
     },
     location: {
-      type: String, // Địa chỉ hoặc vị trí rao bán
+      type: Object,
+      properties: {
+        provinceId: {
+          type: Number, // ID của tỉnh/thành phố
+          required: true,
+        },
+        city: {
+          type: String, // Tên thành phố/quận
+          required: true,
+        },
+        address: {
+          type: String, // Địa chỉ chi tiết (số nhà, tên đường)
+        },
+      },
     },
+
     role: {
       type: String,
       enum: ["buyer", "seller", "admin"], // Phân quyền người dùng

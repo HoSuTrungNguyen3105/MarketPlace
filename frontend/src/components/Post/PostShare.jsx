@@ -3,6 +3,7 @@ import { usePostStore } from "../../store/userPostStore";
 import { useAuthStore } from "../../store/useAuthStore";
 import { useLocation, useNavigate } from "react-router-dom";
 import ProductDetails from "./ProductDetails";
+import { motion } from "framer-motion";
 
 const PostShare = ({ onPostCreateSuccess }) => {
   const { authUser } = useAuthStore();
@@ -12,7 +13,6 @@ const PostShare = ({ onPostCreateSuccess }) => {
     isCreating,
     categories,
     fetchCategories,
-    isLoading,
     error: categoryError,
   } = usePostStore();
   const navigate = useNavigate();
@@ -118,174 +118,104 @@ const PostShare = ({ onPostCreateSuccess }) => {
   };
 
   return (
-    <div className="post-share-container">
+    <div>
       <form
         onSubmit={handleSubmit}
-        className="space-y-6 max-w-xl mx-auto"
+        className="space-y-8"
         encType="multipart/form-data"
       >
-        <h2 className="text-lg font-bold text-gray-800">Tạo bài đăng mới</h2>
+        <h2 className="text-4xl font-extrabold mb-6">✨ Tạo bài đăng mới</h2>
         {selectedCategory.name && (
-          <p className="text-sm text-gray-600">
+          <p className="text-sm font-medium bg-white bg-opacity-10 p-3 rounded-lg">
             Bạn đang tạo bài đăng trong danh mục:{" "}
             <strong>{selectedCategory.name}</strong>
           </p>
         )}
-        {error && <p className="text-red-500">{error}</p>}
-        <div className="space-y-2">
-          <label className="block text-sm font-semibold text-gray-700">
-            Tiêu đề *
-          </label>
+        {/* {error && (
+          <p className="text-red-300 bg-red-900 bg-opacity-50 p-4 rounded-lg">
+            {error}
+          </p>
+        )} */}
+        <div className="space-y-4">
+          <label className="block text-sm font-semibold">Tiêu đề *</label>
           <input
             type="text"
             name="title"
             value={formData.title}
             onChange={handleChange}
-            className="input input-bordered w-full p-3 rounded-md"
+            className="w-full p-4 bg-white bg-opacity-20 rounded-lg shadow-inner focus:ring-2 focus:ring-purple-300 focus:bg-opacity-30 transition-all duration-300 placeholder-gray-300"
             placeholder="Nhập tiêu đề bài đăng"
             required
           />
         </div>
-
-        <div className="space-y-2">
-          <label className="block text-sm font-semibold text-gray-700">
-            Mô tả *
-          </label>
+        <div className="space-y-4">
+          <label className="block text-sm font-semibold">Mô tả *</label>
           <textarea
             name="description"
             value={formData.description}
             onChange={handleChange}
-            className="textarea textarea-bordered w-full p-3 rounded-md"
+            className="w-full p-4 bg-white bg-opacity-20 rounded-lg shadow-inner focus:ring-2 focus:ring-purple-300 focus:bg-opacity-30 transition-all duration-300 placeholder-gray-300 min-h-[120px]"
             placeholder="Viết mô tả..."
             required
           />
         </div>
-
-        <div className="space-y-2">
-          <label className="block text-sm font-semibold text-gray-700">
-            Giá *
-          </label>
-          <input
-            type="number"
-            name="price"
-            value={formData.price}
-            onChange={handleChange}
-            className="input input-bordered w-full p-3 rounded-md"
-            placeholder="Nhập giá (VNĐ)"
-            required
-          />
-        </div>
-
-        <div className="space-y-2">
-          <label className="block text-sm font-semibold text-gray-700">
-            Liên lạc *
-          </label>
-          <input
-            type="text"
-            name="contact"
-            value={formData.contact}
-            onChange={handleChange}
-            className="input input-bordered w-full p-3 rounded-md"
-            placeholder="Số điện thoại hoặc email"
-            readOnly
-          />
-        </div>
-
-        <div className="space-y-2">
-          <label className="block text-sm font-semibold text-gray-700">
-            Danh mục *
-          </label>
-          {selectedCategory.name ? (
-            <p className="p-3 rounded-md bg-gray-100 text-gray-700">
-              {selectedCategory.name}
-            </p>
-          ) : isLoading ? (
-            <p>Đang tải danh mục...</p>
-          ) : categoryError ? (
-            <p className="text-red-500">{categoryError}</p>
-          ) : (
-            <select
-              name="category"
-              value={formData.category}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="space-y-4">
+            <label className="block text-sm font-semibold">Giá *</label>
+            <input
+              type="number"
+              name="price"
+              value={formData.price}
               onChange={handleChange}
-              className="select select-bordered w-full p-3 rounded-md"
+              className="w-full p-4 bg-white bg-opacity-20  rounded-lg shadow-inner focus:ring-2 focus:ring-purple-300 focus:bg-opacity-30 transition-all duration-300 placeholder-gray-300"
+              placeholder="Nhập giá (VNĐ)"
               required
+            />
+          </div>
+          <div className="space-y-4">
+            <label className="block text-sm font-semibold">Tình trạng</label>
+            <select
+              name="condition"
+              value={formData.condition}
+              onChange={handleChange}
+              className="w-full p-4 bg-white bg-opacity-20  rounded-lg shadow-inner focus:ring-2 focus:ring-purple-300 focus:bg-opacity-30 transition-all duration-300"
             >
-              <option value="">Chọn danh mục</option>
-              {categories?.map((category) => (
-                <option key={category.id} value={category.id}>
-                  {category.name}
-                </option>
-              ))}
+              <option value="used">Đã qua sử dụng</option>
+              <option value="new">Mới</option>
             </select>
-          )}
+          </div>
         </div>
-
-        <div className="space-y-2">
-          <label className="block text-sm font-semibold text-gray-700">
-            Địa điểm *
-          </label>
-          <input
-            type="text"
-            name="location"
-            value={formData.location}
-            onChange={handleChange}
-            className="input input-bordered w-full p-3 rounded-md"
-            placeholder="Địa chỉ hoặc khu vực"
-            disabled
-          />
-        </div>
-
-        <div className="space-y-2">
-          <label className="block text-sm font-semibold text-gray-700">
-            Chọn ảnh *
-          </label>
+        <div className="space-y-4">
+          <label className="block text-sm font-semibold">Chọn ảnh *</label>
           <input
             type="file"
             name="images"
             accept="image/*"
             ref={fileInputRef}
             onChange={handleImageChange}
-            className="input input-bordered w-full p-3 rounded-md"
+            className="w-full p-4 bg-white bg-opacity-20  rounded-lg shadow-inner focus:ring-2 focus:ring-purple-300 focus:bg-opacity-30 transition-all duration-300 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-purple-50 file:text-purple-700 hover:file:bg-purple-100"
             multiple
           />
-          <div className="mt-2 flex flex-wrap gap-2">
+          <div className="mt-4 flex flex-wrap gap-4">
             {formData.images.map((image, index) => (
               <img
                 key={index}
                 src={image}
                 alt={`selected-image-${index}`}
-                className="w-20 h-20 object-cover rounded-md"
+                className="w-24 h-24 object-cover rounded-lg shadow-md border-2 border-white"
               />
             ))}
           </div>
         </div>
 
-        <div className="space-y-2">
-          <label className="block text-sm font-semibold text-gray-700">
-            Tình trạng
-          </label>
-          <select
-            name="condition"
-            value={formData.condition}
-            onChange={handleChange}
-            className="select select-bordered w-full p-3 rounded-md"
-          >
-            <option value="used">Đã qua sử dụng</option>
-            <option value="new">Mới</option>
-          </select>
-        </div>
-
         {selectedCategory.customFields &&
           Object.keys(selectedCategory.customFields).length > 0 && (
-            <div className="space-y-4">
-              <h3 className="text-md font-semibold text-gray-800">
-                Thông tin bổ sung
-              </h3>
+            <div className="space-y-6">
+              <h3 className="text-xl font-semibold">Thông tin bổ sung</h3>
               {Object.entries(selectedCategory.customFields).map(
                 ([key, field]) => (
                   <div key={key} className="space-y-2">
-                    <label className="block text-sm font-semibold text-gray-700">
+                    <label className="block text-sm font-semibold">
                       {field.label}
                     </label>
                     <input
@@ -293,11 +223,8 @@ const PostShare = ({ onPostCreateSuccess }) => {
                       name={`custom_${field.name}`}
                       value={formData.customFields[field.name] || ""}
                       onChange={handleChange}
-                      placeholder={
-                        field.placeholder ||
-                        `Nhập ${field.label.toLowerCase()}...`
-                      }
-                      className="input input-bordered w-full p-3 rounded-md"
+                      placeholder={field.placeholder}
+                      className="w-full p-4 bg-white bg-opacity-20  rounded-lg shadow-inner focus:ring-2 focus:ring-purple-300 focus:bg-opacity-30 transition-all duration-300 placeholder-gray-300"
                     />
                   </div>
                 )
@@ -322,10 +249,10 @@ const PostShare = ({ onPostCreateSuccess }) => {
 
         <button
           type="submit"
-          className={`btn w-full p-3 rounded-md ${
+          className={`w-full p-4 rounded-lg font-bold text-lg transition-all ${
             isCreating
-              ? "btn-disabled loading"
-              : "btn-primary hover:bg-blue-600"
+              ? "bg-gray-400 cursor-not-allowed"
+              : "bg-blue-600 hover:bg-blue-700"
           }`}
           disabled={isCreating}
         >

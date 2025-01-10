@@ -99,7 +99,7 @@ function InPut({ isAuthorityLogin }) {
           <p className="text-base-content/60" style={{ fontSize: "12px" }}>
             Chưa có tài khoản?{" "}
             <Link
-              to="/sign-up"
+              to="/register"
               className="link link-primary"
               style={{ color: "blue" }}
             >

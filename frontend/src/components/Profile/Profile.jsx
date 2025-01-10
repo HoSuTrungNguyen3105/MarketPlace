@@ -1,10 +1,12 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useAuthStore } from "../../store/useAuthStore";
 import "./Profile.css";
+import { usePostStore } from "../../store/userPostStore";
 
 const Profile = () => {
   const { authUser } = useAuthStore();
   const { updateProfileInfo, isUpdatingProfile } = useAuthStore();
+  const { provinces, fetchProvinces, isLoading } = usePostStore();
 
   const [formData, setFormData] = useState({
     username: authUser?.username || "",
@@ -12,7 +14,7 @@ const Profile = () => {
     firstname: authUser?.firstname || "",
     lastname: authUser?.lastname || "",
     phone: authUser?.phone || "",
-    location: authUser?.location || "",
+    location: authUser?.location || { provinceId: "", city: "", address: "" },
     role: authUser?.role || "",
     profilePic: authUser?.profilePic || "",
     lastLogin: authUser?.lastLogin || "",
@@ -21,7 +23,9 @@ const Profile = () => {
   });
 
   const [isEditing, setIsEditing] = useState(false);
-
+  useEffect(() => {
+    fetchProvinces(); // Gọi API lấy danh sách tỉnh thành
+  }, [fetchProvinces]);
   // Định dạng ngày tháng
   const formatDate = (date) =>
     date ? new Date(date).toLocaleString("vi-VN") : "N/A";
@@ -131,14 +135,58 @@ const Profile = () => {
             />
           </div>
           <div className="Follow">
-            <label>Địa chỉ:</label>
-            <input
-              type="text"
-              name="location"
-              value={formData.location}
-              onChange={handleChange}
-              disabled={!isEditing}
-            />
+            <div className="Follow">
+              <label>Tỉnh/Thành phố:</label>
+              <select
+                name="location[provinceId]"
+                value={formData.location.provinceId}
+                onChange={handleChange}
+                disabled={!isEditing}
+              >
+                <option value="">Chọn tỉnh thành</option>
+                {!isLoading &&
+                  provinces.map((province) => (
+                    <option key={province.id} value={province.id}>
+                      {province.name}
+                    </option>
+                  ))}
+              </select>
+            </div>
+            {formData.location.provinceId && (
+              <div className="Follow">
+                <label>Quận/Huyện:</label>
+                <select
+                  name="location[city]"
+                  value={formData.location.city}
+                  onChange={handleChange}
+                  disabled={!isEditing}
+                >
+                  <option value="">Chọn quận/huyện</option>
+                  {!isLoading &&
+                    provinces
+                      .find(
+                        (province) =>
+                          province.id === formData.location.provinceId
+                      )
+                      ?.districts.map((district) => (
+                        <option key={district.id} value={district.name}>
+                          {district.name}
+                        </option>
+                      ))}
+                </select>
+              </div>
+            )}
+
+            <div className="Follow">
+              <label>Địa chỉ chi tiết:</label>
+              <input
+                type="text"
+                name="location[address]"
+                value={formData.location.address}
+                onChange={handleChange}
+                disabled={!isEditing}
+              />
+            </div>
           </div>
           <div className="Follow">
             <label>Quyền:</label>

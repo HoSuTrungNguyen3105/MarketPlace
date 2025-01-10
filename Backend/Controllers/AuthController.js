@@ -25,8 +25,16 @@ export const dataRoute = async (req, res) => {
   }
 };
 export const registerUser = async (req, res) => {
-  const { username, password, firstname, lastname, email, phone, role } =
-    req.body;
+  const {
+    username,
+    password,
+    firstname,
+    lastname,
+    email,
+    phone,
+    role,
+    location,
+  } = req.body;
 
   try {
     const existingUser = await UserModel.findOne({ email });
@@ -64,7 +72,8 @@ export const registerUser = async (req, res) => {
       email,
       firstname,
       lastname,
-      role, // Lưu vai trò vào cơ sở dữ liệu
+      role,
+      location, // Lưu vai trò vào cơ sở dữ liệu
       verificationCode,
       verificationCodeExpires,
     });
