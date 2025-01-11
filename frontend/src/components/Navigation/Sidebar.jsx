@@ -1,5 +1,5 @@
 import React from "react";
-import { Link, useLocation } from "react-router-dom"; // Import useLocation
+import { Link, useLocation } from "react-router-dom";
 import {
   EggFried,
   FileArchiveIcon,
@@ -13,59 +13,60 @@ const Sidebar = () => {
   const currentPath = location.pathname;
 
   return (
-    <div className="sticky top-0 left-0 z-[99] h-full w-64 bg-white shadow-lg m-4">
-      {" "}
-      {/* Thêm margin xung quanh */}
+    <div className="sticky top-0 left-0 z-[99] h-full w-64 bg-white shadow-md rounded-lg m-4">
       <div className="p-4 overflow-y-auto h-full">
         <nav>
           <ul>
             <li>
               <Link
                 to="/post"
-                className={`flex items-center p-2 rounded-lg ${
-                  currentPath === "/post" ? "bg-gray-200 font-bold" : ""
+                className={`flex items-center p-3 rounded-lg mb-2 transition-all duration-300 ${
+                  currentPath === "/post"
+                    ? "bg-blue-500 text-white font-semibold"
+                    : "text-gray-700 hover:bg-gray-200"
                 }`}
               >
-                <MdPostAdd className="mr-2" />
-                <span>New Feed</span>
+                <MdPostAdd className="mr-3 text-xl" />
+                <span className="text-lg">New Feed</span>
               </Link>
             </li>
             <li>
               <Link
                 to="/profile"
-                className={`flex items-center p-2 rounded-lg ${
-                  currentPath === "/profile" ? "bg-gray-200 font-bold" : ""
+                className={`flex items-center p-3 rounded-lg mb-2 transition-all duration-300 ${
+                  currentPath === "/profile"
+                    ? "bg-blue-500 text-white font-semibold"
+                    : "text-gray-700 hover:bg-gray-200"
                 }`}
               >
-                <FileArchiveIcon className="mr-2" />
-                <span>Profile</span>
+                <FileArchiveIcon className="mr-3 text-xl" />
+                <span className="text-lg">Profile</span>
               </Link>
             </li>
             <li>
               <Link
                 to="/reset-password/:token"
-                className={`flex items-center p-2 rounded-lg ${
+                className={`flex items-center p-3 rounded-lg mb-2 transition-all duration-300 ${
                   currentPath === "/reset-password"
-                    ? "bg-gray-200 font-bold"
-                    : ""
+                    ? "bg-blue-500 text-white font-semibold"
+                    : "text-gray-700 hover:bg-gray-200"
                 }`}
               >
-                <MdResetTv className="mr-2" />
-                <span>Reset</span>
+                <MdResetTv className="mr-3 text-xl" />
+                <span className="text-lg">Reset</span>
               </Link>
             </li>
           </ul>
+
           <div className="mt-6 border-t pt-3">
             <ul>
               <li>
                 <Link
-                  to="/message/:id"
-                  className={`flex items-center p-2 rounded-lg ${
-                    currentPath === "/settings" ? "bg-gray-200 font-bold" : ""
-                  }`}
+                  to="/settings"
+                  className="flex items-center p-3 rounded-lg mb-2 transition-all duration-300 text-gray-700 hover:bg-gray-200"
                 >
-                  <Settings2Icon className="mr-2" />
-                  <span>Settings</span>
+                  <Settings2Icon className="mr-3 text-xl" />
+                  <span className="text-lg">Settings</span>
                 </Link>
               </li>
             </ul>

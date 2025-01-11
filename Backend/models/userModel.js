@@ -1,4 +1,21 @@
 import mongoose from "mongoose";
+const locationSchema = new mongoose.Schema(
+  {
+    provinceId: {
+      type: Number, // ID của tỉnh/thành phố
+      required: true,
+    },
+    city: {
+      type: Number, // Tên thành phố/quận
+      required: true,
+    },
+    address: {
+      type: String, // Địa chỉ chi tiết (số nhà, tên đường)
+      required: false,
+    },
+  },
+  { _id: false }
+); // Đảm bảo không tạo ra _id cho location con
 
 const userSchema = mongoose.Schema(
   {
@@ -30,22 +47,9 @@ const userSchema = mongoose.Schema(
       type: Number,
     },
     location: {
-      type: Object,
-      properties: {
-        provinceId: {
-          type: Number, // ID của tỉnh/thành phố
-          required: true,
-        },
-        city: {
-          type: String, // Tên thành phố/quận
-          required: true,
-        },
-        address: {
-          type: String, // Địa chỉ chi tiết (số nhà, tên đường)
-        },
-      },
+      type: locationSchema, // Chỉ định schema con cho location
+      required: false,
     },
-
     role: {
       type: String,
       enum: ["buyer", "seller", "admin"], // Phân quyền người dùng

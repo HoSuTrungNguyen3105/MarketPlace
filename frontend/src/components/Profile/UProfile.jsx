@@ -49,7 +49,7 @@ const UProfile = () => {
                 {userData?.username || "TOTO MOBILE"}
               </h1>
               <p className="text-lg text-gray-600">
-                {userData?.location.address || "Địa chỉ không khả dụng"}
+                {/* {userData?.location.city || "Địa chỉ không khả dụng"} */}
               </p>
               <p className="text-sm text-gray-600">Email: {userData?.email}</p>
               <p className="text-sm text-gray-600">

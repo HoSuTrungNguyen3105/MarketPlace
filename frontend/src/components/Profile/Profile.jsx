@@ -14,7 +14,7 @@ const Profile = () => {
     firstname: authUser?.firstname || "",
     lastname: authUser?.lastname || "",
     phone: authUser?.phone || "",
-    location: authUser?.location || { provinceId: "", city: "", address: "" },
+    location: authUser?.location || { provinceId: "", cityId: "", address: "" },
     role: authUser?.role || "",
     profilePic: authUser?.profilePic || "",
     lastLogin: authUser?.lastLogin || "",
@@ -23,23 +23,53 @@ const Profile = () => {
   });
 
   const [isEditing, setIsEditing] = useState(false);
+
   useEffect(() => {
-    fetchProvinces(); // Gọi API lấy danh sách tỉnh thành
+    fetchProvinces();
   }, [fetchProvinces]);
-  // Định dạng ngày tháng
+
   const formatDate = (date) =>
     date ? new Date(date).toLocaleString("vi-VN") : "N/A";
 
   const handleChange = (e) => {
-    const { name, value, type, checked } = e.target;
-    setFormData({
-      ...formData,
-      [name]: type === "checkbox" ? checked : value,
-    });
+    const { name, value } = e.target;
+
+    if (name.startsWith("location[")) {
+      const key = name.slice(9, -1); // Extract key from location[property]
+      setFormData((prev) => ({
+        ...prev,
+        location: {
+          ...prev.location,
+          [key]: value,
+        },
+      }));
+    } else {
+      setFormData({
+        ...formData,
+        [name]: value,
+      });
+    }
   };
+
+  const selectedProvince = provinces.find(
+    (province) => province.id === Number(formData.location.provinceId)
+  );
+  useEffect(() => {
+    if (selectedProvince && selectedProvince.districts.length > 0) {
+      setFormData((prev) => ({
+        ...prev,
+        location: {
+          ...prev.location,
+          cityId: selectedProvince.districts[0].id, // Chọn quận/huyện đầu tiên mặc định
+        },
+      }));
+    }
+  }, [formData.location.provinceId, selectedProvince]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    console.log(formData);
+
     try {
       await updateProfileInfo(formData);
       setIsEditing(false);
@@ -47,7 +77,6 @@ const Profile = () => {
       console.error("Lỗi khi cập nhật thông tin:", error);
     }
   };
-
   return (
     <div className="ProfileCard">
       <div className="ProfileImg">
@@ -64,40 +93,6 @@ const Profile = () => {
           </div>
           <p className="text-sm text-zinc-400">{formData.email}</p>
         </div>
-      </div>
-
-      <div className="ProfileName">
-        <div className="user-info flex items-center space-x-2">
-          <span>@{formData.username}</span>
-          <div className="verified-status flex items-center space-x-1">
-            {formData.isVerified && (
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                viewBox="0 0 24 24"
-                fill="currentColor"
-                className="w-5 h-5 text-green-500"
-              >
-                <path
-                  fillRule="evenodd"
-                  d="M2.25 12c0-5.385 4.365-9.75 9.75-9.75s9.75 4.365 9.75 9.75-4.365 9.75-9.75 9.75S2.25 17.385 2.25 12zm13.36-1.814a.75.75 0 10-1.22-.872l-3.236 4.53L9.53 12.22a.75.75 0 00-1.06 1.06l2.25 2.25a.75.75 0 001.14-.094l3.75-5.25z"
-                  clipRule="evenodd"
-                />
-              </svg>
-            )}
-            <span
-              className={`text-sm ${
-                formData.isVerified
-                  ? "text-green-500 font-medium"
-                  : "text-gray-500"
-              }`}
-            >
-              {formData.isVerified ? "Đã xác minh" : "Chưa xác minh"}
-            </span>
-          </div>
-        </div>
-        {formData.role === "admin" && (
-          <p className="text-red-900 font-extrabold mt-2">Admin</p>
-        )}
       </div>
 
       <div className="ProfileDetails">
@@ -135,58 +130,50 @@ const Profile = () => {
             />
           </div>
           <div className="Follow">
+            <label>Tỉnh/Thành phố:</label>
+            <select
+              name="location[provinceId]"
+              value={formData.location.provinceId}
+              onChange={handleChange}
+              disabled={!isEditing}
+            >
+              <option value="">Chọn tỉnh thành</option>
+              {!isLoading &&
+                provinces.map((province) => (
+                  <option key={province.id} value={province.id}>
+                    {province.name}
+                  </option>
+                ))}
+            </select>
+          </div>
+          {selectedProvince && (
             <div className="Follow">
-              <label>Tỉnh/Thành phố:</label>
+              <label>Quận/Huyện:</label>
               <select
-                name="location[provinceId]"
-                value={formData.location.provinceId}
+                name="location[city]"
+                value={formData.location.city}
                 onChange={handleChange}
                 disabled={!isEditing}
               >
-                <option value="">Chọn tỉnh thành</option>
-                {!isLoading &&
-                  provinces.map((province) => (
-                    <option key={province.id} value={province.id}>
-                      {province.name}
-                    </option>
-                  ))}
+                <option value="">Chọn quận/huyện</option>
+
+                {selectedProvince.districts.map((district) => (
+                  <option key={district.id} value={district.id}>
+                    {district.name}
+                  </option>
+                ))}
               </select>
             </div>
-            {formData.location.provinceId && (
-              <div className="Follow">
-                <label>Quận/Huyện:</label>
-                <select
-                  name="location[city]"
-                  value={formData.location.city}
-                  onChange={handleChange}
-                  disabled={!isEditing}
-                >
-                  <option value="">Chọn quận/huyện</option>
-                  {!isLoading &&
-                    provinces
-                      .find(
-                        (province) =>
-                          province.id === formData.location.provinceId
-                      )
-                      ?.districts.map((district) => (
-                        <option key={district.id} value={district.name}>
-                          {district.name}
-                        </option>
-                      ))}
-                </select>
-              </div>
-            )}
-
-            <div className="Follow">
-              <label>Địa chỉ chi tiết:</label>
-              <input
-                type="text"
-                name="location[address]"
-                value={formData.location.address}
-                onChange={handleChange}
-                disabled={!isEditing}
-              />
-            </div>
+          )}
+          <div className="Follow">
+            <label>Địa chỉ chi tiết:</label>
+            <input
+              type="text"
+              name="location[address]"
+              value={formData.location.address}
+              onChange={handleChange}
+              disabled={!isEditing}
+            />
           </div>
           <div className="Follow">
             <label>Quyền:</label>

@@ -1,7 +1,7 @@
 import PostModel from "../models/postModel.js";
 import UserModel from "../models/userModel.js";
 import cloudinary from "../lib/cloudinary.js"; // Đảm bảo đã cấu hình Cloudinary
-import fs from "fs";
+import MarkModel from "../models/markModel.js";
 
 export const createPost = async (req, res) => {
   try {
@@ -180,16 +180,16 @@ export const provinces = [
     id: 1,
     name: "Hà Nội",
     districts: [
-      { id: 1, name: "Ba Đình" },
-      { id: 2, name: "Hoàn Kiếm" },
-      { id: 3, name: "Tây Hồ" },
-      { id: 4, name: "Cầu Giấy" },
-      { id: 5, name: "Đống Đa" },
-      { id: 6, name: "Hà Đông" },
-      { id: 7, name: "Long Biên" },
-      { id: 8, name: "Nam Từ Liêm" },
-      { id: 9, name: "Bắc Từ Liêm" },
-      { id: 10, name: "Sơn Tây" },
+      { id: 101, name: "Ba Đình" },
+      { id: 102, name: "Hoàn Kiếm" },
+      { id: 103, name: "Tây Hồ" },
+      { id: 104, name: "Cầu Giấy" },
+      { id: 105, name: "Đống Đa" },
+      { id: 106, name: "Hà Đông" },
+      { id: 107, name: "Long Biên" },
+      { id: 108, name: "Nam Từ Liêm" },
+      { id: 109, name: "Bắc Từ Liêm" },
+      { id: 110, name: "Sơn Tây" },
       // ... Thêm các quận khác
     ],
   },
@@ -197,16 +197,15 @@ export const provinces = [
     id: 2,
     name: "Hồ Chí Minh",
     districts: [
-      { id: 1, name: "Quận 1" },
-      { id: 2, name: "Quận 2" },
-      { id: 3, name: "Quận 3" },
-      { id: 4, name: "Quận 4" },
-      { id: 5, name: "Quận 5" },
-      { id: 6, name: "Quận 6" },
-      { id: 7, name: "Quận 7" },
-      { id: 8, name: "Quận 8" },
-      { id: 9, name: "Quận 9" },
-      { id: 10, name: "Quận 10" },
+      { id: 201, name: "Quận 1" },
+      { id: 202, name: "Quận 2" },
+      { id: 203, name: "Quận 3" },
+      { id: 204, name: "Quận 4" },
+      { id: 205, name: "Quận 5" },
+      { id: 206, name: "Quận 6" },
+      { id: 207, name: "Quận 7" },
+      { id: 208, name: "Quận 8" },
+      { id: 209, name: "Quận 9" },
       // ... Thêm các quận khác
     ],
   },
@@ -214,12 +213,12 @@ export const provinces = [
     id: 3,
     name: "Đà Nẵng",
     districts: [
-      { id: 1, name: "Hải Châu" },
-      { id: 2, name: "Thanh Khê" },
-      { id: 3, name: "Sơn Trà" },
-      { id: 4, name: "Ngũ Hành Sơn" },
-      { id: 5, name: "Liên Chiểu" },
-      { id: 6, name: "Khuê Trung" },
+      { id: 301, name: "Hải Châu" },
+      { id: 302, name: "Thanh Khê" },
+      { id: 303, name: "Sơn Trà" },
+      { id: 304, name: "Ngũ Hành Sơn" },
+      { id: 305, name: "Liên Chiểu" },
+      { id: 306, name: "Khuê Trung" },
 
       // ... Thêm các quận khác
     ],
@@ -228,11 +227,11 @@ export const provinces = [
     id: 4,
     name: "Cần Thơ",
     districts: [
-      { id: 1, name: "Ninh Kiều" },
-      { id: 2, name: "Cái Răng" },
-      { id: 3, name: "Bình Thủy" },
-      { id: 4, name: "Ô Môn" },
-      { id: 5, name: "Thốt Nốt" },
+      { id: 401, name: "Ninh Kiều" },
+      { id: 402, name: "Cái Răng" },
+      { id: 403, name: "Bình Thủy" },
+      { id: 404, name: "Ô Môn" },
+      { id: 405, name: "Thốt Nốt" },
       // ... Thêm các quận khác
     ],
   },
@@ -374,5 +373,75 @@ export const delete1UserPost = async (req, res) => {
     res.status(200).json({ message: "Post deleted successfully" });
   } catch (error) {
     res.status(500).json({ message: "Failed to delete post", error });
+  }
+};
+
+export const addBookmark = async (req, res) => {
+  const { postId, userId } = req.body;
+
+  try {
+    // Kiểm tra xem bài viết và người dùng có hợp lệ không
+    const post = await PostModel.findById(postId);
+    const user = await UserModel.findById(userId);
+
+    if (!post || !user) {
+      return res
+        .status(404)
+        .json({ message: "Bài viết hoặc người dùng không tồn tại" });
+    }
+
+    // Kiểm tra xem bài viết đã được đánh dấu trước đó chưa
+    const existingBookmark = await MarkModel.findOne({ postId, userId });
+    if (existingBookmark) {
+      return res
+        .status(400)
+        .json({ message: "Bài viết đã được đánh dấu trước đó" });
+    }
+
+    // Lưu bài viết vào danh sách đánh dấu
+    const newBookmark = new MarkModel({ postId, userId });
+    await newBookmark.save();
+
+    res.status(201).json({ message: "Đánh dấu thành công" });
+  } catch (error) {
+    res.status(500).json({ message: "Lỗi hệ thống", error });
+  }
+};
+
+export const deleteMark = async (req, res) => {
+  const { postId } = req.params;
+  const { userId } = req.body;
+
+  try {
+    // Kiểm tra xem bài viết có trong danh sách đánh dấu của người dùng không
+    const bookmark = await MarkModel.findOne({ postId, userId });
+    if (!bookmark) {
+      return res
+        .status(404)
+        .json({ message: "Bài viết không có trong danh sách đánh dấu" });
+    }
+
+    // Xóa bài viết khỏi danh sách đánh dấu
+    await bookmark.remove();
+    res.status(200).json({ message: "Đã xóa khỏi danh sách đánh dấu" });
+  } catch (error) {
+    res.status(500).json({ message: "Lỗi hệ thống", error });
+  }
+};
+
+export const checkBookmarkStatus = async (req, res) => {
+  const { postId } = req.params;
+  const { userId } = req.query;
+
+  try {
+    // Kiểm tra bài viết có trong danh sách đánh dấu của người dùng không
+    const bookmark = await MarkModel.findOne({ postId, userId });
+    if (bookmark) {
+      return res.status(200).json({ isBookmarked: true });
+    }
+
+    res.status(200).json({ isBookmarked: false });
+  } catch (error) {
+    res.status(500).json({ message: "Lỗi hệ thống", error });
   }
 };

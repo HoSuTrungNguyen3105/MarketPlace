@@ -1,7 +1,10 @@
 import express from "express";
 import {
+  addBookmark,
+  checkBookmarkStatus,
   createPost,
   delete1UserPost,
+  deleteMark,
   getAllPosts,
   getCategories,
   getPost,
@@ -27,4 +30,7 @@ router.get("/user/:id", getPostToProfile); // Để lấy một bài viết theo
 router.get("/provinces", (req, res) => {
   res.json(provinces); // Trả về dữ liệu tỉnh thành
 });
+router.post("/bookmark", addBookmark); // Gọi hàm createTransaction
+router.delete("/bookmark/:postId", deleteMark); // Gọi hàm deleteTransaction
+router.get("/bookmark/:postId", checkBookmarkStatus);
 export default router;

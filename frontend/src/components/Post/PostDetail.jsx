@@ -20,6 +20,7 @@ import {
 import "./Detail.css";
 import { useMessageStore } from "../../store/useMessageStore";
 import { useUserStore } from "../../store/useUserStore";
+import useBookmarkStore from "../../store/useBookmarkStore";
 
 const PostDetail = () => {
   const { id } = useParams();
@@ -50,7 +51,36 @@ const PostDetail = () => {
       },
     });
   };
+  const {
+    bookmarks,
+    addBookmark,
+    removeBookmark,
+    checkBookmarkStatus,
+    isBookmarking,
+  } = useBookmarkStore();
+  const isBookmarked = bookmarks.includes(id);
 
+  useEffect(() => {
+    const checkStatus = async () => {
+      const status = await checkBookmarkStatus(id, userId);
+      if (status) {
+        addBookmark(id, userId);
+      }
+    };
+    checkStatus();
+  }, [id, userId, addBookmark, checkBookmarkStatus]);
+
+  const handleAddBookmark = () => {
+    if (!isBookmarked) {
+      addBookmark(id, userId);
+    }
+  };
+
+  const handleRemoveBookmark = () => {
+    if (isBookmarked) {
+      removeBookmark(id, userId);
+    }
+  };
   useEffect(() => {
     if (id) {
       getPostById(id);
@@ -60,7 +90,10 @@ const PostDetail = () => {
   useEffect(() => {
     const checkFollowStatus = async () => {
       if (authUser && post && post.userId) {
-        const status = await fetchFollowingStatus(authUser._id, post.userId);
+        const status = await fetchFollowingStatus(
+          authUser._id,
+          post.userId._id
+        );
         setIsUserFollowing(status);
       }
     };
@@ -240,6 +273,19 @@ const PostDetail = () => {
             >
               {post.isAvailable ? "Còn hàng" : "Đã bán"}
             </div>
+          </div>
+          <div>
+            {isBookmarking ? (
+              <button disabled>Đang xử lý...</button>
+            ) : isBookmarked ? (
+              <button onClick={handleRemoveBookmark}>
+                Xóa khỏi danh sách đánh dấu
+              </button>
+            ) : (
+              <button onClick={handleAddBookmark}>
+                Thêm vào danh sách đánh dấu
+              </button>
+            )}
           </div>
           <div className="mb-6">
             <h3 className="font-semibold mb-2">Trạng thái kiểm duyệt:</h3>

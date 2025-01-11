@@ -46,19 +46,29 @@ export const useUserStore = create((set, get) => ({
     if (get().following[targetUserId] !== undefined) {
       return get().following[targetUserId];
     }
+
+    // Kiểm tra xem có thiếu parameter nào không
     if (!currentUserId || !targetUserId) {
       console.error("Missing parameters: currentUserId or targetUserId");
       return;
     }
+
     try {
+      // Kiểm tra lại giá trị của targetUserId và currentUserId trước khi gọi API
+      console.log("currentUserId:", currentUserId);
+      console.log("targetUserId:", targetUserId);
+      // Gửi yêu cầu GET với query parameters
       const res = await axiosInstance.get(
-        `/user/${targetUserId}/is-following`,
+        `/user/${targetUserId}/is-following`, // Chú ý thêm '/api'
         {
-          params: { currentUserId: currentUserId }, // Đảm bảo `currentUserId` được truyền
+          params: { currentUserId: currentUserId }, // Đảm bảo 'currentUserId' được truyền đúng
         }
       );
 
-      const isFollowing = res.data.isFollowing; // API trả về trạng thái
+      // Lấy dữ liệu từ response
+      const isFollowing = res.data.isFollowing;
+
+      // Cập nhật state với thông tin follow
       set((state) => ({
         following: { ...state.following, [targetUserId]: isFollowing },
       }));
@@ -66,9 +76,10 @@ export const useUserStore = create((set, get) => ({
       return isFollowing;
     } catch (error) {
       console.error("Failed to fetch follow status:", error);
-      return false; // Nếu lỗi, mặc định là không theo dõi
+      return false; // Mặc định là không theo dõi khi có lỗi
     }
   },
+
   setFollowing: (targetUserId, isFollowing) => {
     set((state) => ({
       following: { ...state.following, [targetUserId]: isFollowing },
