@@ -1,12 +1,11 @@
 import React from "react";
 import { Link, useLocation } from "react-router-dom";
 import {
-  EggFried,
-  FileArchiveIcon,
-  FileEdit,
-  Settings2Icon,
-} from "lucide-react";
-import { MdPostAdd, MdResetTv } from "react-icons/md";
+  FcBusinessman,
+  FcDataConfiguration,
+  FcDataBackup,
+} from "react-icons/fc";
+import { TbHttpPost } from "react-icons/tb";
 
 const Sidebar = () => {
   const location = useLocation(); // Lấy đường dẫn hiện tại
@@ -26,8 +25,8 @@ const Sidebar = () => {
                     : "text-gray-700 hover:bg-gray-200"
                 }`}
               >
-                <MdPostAdd className="mr-3 text-xl" />
-                <span className="text-lg">New Feed</span>
+                <TbHttpPost className="mr-3 text-xl" />
+                <span className="text-lg">Posts</span>
               </Link>
             </li>
             <li>
@@ -39,7 +38,7 @@ const Sidebar = () => {
                     : "text-gray-700 hover:bg-gray-200"
                 }`}
               >
-                <FileArchiveIcon className="mr-3 text-xl" />
+                <FcBusinessman className="mr-3 text-xl" />
                 <span className="text-lg">Profile</span>
               </Link>
             </li>
@@ -52,7 +51,7 @@ const Sidebar = () => {
                     : "text-gray-700 hover:bg-gray-200"
                 }`}
               >
-                <MdResetTv className="mr-3 text-xl" />
+                <FcDataBackup className="mr-3 text-xl" />
                 <span className="text-lg">Reset</span>
               </Link>
             </li>
@@ -65,7 +64,7 @@ const Sidebar = () => {
                   to="/settings"
                   className="flex items-center p-3 rounded-lg mb-2 transition-all duration-300 text-gray-700 hover:bg-gray-200"
                 >
-                  <Settings2Icon className="mr-3 text-xl" />
+                  <FcDataConfiguration className="mr-3 text-xl" />
                   <span className="text-lg">Settings</span>
                 </Link>
               </li>

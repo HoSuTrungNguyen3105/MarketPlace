@@ -6,6 +6,7 @@ import {
   delete1UserPost,
   deleteMark,
   getAllPosts,
+  getBookmarks,
   getCategories,
   getPost,
   getPostbyid,
@@ -30,7 +31,8 @@ router.get("/user/:id", getPostToProfile); // Để lấy một bài viết theo
 router.get("/provinces", (req, res) => {
   res.json(provinces); // Trả về dữ liệu tỉnh thành
 });
-router.post("/bookmark", addBookmark); // Gọi hàm createTransaction
-router.delete("/bookmark/:postId", deleteMark); // Gọi hàm deleteTransaction
-router.get("/bookmark/:postId", checkBookmarkStatus);
+router.post("/bookmark", protectRoute, addBookmark); // Gọi hàm createTransaction
+router.delete("/bookmark/:postId", protectRoute, deleteMark); // Gọi hàm deleteTransaction
+router.get("/:postId/bookmarks/:userId", protectRoute, getBookmarks);
+router.get("/bookmark/:postId", protectRoute, checkBookmarkStatus);
 export default router;

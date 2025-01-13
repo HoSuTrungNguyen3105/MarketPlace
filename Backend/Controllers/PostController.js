@@ -2,6 +2,7 @@ import PostModel from "../models/postModel.js";
 import UserModel from "../models/userModel.js";
 import cloudinary from "../lib/cloudinary.js"; // Đảm bảo đã cấu hình Cloudinary
 import MarkModel from "../models/markModel.js";
+import mongoose from "mongoose";
 
 export const createPost = async (req, res) => {
   try {
@@ -377,7 +378,8 @@ export const delete1UserPost = async (req, res) => {
 };
 
 export const addBookmark = async (req, res) => {
-  const { postId, userId } = req.body;
+  const { postId } = req.body;
+  const userId = req.user?.id; // Đảm bảo middleware thêm thông tin user vào req
 
   try {
     // Kiểm tra xem bài viết và người dùng có hợp lệ không
@@ -407,7 +409,6 @@ export const addBookmark = async (req, res) => {
     res.status(500).json({ message: "Lỗi hệ thống", error });
   }
 };
-
 export const deleteMark = async (req, res) => {
   const { postId } = req.params;
   const { userId } = req.body;
@@ -426,6 +427,37 @@ export const deleteMark = async (req, res) => {
     res.status(200).json({ message: "Đã xóa khỏi danh sách đánh dấu" });
   } catch (error) {
     res.status(500).json({ message: "Lỗi hệ thống", error });
+  }
+};
+export const getBookmarks = async (req, res) => {
+  const { userId, postId } = req.params; // Extract both userId and postId from the request params
+
+  // Validate userId
+  if (!userId || !mongoose.Types.ObjectId.isValid(userId)) {
+    return res
+      .status(400)
+      .json({ success: false, message: "Invalid or missing userId" });
+  }
+
+  // Validate postId if needed (optional)
+  if (!postId || !mongoose.Types.ObjectId.isValid(postId)) {
+    return res
+      .status(400)
+      .json({ success: false, message: "Invalid or missing postId" });
+  }
+
+  try {
+    // Lấy danh sách các bài viết đã bookmark bởi userId và postId
+    const bookmarks = await MarkModel.find({ userId, postId }).populate(
+      "postId"
+    );
+
+    res.status(200).json({ success: true, bookmarks });
+  } catch (error) {
+    console.error(error);
+    res
+      .status(500)
+      .json({ success: false, message: "Lỗi khi lấy danh sách bookmark" });
   }
 };
 

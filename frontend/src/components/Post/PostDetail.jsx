@@ -36,7 +36,6 @@ const PostDetail = () => {
   const { getPostById, post, isLoading } = usePostStore();
   const { authUser } = useAuthStore();
   const isAuthUserPost = authUser?._id === post?.userId?._id;
-
   const [isUserFollowing, setIsUserFollowing] = useState(false);
   const [isFollowLoading, setIsFollowLoading] = useState(false);
 
@@ -62,14 +61,18 @@ const PostDetail = () => {
 
   useEffect(() => {
     const checkStatus = async () => {
-      const status = await checkBookmarkStatus(id, userId);
-      if (status) {
-        addBookmark(id, userId);
+      if (id && authUser._id) {
+        const status = await checkBookmarkStatus(id, authUser._id);
+        //console.log("Bookmark status:", status);
       }
     };
     checkStatus();
-  }, [id, userId, addBookmark, checkBookmarkStatus]);
+  }, [id, authUser._id, isBookmarked, addBookmark, checkBookmarkStatus]);
 
+  // useEffect(() => {
+  //   const { loadBookmarks } = useBookmarkStore.getState();
+  //   //loadBookmarks(userId); // Truyền `userId` của người dùng hiện tại
+  // }, [userId]);
   const handleAddBookmark = () => {
     if (!isBookmarked) {
       addBookmark(id, userId);
@@ -81,12 +84,19 @@ const PostDetail = () => {
       removeBookmark(id, userId);
     }
   };
+
   useEffect(() => {
     if (id) {
       getPostById(id);
     }
   }, [id, getPostById]);
-
+  const handleBookmark = () => {
+    if (isBookmarked) {
+      removeBookmark(id, userId);
+    } else {
+      addBookmark(id, userId);
+    }
+  };
   useEffect(() => {
     const checkFollowStatus = async () => {
       if (authUser && post && post.userId) {
@@ -164,10 +174,14 @@ const PostDetail = () => {
         <div className="relative">
           <div className="relative aspect-square">
             <img
-              src={post.images[currentImageIndex]}
+              src={
+                post.images[currentImageIndex] ||
+                "https://cdn-icons-png.freepik.com/256/15058/15058095.png?semt=ais_hybrid"
+              }
               alt="Product"
               className="w-full h-full object-contain rounded-lg"
             />
+
             <button
               onClick={handlePrevImage}
               className="absolute left-2 top-1/2 -translate-y-1/2 bg-white/80 rounded-full p-2"
@@ -271,21 +285,44 @@ const PostDetail = () => {
                   : "bg-red-100 text-red-800"
               }`}
             >
-              {post.isAvailable ? "Còn hàng" : "Đã bán"}
+              {post.isAvailable ? "Còn hạn" : "Hết hạn"}
             </div>
           </div>
           <div>
-            {isBookmarking ? (
-              <button disabled>Đang xử lý...</button>
-            ) : isBookmarked ? (
-              <button onClick={handleRemoveBookmark}>
-                Xóa khỏi danh sách đánh dấu
+            <div className="mb-6">
+              <button onClick={handleBookmark} className="font-semibold mb-2">
+                Trạng thái Bookmark:
               </button>
-            ) : (
-              <button onClick={handleAddBookmark}>
-                Thêm vào danh sách đánh dấu
-              </button>
-            )}
+              {isBookmarking ? (
+                <div className="inline-block px-3 py-1 bg-gray-100 text-gray-800 rounded-full">
+                  Đang xử lý...
+                </div>
+              ) : isBookmarked ? (
+                <div className="flex items-center gap-2">
+                  <span className="inline-block px-3 py-1 bg-green-100 text-green-800 rounded-full">
+                    Đã bookmark
+                  </span>
+                  <button
+                    onClick={handleRemoveBookmark}
+                    className="bg-red-500 text-white px-3 py-1 rounded hover:bg-red-600"
+                  >
+                    Xóa bookmark
+                  </button>
+                </div>
+              ) : (
+                <div className="flex items-center gap-2">
+                  <span className="inline-block px-3 py-1 bg-gray-100 text-gray-800 rounded-full">
+                    Chưa bookmark
+                  </span>
+                  <button
+                    onClick={handleAddBookmark}
+                    className="bg-blue-500 text-white px-3 py-1 rounded hover:bg-blue-600"
+                  >
+                    Thêm bookmark
+                  </button>
+                </div>
+              )}
+            </div>
           </div>
           <div className="mb-6">
             <h3 className="font-semibold mb-2">Trạng thái kiểm duyệt:</h3>
@@ -400,7 +437,10 @@ const PostDetail = () => {
               </h2>
               <div className="grid grid-cols-2 gap-4">
                 {Object.entries(post.customFields).map(([key, value]) => (
-                  <div key={key} className="flex items-center gap-2">
+                  <div
+                    key={key}
+                    class="flex items-center space-x-3 bg-gray-50 p-3 rounded-md"
+                  >
                     <span className="font-semibold"> {key}:</span>
                     <span>{value}</span>
                   </div>

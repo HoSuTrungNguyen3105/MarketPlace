@@ -106,7 +106,7 @@ export const registerUser = async (req, res) => {
 };
 
 export const loginUser = async (req, res) => {
-  const { email, password, isAuthorityLogin } = req.body;
+  const { email, password } = req.body;
   try {
     if (!email || !password) {
       return res.status(400).json({
@@ -159,6 +159,7 @@ export const loginUser = async (req, res) => {
     user.loginAttempts = 0;
     user.isBlocked = false;
     user.blockExpires = null;
+    user.lastLogin = Date.now();
     await user.save();
 
     // Tạo token đăng nhập và trả về thông tin người dùng

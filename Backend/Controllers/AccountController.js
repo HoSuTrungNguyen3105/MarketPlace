@@ -179,23 +179,14 @@ export const updateProfile = async (req, res) => {
     res.status(500).json({ message: "Internal server error" });
   }
 };
-// Cập nhật thông tin người dùng
+
+// Cập nhật thông tin người dùng (không bao gồm role)
 export const updateUserInfo = async (req, res) => {
   try {
-    // Lấy thông tin từ body request
-    const {
-      username,
-      firstname,
-      lastname,
-      email,
-      phone,
-      location,
-      role,
-      isVerified,
-    } = req.body;
+    const { username, firstname, lastname, email, phone, location } = req.body;
 
     const userId = req.user._id;
-    // Kiểm tra nếu trường location được gửi lên
+
     const locationUpdate = location
       ? {
           provinceId: location.provinceId,
@@ -203,26 +194,109 @@ export const updateUserInfo = async (req, res) => {
           address: location.address,
         }
       : {};
-    // Cập nhật thông tin người dùng
-    const updatedUser = await UserModel.findByIdAndUpdate(
-      userId,
-      {
-        username,
-        firstname,
-        lastname,
-        email,
-        phone,
-        location: locationUpdate, // Cập nhật location
-        role,
-        isVerified,
-      },
-      { new: true }
-    );
 
-    res.status(200).json(updatedUser); // Trả về thông tin người dùng đã được cập nhật
+    const updateData = {
+      username,
+      firstname,
+      lastname,
+      email,
+      phone,
+      location: locationUpdate,
+    };
+
+    const updatedUser = await UserModel.findByIdAndUpdate(userId, updateData, {
+      new: true,
+    });
+
+    res.status(200).json(updatedUser);
   } catch (error) {
-    console.log("error in update user info:", error);
-    res.status(500).json({ message: "Internal server error" }); // Trả về lỗi nếu có
+    console.error("Lỗi trong quá trình cập nhật thông tin người dùng:", error);
+    res.status(500).json({ message: "Lỗi server nội bộ" });
+  }
+};
+
+// Yêu cầu thay đổi role (dành cho buyer)
+export const requestRoleChange = async (req, res) => {
+  try {
+    const { requestedRole } = req.body;
+    const userId = req.user._id;
+
+    if (req.user.role !== "buyer") {
+      return res
+        .status(403)
+        .json({ message: "Chỉ buyer mới có thể yêu cầu thay đổi role" });
+    }
+
+    const newRequest = new UserModel({
+      userId,
+      currentRole: req.user.role,
+      requestedRole,
+      status: "pending",
+    });
+
+    await newRequest.save();
+
+    res
+      .status(200)
+      .json({
+        message: "Yêu cầu thay đổi role đã được gửi và đang chờ admin duyệt",
+      });
+  } catch (error) {
+    console.error("Lỗi trong quá trình yêu cầu thay đổi role:", error);
+    res.status(500).json({ message: "Lỗi server nội bộ" });
+  }
+};
+
+// Admin duyệt yêu cầu thay đổi role
+export const approveRoleChange = async (req, res) => {
+  try {
+    const { requestId, approved } = req.body;
+
+    if (req.user.role !== "admin") {
+      return res
+        .status(403)
+        .json({
+          message: "Chỉ admin mới có quyền duyệt yêu cầu thay đổi role",
+        });
+    }
+
+    const request = await UserModel.findById(requestId);
+    if (!request) {
+      return res
+        .status(404)
+        .json({ message: "Không tìm thấy yêu cầu thay đổi role" });
+    }
+
+    if (approved) {
+      await UserModel.findByIdAndUpdate(request.userId, {
+        role: request.requestedRole,
+      });
+      request.status = "approved";
+    } else {
+      request.status = "rejected";
+    }
+
+    await request.save();
+
+    res
+      .status(200)
+      .json({
+        message: `Yêu cầu thay đổi role đã được ${
+          approved ? "chấp nhận" : "từ chối"
+        }`,
+      });
+  } catch (error) {
+    console.error("Lỗi trong quá trình duyệt yêu cầu thay đổi role:", error);
+    res.status(500).json({ message: "Lỗi server nội bộ" });
+  }
+};
+
+// Middleware kiểm tra quyền truy cập admin
+export const checkAdminAccess = (req, res, next) => {
+  if (req.user && req.user.role === "admin") {
+    next();
+  } else {
+    res.status(403).json({ message: "Không có quyền truy cập" });
   }
 };
 export const getUserById = async (req, res) => {

@@ -1,5 +1,4 @@
-import bcrypt from "bcryptjs";
-import PostModel from "../models/postModel";
+import UserModel from "../models/userModel";
 
 export const getAllUsers = async (req, res) => {
   try {
@@ -29,60 +28,6 @@ export const getAllSeller = async (req, res) => {
     res.status(500).json(error); // Trả về lỗi nếu có
   }
 };
-// API duyệt bài viết
-export const approvePost = async (req, res) => {
-  const { postId } = req.body; // ID bài viết cần duyệt
-
-  try {
-    // Kiểm tra xem người dùng có phải là admin không
-    const { userRole } = req.user; // Lấy role của người dùng từ token (admin hoặc user)
-
-    if (userRole !== "admin") {
-      return res
-        .status(403)
-        .json({ message: "You are not authorized to approve posts." });
-    }
-
-    // Tìm bài viết theo ID và cập nhật trường `isApproved` thành true
-    const post = await PostModel.findByIdAndUpdate(
-      postId,
-      { isApproved: true }, // Đặt isApproved = true khi duyệt
-      { new: true }
-    );
-
-    if (!post) {
-      return res.status(404).json({ message: "Post not found" });
-    }
-
-    res.status(200).json({
-      message: "Post approved successfully",
-      post,
-    });
-  } catch (error) {
-    console.error("Error approving post:", error);
-    res.status(500).json({ message: "Error approving post" });
-  }
-};
-
-// export const getApprovedPosts = async (req, res) => {
-//   try {
-//     const approvedPosts = await PostModel.find({ isApproved: true }); // Chỉ lấy bài đã được duyệt
-//     res.status(200).json(approvedPosts);
-//   } catch (error) {
-//     console.error("Error fetching approved posts:", error);
-//     res.status(500).json({ message: "Error fetching approved posts" });
-//   }
-// };
-
-// export const getPendingPosts = async (req, res) => {
-//   try {
-//     const pendingPosts = await PostModel.find({ isApproved: false }); // Lọc bài chưa được duyệt
-//     res.status(200).json(pendingPosts);
-//   } catch (error) {
-//     console.error("Error fetching pending posts:", error);
-//     res.status(500).json({ message: "Error fetching pending posts" });
-//   }
-// };
 
 export const getUserById = async (req, res) => {
   try {
@@ -101,36 +46,7 @@ export const getUserById = async (req, res) => {
     res.status(500).json({ message: "Lỗi máy chủ nội bộ." });
   }
 };
-export const dashboard = async (req, res) => {
-  try {
-    const totalUsers = await UserModel.countDocuments({ role: "user" });
-    const monthlyUsers = await UserModel.aggregate([
-      {
-        $group: {
-          _id: {
-            year: { $year: "$createdAt" },
-            month: { $month: "$createdAt" },
-          },
-          count: { $sum: 1 },
-        },
-      },
-    ]);
-    const totalIncidents = await PostModel.countDocuments();
-    const totalLostItems = await PostModel.countDocuments({ isLost: true });
-    const totalFoundItems = await PostModel.countDocuments({ isFound: true });
 
-    res.json({
-      totalUsers,
-      monthlyUsers,
-      totalIncidents,
-      totalLostItems,
-      totalFoundItems,
-    });
-  } catch (error) {
-    console.error("Error fetching reports:", error);
-    res.status(500).json({ message: "Failed to fetch report data" });
-  }
-};
 export const reportNoti = async (req, res) => {
   try {
     const posts = await PostModel.find({}, "reports"); // Chỉ lấy trường reports
@@ -151,16 +67,11 @@ export const reportNoti = async (req, res) => {
 export const getReportsByUser = async (req, res) => {
   try {
     const userId = req.params.userId;
-
-    // Find all posts of the user
     const posts = await PostModel.find({ userId: userId });
-
-    // Calculate the total number of reports
     let reportCount = 0;
     posts.forEach((post) => {
-      reportCount += post.reports.length; // reports is an array, so count its length
+      reportCount += post.reports.length;
     });
-
     return res.status(200).json({ reportCount });
   } catch (err) {
     console.error("Error fetching report count", err);
@@ -173,13 +84,10 @@ export const getReportsByUser = async (req, res) => {
 export const allchatUser = async (req, res) => {
   const { userId } = req.params;
   try {
-    // Tìm người dùng trong cơ sở dữ liệu
     const user = await messageModel.findById(userId);
-
     if (!user) {
       return res.status(404).json({ message: "User not found" });
     }
-
     // Kiểm tra quyền truy cập (Chỉ admin mới có thể block/unblock)
     if (req.user.role !== "admin") {
       return res

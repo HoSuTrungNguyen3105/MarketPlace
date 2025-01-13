@@ -2,13 +2,22 @@ import React from "react";
 import { FaUsers, FaNewspaper, FaCogs, FaPhoneSquareAlt } from "react-icons/fa";
 import { MessageCircleCode, MessageCircleMore, Settings } from "lucide-react";
 import { MdPostAdd, MdReportProblem } from "react-icons/md";
-import { Link, Outlet, useLocation } from "react-router-dom";
+import { Link } from "react-router-dom";
 import { useAuthStore } from "../../store/useAuthStore"; // Giả sử bạn sử dụng zustand hoặc một cách nào đó để lưu trữ thông tin người dùng.
 
+const SidebarItem = ({ to, icon, label }) => (
+  <li className="sidebar-item">
+    <Link to={to} className="sidebar-link">
+      <div className="sidebar-item-content">
+        <span className="sidebar-item-icon">{icon}</span>
+        <span className="sidebar-item-label">{label}</span>
+      </div>
+    </Link>
+  </li>
+);
+
 const AdminSidebar = () => {
-  const { authUser } = useAuthStore(); // Giả sử đây là nơi bạn lấy thông tin người dùng từ store
-  const location = useLocation();
-  const dashboardData = location.state?.dashboardData || "No data provided";
+  const { authUser } = useAuthStore(); // Lấy thông tin người dùng từ store
 
   // Mục sidebar dành cho admin
   const adminSidebarItems = [
@@ -17,11 +26,7 @@ const AdminSidebar = () => {
       icon: <FaPhoneSquareAlt />,
       label: "Quản lý Bài đăng",
     },
-    {
-      to: "/admin/users",
-      icon: <FaUsers />,
-      label: "Quản lý Người dùng",
-    },
+    { to: "/admin/users", icon: <FaUsers />, label: "Quản lý Người dùng" },
     {
       to: "/admin-dashboard/admin-adv",
       icon: <FaNewspaper />,
@@ -56,26 +61,10 @@ const AdminSidebar = () => {
 
   // Mục sidebar dành cho seller
   const sellerSidebarItems = [
-    {
-      to: "/seller/dashboard",
-      icon: <MdPostAdd />,
-      label: "Bảng điều khiển",
-    },
-    {
-      to: "/seller/products",
-      icon: <FaUsers />,
-      label: "Quản lý Sản phẩm",
-    },
-    {
-      to: "/seller/orders",
-      icon: <FaNewspaper />,
-      label: "Đơn hàng",
-    },
-    {
-      to: "/seller/settings",
-      icon: <Settings />,
-      label: "Cài đặt",
-    },
+    { to: "/seller/dashboard", icon: <MdPostAdd />, label: "Bảng điều khiển" },
+    { to: "/seller/products", icon: <FaUsers />, label: "Quản lý Sản phẩm" },
+    { to: "/seller/orders", icon: <FaNewspaper />, label: "Đơn hàng" },
+    { to: "/seller/settings", icon: <Settings />, label: "Cài đặt" },
   ];
 
   // Render sidebar items dựa trên role
@@ -84,23 +73,23 @@ const AdminSidebar = () => {
 
   return (
     <div className="admin-layout">
-      {/* Sidebar bên cạnh */}
+      {/* Sidebar */}
       <div className="admin-sidebar">
         <div className="sidebar-header">
-          <p>{dashboardData}</p>
+          <p>
+            {authUser?.role === "admin"
+              ? "Admin Dashboard"
+              : "Seller Dashboard"}
+          </p>
         </div>
         <ul className="sidebar-nav">
           {sidebarItems.map((item) => (
-            <li key={item.to} className="sidebar-item">
-              <Link to={item.to} className="sidebar-link">
-                <div style={{ display: "flex", alignItems: "center" }}>
-                  <span style={{ fontSize: "1.5rem", marginRight: "10px" }}>
-                    {item.icon}
-                  </span>
-                  <span style={{ marginLeft: "10px" }}>{item.label}</span>
-                </div>
-              </Link>
-            </li>
+            <SidebarItem
+              key={item.to}
+              to={item.to}
+              icon={item.icon}
+              label={item.label}
+            />
           ))}
         </ul>
       </div>

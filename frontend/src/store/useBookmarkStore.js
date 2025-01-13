@@ -18,7 +18,7 @@ const useBookmarkStore = create((set) => ({
       });
       if (response.data.message === "Đánh dấu thành công") {
         set((state) => ({
-          bookmarks: [...state.bookmarks, postId],
+          bookmarks: [...new Set([...state.bookmarks, postId])], // Đảm bảo không thêm trùng
           isBookmarking: false,
         }));
         toast.success("Đánh dấu thành công");
@@ -53,16 +53,38 @@ const useBookmarkStore = create((set) => ({
 
   // Kiểm tra trạng thái bookmark của bài viết
   checkBookmarkStatus: async (postId, userId) => {
-    set({ isBookmarking: true });
     try {
       const response = await axiosInstance.get(`/post/bookmark/${postId}`, {
         params: { userId },
       });
-      set({ isBookmarking: false });
-      return response.data.isBookmarked;
+      const isBookmarked = response.data.isBookmarked;
+
+      set((state) => ({
+        bookmarks: isBookmarked
+          ? [...state.bookmarks, postId]
+          : state.bookmarks.filter((id) => id !== postId),
+      }));
+
+      return isBookmarked;
     } catch (error) {
       const errorMessage = error.response?.data?.message || "Đã xảy ra lỗi";
-      set({ errorMessage, isBookmarking: false });
+      set({ errorMessage });
+      toast.error(errorMessage);
+      return false;
+    }
+  },
+
+  // Tải danh sách bookmark
+  loadBookmarks: async (postId, userId) => {
+    try {
+      const response = await axiosInstance.get(
+        `/post/${postId}/bookmarks/${userId}`
+      );
+      set({ bookmarks: response.data.bookmarks || [] });
+    } catch (error) {
+      const errorMessage =
+        error.response?.data?.message || "Đã xảy ra lỗi khi tải bookmark";
+      set({ errorMessage });
       toast.error(errorMessage);
     }
   },

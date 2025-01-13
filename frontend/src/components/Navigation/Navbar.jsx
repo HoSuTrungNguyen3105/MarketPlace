@@ -12,7 +12,6 @@ const Navbar = () => {
   const navigate = useNavigate();
   const searchText = location.search ? location.search.slice(3) : ""; // Lấy giá trị query từ URL
   const { logout, authUser } = useAuthStore();
-  const { createPost } = usePostStore();
 
   // Xử lý điều hướng đến trang tìm kiếm
   const redirectToSearchPage = () => navigate("/search");
@@ -32,13 +31,13 @@ const Navbar = () => {
   const handleRedirectByRole = () => {
     switch (authUser?.role) {
       case "admin":
-        navigate("/admin", { state: { dashboardData: "Admin Data" } });
+        navigate("/admin");
         break;
       case "seller":
-        navigate("/admin", { state: { dashboardData: "Seller Data" } });
+        navigate("/admin");
         break;
       default:
-        navigate("/", { state: { dashboardData: "Default Data" } });
+        navigate("/");
         break;
     }
   };

@@ -76,26 +76,31 @@ const Post = ({ data, currentUserId }) => {
   };
 
   return (
-    <div className="contain border rounded-lg p-5 mb-5 shadow-sm hover:shadow-lg transition-shadow duration-150">
-      {/* Hình ảnh bài đăng */}
-      {data.images && data.images.length > 0 && (
+    <div className="contain border border-gray-200 rounded-lg p-5 mb-5 shadow-sm hover:shadow-lg transition-shadow duration-150">
+      {Array.isArray(data.images) && data.images.length > 0 ? (
         <Link to={`/post/${data._id}?userId=${userId}`}>
           <img
             src={data.images[0]}
             alt="Hình ảnh bài đăng"
-            className="w-full h-48 object-cover rounded-lg mb-2"
+            className="w-full h-48 object-cover rounded-lg mb-4"
+          />
+        </Link>
+      ) : (
+        <Link to={`/post/${data._id}?userId=${userId}`}>
+          <img
+            src="https://cdn-icons-png.freepik.com/256/15058/15058095.png?semt=ais_hybrid"
+            alt="Hình ảnh mặc định"
+            className="w-full h-48 object-cover rounded-lg mb-4"
           />
         </Link>
       )}
-      <Link to={`/post/${data._id}?userId=${userId}`}>
-        <div>Chi tiết</div>
-      </Link>
-      {/* Thông tin bài đăng */}
+
+      {/* Tiêu đề và danh mục */}
       <div className="flex flex-col">
-        <h2 className="text-base font-bold mb-1 text-gray-800 truncate">
+        <h2 className="text-lg font-semibold text-gray-800 truncate mb-2">
           {data.title}
         </h2>
-        <p className="text-sm text-gray-600 mb-1 truncate">
+        <p className="text-sm text-gray-600 mb-2 truncate">
           {data.category} -{" "}
           {(() => {
             const description = (data.description || "").replace(
@@ -103,13 +108,13 @@ const Post = ({ data, currentUserId }) => {
               " "
             );
 
-            const words = description.split(" "); // Tách chuỗi thành các từ
+            const words = description.split(" ");
             if (words.length > 5) {
               return (
                 <>
                   {words.slice(0, 5).join(" ")}...{" "}
                   <span
-                    className="text-blue-500 cursor-pointer"
+                    className="text-blue-500 cursor-pointer hover:underline"
                     onClick={() => alert(description)}
                   >
                     Xem thêm
@@ -121,37 +126,44 @@ const Post = ({ data, currentUserId }) => {
             }
           })()}
         </p>
-
-        <p className="text-red-500 font-bold text-lg mb-1">{data.price} VND</p>
-        <p className="text-gray-500 text-xs">{formatTimeAgo(data.createdAt)}</p>
+        <p className="text-red-500 font-bold text-xl mb-3">
+          {data.price.toLocaleString()} VND
+        </p>
+        <p className="text-xs text-gray-500">{formatTimeAgo(data.createdAt)}</p>
       </div>
+
       {/* Nút tương tác */}
-      <div className="postReact">
+      <div className="flex items-center mt-4 space-x-4">
         {currentUserId && !isCurrentUserPost && (
-          <>
-            <button
-              className={`report-btn button btn-danger ${
-                isUserFollowing ? "unfollow" : "follow"
-              }`}
-              onClick={isUserFollowing ? handleUnfollow : handleFollow}
-              disabled={isLoading}
-            >
-              {isLoading
-                ? "Đang tải..."
-                : isUserFollowing
-                ? "Đã theo dõi"
-                : "Theo dõi"}
-            </button>
-          </>
+          <button
+            className={`px-4 py-2 rounded-md text-white ${
+              isUserFollowing
+                ? "bg-red-500 hover:bg-red-600"
+                : "bg-blue-500 hover:bg-blue-600"
+            }`}
+            onClick={isUserFollowing ? handleUnfollow : handleFollow}
+            disabled={isLoading}
+          >
+            {isLoading
+              ? "Đang tải..."
+              : isUserFollowing
+              ? "Đã theo dõi"
+              : "Theo dõi"}
+          </button>
         )}
         {isCurrentUserPost && (
-          <button className="delete-btn button btn-danger ml-2">Xóa bài</button>
+          <button className="px-4 py-2 bg-red-500 text-white rounded-md hover:bg-red-600">
+            Xóa bài
+          </button>
         )}
       </div>
+
       {/* Biểu tượng yêu thích và nút thêm */}
-      <div className="flex justify-between items-center mt-3">
-        <button className="p-1 rounded-full hover:bg-gray-100">❤️</button>
-        <div className="text-gray-500 cursor-pointer">
+      <div className="flex justify-between items-center mt-4">
+        <button className="p-2 rounded-full hover:bg-gray-100 transition-colors duration-150">
+          ❤️
+        </button>
+        <div className="text-gray-500 cursor-pointer hover:text-gray-700">
           <span>⋮</span>
         </div>
       </div>

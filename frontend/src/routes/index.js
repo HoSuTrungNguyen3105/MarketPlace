@@ -16,6 +16,8 @@ import PostDetail from "../components/Post/PostDetail.jsx";
 import UProfile from "../components/Profile/UProfile.jsx";
 import FullSizeChat from "../pages/Chat/FullSizeChat.jsx";
 import Transaction from "../components/Transaction/Transaction.jsx";
+import Post from "../components/Admin/Post.jsx";
+import User from "../components/Admin/User.jsx";
 
 // Tạo PrivateRoute cho các trang yêu cầu đăng nhập
 const PrivateRoute = ({ children }) => {
@@ -139,11 +141,11 @@ const router = createBrowserRouter([
     children: [
       {
         path: "posts",
-        element: <CategorySelection />,
+        element: <Post />,
       },
       {
         path: "users",
-        element: <CategorySelection />,
+        element: <User />,
       },
     ],
   },
