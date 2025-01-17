@@ -47,40 +47,6 @@ export const getUserById = async (req, res) => {
   }
 };
 
-export const reportNoti = async (req, res) => {
-  try {
-    const posts = await PostModel.find({}, "reports"); // Chỉ lấy trường reports
-    const notifications = posts
-      .map((post) =>
-        post.reports.map((report) => ({
-          reportedBy: report.reportedBy,
-          reportedAt: report.reportedAt,
-        }))
-      )
-      .flat();
-    res.json(notifications);
-  } catch (error) {
-    res.status(500).json({ message: "Lỗi khi lấy thông báo" });
-  }
-};
-
-export const getReportsByUser = async (req, res) => {
-  try {
-    const userId = req.params.userId;
-    const posts = await PostModel.find({ userId: userId });
-    let reportCount = 0;
-    posts.forEach((post) => {
-      reportCount += post.reports.length;
-    });
-    return res.status(200).json({ reportCount });
-  } catch (err) {
-    console.error("Error fetching report count", err);
-    return res
-      .status(500)
-      .json({ error: "Có lỗi xảy ra khi lấy số lượng báo cáo" });
-  }
-};
-
 export const allchatUser = async (req, res) => {
   const { userId } = req.params;
   try {

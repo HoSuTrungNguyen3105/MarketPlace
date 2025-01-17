@@ -18,6 +18,7 @@ import FullSizeChat from "../pages/Chat/FullSizeChat.jsx";
 import Transaction from "../components/Transaction/Transaction.jsx";
 import Post from "../components/Admin/Post.jsx";
 import User from "../components/Admin/User.jsx";
+import Setting from "../components/Admin/Setting.jsx";
 
 // Tạo PrivateRoute cho các trang yêu cầu đăng nhập
 const PrivateRoute = ({ children }) => {
@@ -128,6 +129,10 @@ const router = createBrowserRouter([
       {
         path: "/reset-password/:token",
         element: <ResetPw />,
+      },
+      {
+        path: "/settings",
+        element: <Setting />,
       },
     ],
   },

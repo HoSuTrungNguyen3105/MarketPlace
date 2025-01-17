@@ -135,6 +135,30 @@ export const useAuthStore = create((set, get) => ({
       set({ isUpdatingProfile: false });
     }
   },
+  changeRole: async (role) => {
+    set({ isUpdatingProfile: true });
+    try {
+      const res = await axiosInstance.put("/user/change-role", { role });
+      set({ authUser: res.data }); // Cập nhật người dùng sau khi thay đổi quyền
+      toast.success(
+        role === "admin"
+          ? "Đã tạo liên kết, chờ admin xác nhận quyền."
+          : `Đã thay đổi quyền thành ${role}`
+      );
+    } catch (error) {
+      if (error.response) {
+        const errorMessage =
+          error.response.data?.message || "Đã xảy ra lỗi khi thay đổi quyền!";
+        console.error("Error in changeRole:", errorMessage);
+        toast.error(errorMessage);
+      } else {
+        console.error("Error in changeRole:", error.message);
+        toast.error("Không thể kết nối với máy chủ. Vui lòng thử lại sau.");
+      }
+    } finally {
+      set({ isUpdatingProfile: false });
+    }
+  },
 
   updateProfileInfo: async (data) => {
     set((state) => ({

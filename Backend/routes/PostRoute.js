@@ -5,6 +5,7 @@ import {
   createPost,
   delete1UserPost,
   deleteMark,
+  fetchAllPost,
   getAllPosts,
   getBookmarks,
   getCategories,
@@ -20,6 +21,8 @@ import { protectRoute } from "../lib/check.js";
 const router = express.Router();
 
 router.post("/posts", uploadMiddleware, createPost); // Để tạo bài viết
+router.post("/fetchpost", fetchAllPost); // Để tạo bài viết
+
 router.get("/posts/:id", getPost); // Để lấy một bài viết theo id
 router.get("/detail/:id", getPostbyid); // Để lấy bài viết theo id
 router.get("/detail/without/:id", getPostbyidwithoutUser); // Để lấy bài viết theo id

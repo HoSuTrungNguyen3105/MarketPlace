@@ -17,6 +17,7 @@ export const createPost = async (req, res) => {
       images,
       condition,
       customFields,
+      stock,
     } = req.body;
 
     // Kiểm tra người dùng
@@ -26,7 +27,6 @@ export const createPost = async (req, res) => {
         .status(400)
         .json({ message: "Người dùng không tồn tại", field: "userId" });
     }
-
     // Kiểm tra các trường bắt buộc
     if (!title?.trim()) {
       return res
@@ -75,6 +75,7 @@ export const createPost = async (req, res) => {
       condition: condition || "used", // Giá trị mặc định là "used"
       customFields: customFields || {},
       userId,
+      stock,
     });
 
     await newPost.save();
@@ -168,6 +169,20 @@ export const getAllPosts = async (req, res) => {
       return res.status(404).json({ message: "No posts found" });
     }
 
+    return res.json({
+      status: "Success",
+      data: posts, // Trả về danh sách bài đăng với thông tin báo cáo
+    });
+  } catch (error) {
+    res.status(500).json({ message: "Error retrieving posts" });
+  }
+};
+export const fetchAllPost = async (req, res) => {
+  try {
+    const posts = await PostModel.find();
+    if (!posts) {
+      return res.status(404).json({ message: "No posts found" });
+    }
     return res.json({
       status: "Success",
       data: posts, // Trả về danh sách bài đăng với thông tin báo cáo
@@ -411,11 +426,11 @@ export const addBookmark = async (req, res) => {
 };
 export const deleteMark = async (req, res) => {
   const { postId } = req.params;
-  const { userId } = req.body;
+  const userId = req.user?.id; // Lấy từ token (nếu dùng)
 
   try {
     // Kiểm tra xem bài viết có trong danh sách đánh dấu của người dùng không
-    const bookmark = await MarkModel.findOne({ postId, userId });
+    const bookmark = await MarkModel.findOneAndDelete({ postId, userId });
     if (!bookmark) {
       return res
         .status(404)
@@ -423,7 +438,6 @@ export const deleteMark = async (req, res) => {
     }
 
     // Xóa bài viết khỏi danh sách đánh dấu
-    await bookmark.remove();
     res.status(200).json({ message: "Đã xóa khỏi danh sách đánh dấu" });
   } catch (error) {
     res.status(500).json({ message: "Lỗi hệ thống", error });

@@ -47,12 +47,17 @@ const Navbar = () => {
       <div className="container mx-auto px-4 h-16 flex items-center justify-between">
         {/* Logo & Title */}
         <div className="flex items-center gap-6">
-          <img
-            src="https://previews.123rf.com/images/butenkow/butenkow1612/butenkow161200764/67325901-pattern-design-logo-social-vector-illustration-of-icon.jpg"
-            className="w-10 h-10 md:block hidden"
-            alt="Logo"
-          />
-          <span className="text-lg font-semibold">Circle App</span>
+          <Link to="/">
+            <img
+              src="https://previews.123rf.com/images/butenkow/butenkow1612/butenkow161200764/67325901-pattern-design-logo-social-vector-illustration-of-icon.jpg"
+              className="w-10 h-10 md:block hidden"
+              alt="Logo"
+            />
+          </Link>
+
+          <Link to="/">
+            <span className="text-lg font-semibold">Circle App</span>
+          </Link>
         </div>
 
         {/* Thanh tìm kiếm */}

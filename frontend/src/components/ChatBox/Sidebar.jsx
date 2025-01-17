@@ -30,22 +30,28 @@ const Sidebar = () => {
 
   return (
     <aside className="lg:w-60 w-16 border-r border-base-300 flex flex-col transition-all duration-200">
+      {/* Header */}
       <div className="border-b border-base-300 w-full p-5">
         <div className="flex items-center gap-2">
           <div className="p-2 bg-white rounded-full shadow-lg">
             <MessageCircle className="size-6 text-blue-500" />
           </div>
+          {/* Ẩn khi sidebar bị bóp lại */}
           <span className="text-lg font-semibold hidden lg:block">
             Tin nhắn
           </span>
         </div>
+
+        {/* Thanh tìm kiếm */}
         <input
           type="text"
           placeholder="Nhập tên người dùng để tìm kiếm..."
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
-          className="border-gray-500 rounded-lg p-2 w-full max-w-xs"
+          className="border-gray-500 rounded-lg p-2 w-full max-w-xs hidden lg:block"
         />
+
+        {/* Bộ lọc chỉ hiển thị khi mở rộng */}
         <div className="mt-3 hidden lg:flex items-center gap-2">
           <label className="flex items-center gap-2 cursor-pointer">
             <input
@@ -74,9 +80,10 @@ const Sidebar = () => {
             </span>
             <span className="text-sm">Chỉ hiển thị online</span>
           </label>
-          <span className="text-xs text-zinc-500"></span>
         </div>
       </div>
+
+      {/* Danh sách liên hệ */}
       <div className="overflow-y-auto w-full py-3">
         {filteredContacts.length > 0 ? (
           filteredContacts.map((contact) => (
@@ -96,6 +103,7 @@ const Sidebar = () => {
                   className="size-12 object-cover rounded-full"
                 />
               </div>
+              {/* Ẩn khi sidebar bị thu nhỏ */}
               <div className="hidden lg:block text-left min-w-0">
                 <div className="font-medium truncate">{contact.username}</div>
               </div>

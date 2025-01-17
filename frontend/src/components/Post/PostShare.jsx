@@ -28,6 +28,7 @@ const PostShare = ({ onPostCreateSuccess }) => {
     contact: authUser?.phone || "",
     location: authUser?.location || "",
     images: [],
+    stock: "",
     price: "",
     category: selectedCategory.id || "",
     condition: "used",
@@ -80,6 +81,12 @@ const PostShare = ({ onPostCreateSuccess }) => {
       }));
     });
   }, []);
+  const handleRemoveImage = (indexToRemove) => {
+    setFormData((prevState) => ({
+      ...prevState,
+      images: prevState.images.filter((_, index) => index !== indexToRemove),
+    }));
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -97,6 +104,7 @@ const PostShare = ({ onPostCreateSuccess }) => {
           location: authUser?.location || "",
           images: [],
           price: "",
+          stock: "",
           category: "",
           condition: "used",
           customFields: {},
@@ -173,6 +181,18 @@ const PostShare = ({ onPostCreateSuccess }) => {
             />
           </div>
           <div className="space-y-4">
+            <label className="block text-sm font-semibold">Giá *</label>
+            <input
+              type="number"
+              name="stock"
+              value={formData.stock}
+              onChange={handleChange}
+              className="w-full p-4 bg-white bg-opacity-20  rounded-lg shadow-inner focus:ring-2 focus:ring-purple-300 focus:bg-opacity-30 transition-all duration-300 placeholder-gray-300"
+              placeholder="Nhập số lượng hàng hóa"
+              required
+            />
+          </div>
+          <div className="space-y-4">
             <label className="block text-sm font-semibold">Tình trạng</label>
             <select
               name="condition"
@@ -198,12 +218,20 @@ const PostShare = ({ onPostCreateSuccess }) => {
           />
           <div className="mt-4 flex flex-wrap gap-4">
             {formData.images.map((image, index) => (
-              <img
-                key={index}
-                src={image}
-                alt={`selected-image-${index}`}
-                className="w-24 h-24 object-cover rounded-lg shadow-md border-2 border-white"
-              />
+              <div key={index} className="relative group">
+                <img
+                  src={image}
+                  alt={`selected-image-${index}`}
+                  className="w-24 h-24 object-cover rounded-lg shadow-md border-2 border-white"
+                />
+                <button
+                  type="button"
+                  onClick={() => handleRemoveImage(index)}
+                  className="absolute top-1 right-1 bg-red-500 text-white text-xs px-2 py-1 rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
+                >
+                  Xóa
+                </button>
+              </div>
             ))}
           </div>
         </div>

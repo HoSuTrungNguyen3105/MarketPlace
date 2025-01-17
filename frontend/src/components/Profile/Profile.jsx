@@ -2,10 +2,12 @@ import React, { useEffect, useState } from "react";
 import { useAuthStore } from "../../store/useAuthStore";
 import "./Profile.css";
 import { usePostStore } from "../../store/userPostStore";
+import { axiosInstance } from "../../lib/axios";
 
 const Profile = () => {
   const { authUser } = useAuthStore();
-  const { updateProfileInfo, isUpdatingProfile } = useAuthStore();
+  const { updateProfileInfo, changeRole, isUpdatingProfile } = useAuthStore();
+
   const { provinces, fetchProvinces, isLoading } = usePostStore();
 
   const [formData, setFormData] = useState({
@@ -77,6 +79,21 @@ const Profile = () => {
       console.error("Lỗi khi cập nhật thông tin:", error);
     }
   };
+  const [role, setRole] = useState("");
+  const [message, setMessage] = useState("");
+  const handleRoleChange = async (e) => {
+    const selectedRole = e.target.value;
+    setRole(selectedRole);
+
+    if (selectedRole) {
+      try {
+        await changeRole(selectedRole); // Gọi phương thức từ zustand
+      } catch (error) {
+        console.error("Lỗi khi thay đổi quyền:", error);
+      }
+    }
+  };
+
   return (
     <div className="ProfileCard">
       <div className="ProfileImg">
@@ -176,14 +193,14 @@ const Profile = () => {
             />
           </div>
           <div className="Follow">
-            <label>Quyền:</label>
-            <input
-              type="text"
-              name="role"
-              value={formData.role}
-              onChange={handleChange}
-              disabled={!isEditing}
-            />
+            <label>Quyền: {formData.role}</label>
+            <select name="role" value={role} onChange={handleRoleChange}>
+              <option value="">Quyền</option>
+              <option value="admin">Admin</option>
+              <option value="seller">Seller</option>
+              <option value="buyer">Buyer(mặc định)</option>
+            </select>
+            {message && <p>{message}</p>}
           </div>
           <div className="Follow">
             <label>Ngày đăng nhập lần cuối:</label>

@@ -236,28 +236,48 @@ export const requestRoleChange = async (req, res) => {
 
     await newRequest.save();
 
-    res
-      .status(200)
-      .json({
-        message: "Yêu cầu thay đổi role đã được gửi và đang chờ admin duyệt",
-      });
+    res.status(200).json({
+      message: "Yêu cầu thay đổi role đã được gửi và đang chờ admin duyệt",
+    });
   } catch (error) {
     console.error("Lỗi trong quá trình yêu cầu thay đổi role:", error);
     res.status(500).json({ message: "Lỗi server nội bộ" });
   }
 };
-
+export const changeRole = async (req, res) => {
+  const { role } = req.body;
+  if (!role) {
+    return res.status(400).json({ message: "Vui lòng chọn quyền hợp lệ." });
+  }
+  // Giả sử bạn kiểm tra logic quyền ở đây
+  try {
+    if (role === "admin") {
+      // Xử lý logic nếu người dùng muốn làm admin
+      // Ví dụ: Gửi yêu cầu chờ admin xác nhận
+      return res.status(200).json({
+        message: "Đã tạo liên kết, chờ admin xác nhận quyền.",
+      });
+    } else {
+      // Thay đổi quyền ngay lập tức cho seller hoặc buyer
+      // Ví dụ: Ghi quyền vào database
+      return res.status(200).json({
+        message: `Đã thay đổi quyền thành ${role}`,
+      });
+    }
+  } catch (error) {
+    console.error("Lỗi:", error);
+    return res.status(500).json({ message: "Đã xảy ra lỗi server." });
+  }
+};
 // Admin duyệt yêu cầu thay đổi role
 export const approveRoleChange = async (req, res) => {
   try {
     const { requestId, approved } = req.body;
 
     if (req.user.role !== "admin") {
-      return res
-        .status(403)
-        .json({
-          message: "Chỉ admin mới có quyền duyệt yêu cầu thay đổi role",
-        });
+      return res.status(403).json({
+        message: "Chỉ admin mới có quyền duyệt yêu cầu thay đổi role",
+      });
     }
 
     const request = await UserModel.findById(requestId);
@@ -278,13 +298,11 @@ export const approveRoleChange = async (req, res) => {
 
     await request.save();
 
-    res
-      .status(200)
-      .json({
-        message: `Yêu cầu thay đổi role đã được ${
-          approved ? "chấp nhận" : "từ chối"
-        }`,
-      });
+    res.status(200).json({
+      message: `Yêu cầu thay đổi role đã được ${
+        approved ? "chấp nhận" : "từ chối"
+      }`,
+    });
   } catch (error) {
     console.error("Lỗi trong quá trình duyệt yêu cầu thay đổi role:", error);
     res.status(500).json({ message: "Lỗi server nội bộ" });

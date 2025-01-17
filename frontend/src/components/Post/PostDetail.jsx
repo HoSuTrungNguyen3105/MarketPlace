@@ -58,21 +58,6 @@ const PostDetail = () => {
     isBookmarking,
   } = useBookmarkStore();
   const isBookmarked = bookmarks.includes(id);
-
-  useEffect(() => {
-    const checkStatus = async () => {
-      if (id && authUser._id) {
-        const status = await checkBookmarkStatus(id, authUser._id);
-        //console.log("Bookmark status:", status);
-      }
-    };
-    checkStatus();
-  }, [id, authUser._id, isBookmarked, addBookmark, checkBookmarkStatus]);
-
-  // useEffect(() => {
-  //   const { loadBookmarks } = useBookmarkStore.getState();
-  //   //loadBookmarks(userId); // Truyền `userId` của người dùng hiện tại
-  // }, [userId]);
   const handleAddBookmark = () => {
     if (!isBookmarked) {
       addBookmark(id, userId);
@@ -81,15 +66,10 @@ const PostDetail = () => {
 
   const handleRemoveBookmark = () => {
     if (isBookmarked) {
-      removeBookmark(id, userId);
+      console.log("Post ID:", id, "User ID:", authUser._id); // Kiểm tra dữ liệu
+      removeBookmark(id, authUser._id);
     }
   };
-
-  useEffect(() => {
-    if (id) {
-      getPostById(id);
-    }
-  }, [id, getPostById]);
   const handleBookmark = () => {
     if (isBookmarked) {
       removeBookmark(id, userId);
@@ -97,6 +77,11 @@ const PostDetail = () => {
       addBookmark(id, userId);
     }
   };
+  useEffect(() => {
+    if (id) {
+      getPostById(id);
+    }
+  }, [id, getPostById]);
   useEffect(() => {
     const checkFollowStatus = async () => {
       if (authUser && post && post.userId) {
@@ -109,6 +94,15 @@ const PostDetail = () => {
     };
     checkFollowStatus();
   }, [authUser, post, fetchFollowingStatus]);
+  useEffect(() => {
+    const checkStatus = async () => {
+      if (id && authUser._id) {
+        const status = await checkBookmarkStatus(id, authUser._id);
+        console.log("Bookmark status:", status);
+      }
+    };
+    checkStatus();
+  }, [id, authUser._id, isBookmarked, addBookmark, checkBookmarkStatus]);
 
   const handleFollowToggle = async () => {
     if (!authUser || !post?.userId) return; // Kiểm tra `post.userId` có hợp lệ
@@ -246,7 +240,7 @@ const PostDetail = () => {
           <div className="space-y-4 mb-6">
             <div className="flex items-center gap-2">
               <MapPin className="w-5 h-5 text-gray-500" />
-              {/* <span>{post.location.address}</span> */}
+              <span>{post.location.address}</span>
             </div>
             <div className="flex items-center gap-2">
               <Clock1 className="w-5 h-5 text-gray-500" />
@@ -266,7 +260,7 @@ const PostDetail = () => {
           <div className="flex items-center gap-2">
             <Package className="w-5 h-5 text-gray-500" />
             <span>
-              Còn hàng: {post.stock > 0 ? `${post.stock} sản phẩm` : "Hết hàng"}
+              Còn : {post.stock > 0 ? `${post.stock} sản phẩm` : "Hết hàng"}
             </span>
           </div>
           {post.isPromoted && (

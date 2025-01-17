@@ -1,5 +1,6 @@
 import express from "express";
 import {
+  changeRole,
   fetchFollowingStatus,
   followUser,
   getUserById,
@@ -16,5 +17,5 @@ router.get("/profile/:userId", getUserById);
 router.put("/:id/follow", followUser);
 router.put("/:id/unfollow", unfollowUser);
 router.get("/:targetUserId/is-following", fetchFollowingStatus);
-
+router.put("/change-role", protectRoute, changeRole);
 export default router;
