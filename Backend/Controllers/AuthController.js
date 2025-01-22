@@ -175,6 +175,33 @@ export const loginUser = async (req, res) => {
       .json({ message: "Đã xảy ra lỗi trên máy chủ. Vui lòng thử lại sau." });
   }
 };
+export const checkPassword = async (req, res) => {
+  const { password } = req.body;
+
+  if (!password) {
+    return res.status(400).json({ message: "Mật khẩu không được để trống!" });
+  }
+
+  try {
+    // Giả sử bạn lấy user từ JWT hoặc từ session
+    const user = await UserModel.findById(req.userId); // Lấy thông tin người dùng từ cơ sở dữ liệu
+    if (!user) {
+      return res.status(404).json({ message: "Không tìm thấy người dùng!" });
+    }
+
+    // So sánh mật khẩu từ người dùng gửi lên và mật khẩu đã mã hóa trong cơ sở dữ liệu
+    const isMatch = await bcrypt.compare(password, user.password);
+
+    if (isMatch) {
+      return res.status(200).json({ message: "Mật khẩu đúng!" });
+    } else {
+      return res.status(400).json({ message: "Mật khẩu không chính xác!" });
+    }
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Đã xảy ra lỗi, vui lòng thử lại!" });
+  }
+};
 export const logoutUser = async (req, res) => {
   try {
     res.cookie("jwt", "", {

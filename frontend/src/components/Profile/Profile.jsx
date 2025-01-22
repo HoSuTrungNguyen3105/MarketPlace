@@ -3,6 +3,7 @@ import { useAuthStore } from "../../store/useAuthStore";
 import "./Profile.css";
 import { usePostStore } from "../../store/userPostStore";
 import { axiosInstance } from "../../lib/axios";
+import { Link } from "react-router-dom";
 
 const Profile = () => {
   const { authUser } = useAuthStore();
@@ -219,6 +220,9 @@ const Profile = () => {
                 Lưu
               </button>
             )}
+            <div>
+              <Link to="/confirm">Confirm</Link>
+            </div>
           </div>
         </form>
         <hr />

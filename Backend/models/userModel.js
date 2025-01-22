@@ -1,85 +1,93 @@
-import mongoose from "mongoose";
-const locationSchema = new mongoose.Schema(
-  {
-    provinceId: {
-      type: Number, // ID của tỉnh/thành phố
-      required: true,
-    },
-    city: {
-      type: Number, // Tên thành phố/quận
-      required: true,
-    },
-    address: {
-      type: String, // Địa chỉ chi tiết (số nhà, tên đường)
-      required: false,
-    },
-  },
-  { _id: false }
-); // Đảm bảo không tạo ra _id cho location con
+import { DataTypes, Sequelize } from "sequelize";
+import mysqlpool from "../config/db.js"; // Đường dẫn tới cấu hình Sequelize
 
-const userSchema = mongoose.Schema(
+class User extends Model {}
+
+User.init(
   {
-    //accountId can be google Id, facebook Id, github Id etc.
     accountId: {
-      type: String,
+      type: DataTypes.STRING,
+      allowNull: true,
     },
     username: {
-      type: String,
-      required: true,
+      type: DataTypes.STRING,
+      allowNull: false,
     },
     firstname: {
-      type: String,
-      required: true,
+      type: DataTypes.STRING,
+      allowNull: false,
     },
     lastname: {
-      type: String,
-      required: true,
+      type: DataTypes.STRING,
+      allowNull: false,
     },
     email: {
-      type: String,
-      required: true,
+      type: DataTypes.STRING,
+      allowNull: false,
+      unique: true,
     },
     password: {
-      type: String,
-      required: true,
+      type: DataTypes.STRING,
+      allowNull: false,
     },
     phone: {
-      type: Number,
-    },
-    location: {
-      type: locationSchema, // Chỉ định schema con cho location
-      required: false,
+      type: DataTypes.STRING,
+      allowNull: true,
     },
     role: {
-      type: String,
-      enum: ["buyer", "seller", "admin"], // Phân quyền người dùng
-      default: "buyer",
+      type: DataTypes.ENUM("buyer", "seller", "admin"),
+      defaultValue: "buyer",
     },
     profilePic: {
-      type: String,
-      default: "",
+      type: DataTypes.STRING,
+      defaultValue: "",
     },
-    followers: [],
-    following: [],
     isBlocked: {
-      type: Boolean,
-      default: false, // Mặc định người dùng không bị chặn
+      type: DataTypes.BOOLEAN,
+      defaultValue: false,
     },
-    blockExpires: { type: Date },
-    loginAttempts: { type: Number, default: 0 },
+    blockExpires: {
+      type: DataTypes.DATE,
+      allowNull: true,
+    },
+    loginAttempts: {
+      type: DataTypes.INTEGER,
+      defaultValue: 0,
+    },
     lastLogin: {
-      type: Date,
-      default: Date.now,
+      type: DataTypes.DATE,
+      defaultValue: DataTypes.NOW,
     },
-    soldItems: { type: Number, default: 0 },
-    activeListings: { type: Number, default: 0 },
-    responseRate: { type: Number, default: 0 },
-    isVerified: { type: Boolean, default: false },
-    verificationCode: { type: String },
-    verificationCodeExpires: { type: Date },
+    soldItems: {
+      type: DataTypes.INTEGER,
+      defaultValue: 0,
+    },
+    activeListings: {
+      type: DataTypes.INTEGER,
+      defaultValue: 0,
+    },
+    responseRate: {
+      type: DataTypes.FLOAT,
+      defaultValue: 0,
+    },
+    isVerified: {
+      type: DataTypes.BOOLEAN,
+      defaultValue: false,
+    },
+    verificationCode: {
+      type: DataTypes.STRING,
+      allowNull: true,
+    },
+    verificationCodeExpires: {
+      type: DataTypes.DATE,
+      allowNull: true,
+    },
   },
-  { timestamps: true }
+  {
+    sequelize, // Tham chiếu tới instance của Sequelize
+    modelName: "User",
+    timestamps: true, // Tự động tạo `createdAt` và `updatedAt`
+  }
 );
 
-const UserModel = mongoose.model("User", userSchema);
-export default UserModel;
+export default User;

@@ -17,5 +17,8 @@ const authenticateToken = (req, res, next) => {
     next();
   });
 };
-
+// export const token = (req, res) => {
+//   const user = req.user;
+//   const token = jwt.sign({ id: user.id }, process.env.JWT_SECRET, { expiresIn: "1h" });
+// }
 export default authenticateToken;

@@ -19,6 +19,7 @@ import Transaction from "../components/Transaction/Transaction.jsx";
 import Post from "../components/Admin/Post.jsx";
 import User from "../components/Admin/User.jsx";
 import Setting from "../components/Admin/Setting.jsx";
+import Confirm from "../components/Admin/Confirm.jsx";
 
 // Tạo PrivateRoute cho các trang yêu cầu đăng nhập
 const PrivateRoute = ({ children }) => {
@@ -93,6 +94,10 @@ const router = createBrowserRouter([
             <Transaction />
           </PrivateRoute>
         ),
+      },
+      {
+        path: "/confirm",
+        element: <Confirm />,
       },
       {
         path: "/post",

@@ -162,7 +162,7 @@ export const getPostToProfile = async (req, res) => {
 export const getAllPosts = async (req, res) => {
   try {
     const posts = await PostModel.find()
-      .populate("userId", "username _id") // Trả cả username và _id từ UserModel
+      // .populate("userId", "username _id") // Trả cả username và _id từ UserModel
       .sort({ createdAt: -1 });
 
     if (!posts) {

@@ -1,6 +1,7 @@
 import express from "express";
 import {
   checkAuth,
+  checkPassword,
   checkUserStatus,
   dataRoute,
   forgetPassword,
@@ -24,6 +25,7 @@ router.get("/check", protectRoute, checkAuth);
 router.get("/check-status", protectRoute, checkUserStatus);
 router.post("/forgot-password", forgetPassword);
 router.post("/reset-password-from-forget/:token", resetPasswordFromForget);
-
 router.post("/reset-password/:token", resetPassword);
+router.post("/check-password", protectRoute, checkPassword);
+
 export default router;

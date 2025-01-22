@@ -1,14 +1,14 @@
 import bodyparser from "body-parser";
-import mongoose from "mongoose";
 import dotenv from "dotenv";
 import express from "express";
 import cookieParser from "cookie-parser";
 import cors from "cors";
-import UserRoute from "./routes/UserRoute.js";
-import AuthRoute from "./routes/AuthRoute.js";
-import PostRoute from "./routes/PostRoute.js";
-import MessageRoute from "./routes/MessageRoute.js";
-import TransactionRoute from "./routes/TransactionRoute.js";
+// import UserRoute from "./routes/UserRoute.js";
+// import AuthRoute from "./routes/AuthRoute.js";
+// import PostRoute from "./routes/PostRoute.js";
+// import MessageRoute from "./routes/MessageRoute.js";
+// import TransactionRoute from "./routes/TransactionRoute.js";
+import mysqlpool from "./config/db.js";
 
 const app = express();
 const port = process.env.PORT || 5000;
@@ -25,18 +25,22 @@ app.use(
     credentials: true,
   })
 );
+mysqlpool.query("SELECT 1").then(() => {
+  console.log("Kết nối thành công đến CSDL"); // Hiển thị "Kết nối thành công đến CSDL"
+  app.listen(port, () => console.log(`Server running on port ${port}`)); // Hiển thị "Đang chạy"
+});
 // Route mặc định
 app.get("/", (req, res) => {
   res.send("Đang chạy"); // Hiển thị "Đang chạy"
 });
-mongoose.connect(process.env.MONGO_URL).then(() => {
-  app.listen(port, () => {
-    console.log(`Server is running on port`, port);
-  });
-});
+// mongoose.connect(process.env.MONGO_URL).then(() => {
+//   app.listen(port, () => {
+//     console.log(`Server is running on port`, port);
+//   });
+// });
 // Routes
-app.use("/api/user", UserRoute);
-app.use("/api/auth", AuthRoute);
-app.use("/api/post", PostRoute);
-app.use("/api/message", MessageRoute);
-app.use("/api/transaction", TransactionRoute);
+// app.use("/api/user", UserRoute);
+// app.use("/api/auth", AuthRoute);
+// app.use("/api/post", PostRoute);
+// app.use("/api/message", MessageRoute);
+// app.use("/api/transaction", TransactionRoute);
