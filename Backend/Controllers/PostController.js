@@ -1,9 +1,9 @@
-import PostModel from "../models/postModel.js";
 import UserModel from "../models/userModel.js";
 import cloudinary from "../lib/cloudinary.js"; // Đảm bảo đã cấu hình Cloudinary
 import MarkModel from "../models/markModel.js";
 import mongoose from "mongoose";
-
+import postModel from "../models/postModel.js";
+import Post from "../models/postModel.js";
 export const createPost = async (req, res) => {
   try {
     const {
@@ -17,16 +17,16 @@ export const createPost = async (req, res) => {
       images,
       condition,
       customFields,
-      stock,
     } = req.body;
 
     // Kiểm tra người dùng
-    const user = await UserModel.findById(userId);
+    const user = await UserModel.findByPk(userId);
     if (!user) {
       return res
         .status(400)
         .json({ message: "Người dùng không tồn tại", field: "userId" });
     }
+
     // Kiểm tra các trường bắt buộc
     if (!title?.trim()) {
       return res
@@ -58,27 +58,24 @@ export const createPost = async (req, res) => {
     }
 
     // Upload ảnh lên Cloudinary
-    const imageUrls = await handleImageUpload(images); // Upload ảnh và nhận URL
+    const imageUrls = await handleImageUpload(images);
 
     // Thay thế dấu xuống hàng và khoảng trắng bằng các ký tự đặc biệt
-    const formattedDescription = description.replace(/\n/g, "{{newline}}"); // Thay thế xuống dòng bằng {{newline}}
+    const formattedDescription = description.replace(/\n/g, "{{newline}}");
 
     // Tạo bài đăng mới
-    const newPost = new PostModel({
+    const newPost = await PostModel.create({
       title,
       description: formattedDescription, // Lưu description đã giữ nguyên khoảng trắng và xuống dòng
       category: cate,
       price,
       location,
       contact,
-      images: imageUrls, // Lưu mảng các URL ảnh
+      images: JSON.stringify(imageUrls), // Lưu mảng các URL ảnh dưới dạng JSON
       condition: condition || "used", // Giá trị mặc định là "used"
-      customFields: customFields || {},
+      customFields: JSON.stringify(customFields || {}),
       userId,
-      stock,
     });
-
-    await newPost.save();
 
     return res.status(201).json({
       message: "Bài đăng đã được tạo thành công",
@@ -109,73 +106,10 @@ const handleImageUpload = async (images) => {
 
   return imageUrls;
 };
-// API để lấy danh sách danh mục
-export const getCategories = async (req, res) => {
-  try {
-    // Mảng danh mục (có thể lấy từ cơ sở dữ liệu hoặc lưu cứng)
-    const categories = [
-      { id: 1, name: "Đồ điện tử" },
-      { id: 2, name: "Dụng cụ trong nhà" },
-      { id: 3, name: "Thời trang" },
-      { id: 4, name: "Đồ ăn, thực phẩm" },
-      { id: 5, name: "Đồ dùng văn phòng" },
-      { id: 6, name: "Thú cưng" },
-      { id: 7, name: "Thiết bị chơi Game, đồ sưu tầm" },
-      { id: 8, name: "Đồ thể thao" },
-      { id: 9, name: "Đồ dùng cá nhân" },
-      { id: 10, name: "Du lịch" },
-    ];
-    return res.status(200).json(categories);
-  } catch (error) {
-    console.error("Lỗi khi lấy danh mục:", error);
-    return res.status(500).json({ message: "Lỗi khi lấy danh mục" });
-  }
-};
 
-export const getPost = async (req, res) => {
-  try {
-    const postId = req.params.id;
-    const post = await PostModel.findById(postId);
-    if (!post) {
-      return res.status(404).json({ message: "Bài viết không tìm thấy" });
-    }
-    res.status(200).json(post);
-  } catch (error) {
-    console.error("Lỗi lấy bài viết:", error);
-    res.status(500).json({ message: "Lỗi lấy bài viết", error: error.message });
-  }
-};
-
-export const getPostToProfile = async (req, res) => {
-  try {
-    const userId = req.params.id;
-    const posts = await PostModel.find({ userId });
-    res.status(200).json(posts);
-  } catch (error) {
-    console.error("Lỗi lấy bài viết của người dùng:", error);
-    res.status(500).json({
-      message: "Lỗi lấy bài viết của người dùng",
-      error: error.message,
-    });
-  }
-};
 export const getAllPosts = async (req, res) => {
-  try {
-    const posts = await PostModel.find()
-      // .populate("userId", "username _id") // Trả cả username và _id từ UserModel
-      .sort({ createdAt: -1 });
-
-    if (!posts) {
-      return res.status(404).json({ message: "No posts found" });
-    }
-
-    return res.json({
-      status: "Success",
-      data: posts, // Trả về danh sách bài đăng với thông tin báo cáo
-    });
-  } catch (error) {
-    res.status(500).json({ message: "Error retrieving posts" });
-  }
+  let products = await Post.findAll({});
+  res.status(200).send(products);
 };
 export const fetchAllPost = async (req, res) => {
   try {

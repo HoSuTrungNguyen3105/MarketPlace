@@ -1,108 +1,31 @@
-import mongoose from "mongoose";
+import { DataTypes, Model } from "sequelize";
+import sequelize from "../config/db.js"; // Đường dẫn tới cấu hình Sequelize
 
-const postSchema = mongoose.Schema(
+class Post extends Model {}
+
+Post.init(
   {
-    userId: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "User",
-      required: true,
+    image: {
+      type: DataTypes.STRING,
     },
     title: {
-      type: String,
-      required: true,
-      trim: true,
-    },
-    description: {
-      type: String,
-      required: true,
-    },
-    category: {
-      type: Number,
-      required: true,
+      type: DataTypes.STRING,
+      allowNull: false,
     },
     price: {
-      type: Number,
-      required: true,
+      type: DataTypes.INTEGER,
     },
-    location: {
-      provinceId: { type: String },
-      city: { type: String },
-      address: { type: String },
+    description: {
+      type: DataTypes.TEXT,
     },
-    // geoLocation: {
-    //   latitude: { type: Number },
-    //   longitude: { type: Number },
-    // },
-    images: {
-      type: [String],
-      default: [],
-    },
-    contact: {
-      type: String,
-    },
-    condition: {
-      type: String,
-      enum: ["new", "used"],
-      default: "used",
-    },
-    sellerRating: {
-      type: Number,
-      default: 0,
-      min: 0,
-      max: 5,
-    },
-    isAvailable: {
-      type: Boolean,
-      default: true,
-    },
-    views: {
-      type: Number,
-      default: 0,
-    },
-    reports: {
-      type: [
-        {
-          reportedBy: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
-          reportedAt: { type: Date, default: Date.now },
-        },
-      ],
-      default: [],
-    },
-    // keywords: {
-    //   type: [String],
-    //   default: [],
-    // },
-    favoritesCount: {
-      type: Number,
-      default: 0,
-    },
-    // isPromoted: {
-    //   type: Boolean,
-    //   default: false,
-    // },
-    stock: { type: Number, default: 0 }, // Số lượng tồn kho
-    moderationStatus: {
-      type: String,
-      enum: ["pending", "approved", "rejected"],
-      default: "pending",
-    },
-    status: {
-      type: String,
-      enum: ["active", "archived", "deleted"],
-      default: "active",
-    },
-    // Bổ sung các fields động theo từng danh mục
-    customFields: {
-      type: Map,
-      of: mongoose.Schema.Types.Mixed,
-      default: {}, // Dữ liệu động cho từng danh mục
+    published: {
+      type: DataTypes.BOOLEAN,
     },
   },
   {
-    timestamps: true,
+    sequelize, // Tham chiếu tới instance của Sequelize
+    modelName: "Post",
+    timestamps: true, // Tự động tạo `createdAt` và `updatedAt`
   }
 );
-
-const PostModel = mongoose.model("MarketplacePost", postSchema);
-
-export default PostModel;
+export default Post;

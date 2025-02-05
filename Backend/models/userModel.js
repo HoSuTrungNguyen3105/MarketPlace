@@ -1,6 +1,5 @@
-import { DataTypes, Sequelize } from "sequelize";
-import mysqlpool from "../config/db.js"; // Đường dẫn tới cấu hình Sequelize
-
+import { DataTypes, Model } from "sequelize";
+import sequelize from "../config/db.js";
 class User extends Model {}
 
 User.init(
@@ -35,7 +34,7 @@ User.init(
       allowNull: true,
     },
     role: {
-      type: DataTypes.ENUM("buyer", "seller", "admin"),
+      type: DataTypes.ENUM("buyer", "user", "seller", "admin"),
       defaultValue: "buyer",
     },
     profilePic: {
