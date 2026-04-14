@@ -7,7 +7,6 @@ import { usePostStore } from "../../store/userPostStore";
 
 const Navbar = () => {
   const [isSearchPage, setIsSearchPage] = useState(false);
-  const [modalOpened, setModalOpened] = useState(false);
   const location = useLocation();
   const navigate = useNavigate();
   const searchText = location.search ? location.search.slice(3) : ""; // Lấy giá trị query từ URL
@@ -118,7 +117,6 @@ const Navbar = () => {
         <Link to="/create-post">
           <button
             className="button r-button"
-            onClick={() => setModalOpened(true)}
           >
             <LetterTextIcon />
             Thêm Bài Đăng mới

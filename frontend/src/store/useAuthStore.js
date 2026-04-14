@@ -4,6 +4,18 @@ import toast from "react-hot-toast";
 import { io } from "socket.io-client";
 
 const BACKEND_URL = "http://localhost:5000";
+
+// Mock user data
+const mockUser = {
+  _id: "mock-user-id",
+  username: "mockuser",
+  email: "mock@example.com",
+  role: "admin", // Có thể đổi thành "admin" hoặc "seller" để test
+  phone: "0123456789",
+  location: "Hà Nội",
+  avatar: "https://via.placeholder.com/150",
+};
+
 export const useAuthStore = create((set, get) => ({
   authUser: null,
   password: "",
@@ -28,8 +40,9 @@ export const useAuthStore = create((set, get) => ({
 
   checkAuth: async () => {
     try {
-      const res = await axiosInstance.get("/auth/check");
-      set({ authUser: res.data });
+      // Mock: Simulate checking auth
+      await new Promise(resolve => setTimeout(resolve, 500));
+      set({ authUser: mockUser });
     } catch (error) {
       console.log("Error in checkAuth:", error);
       set({ authUser: null });
@@ -40,11 +53,13 @@ export const useAuthStore = create((set, get) => ({
   signup: async (data) => {
     set({ isSigningUp: true, registerError: null });
     try {
-      await axiosInstance.post("/auth/register", data);
+      // Mock: Simulate signup success
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      toast.success("Đăng ký thành công!");
       return true;
     } catch (error) {
-      const errorMessage = error.response?.data?.message || "Đã xảy ra lỗi";
-      set({ registerError: errorMessage }); // Lưu thông báo lỗi
+      const errorMessage = "Đã xảy ra lỗi";
+      set({ registerError: errorMessage });
       toast.error(errorMessage);
       set({ isSigningUp: false });
       return false;
@@ -55,13 +70,12 @@ export const useAuthStore = create((set, get) => ({
 
   verifyEmail: async (email, code) => {
     try {
-      await axiosInstance.post("/auth/verify-email", {
-        email,
-        verificationCode: code,
-      });
+      // Mock: Always verify successfully
+      await new Promise(resolve => setTimeout(resolve, 500));
+      toast.success("Xác thực email thành công!");
       return true;
     } catch (error) {
-      toast.error(error.response?.data?.message || "Xác thực thất bại");
+      toast.error("Xác thực thất bại");
       return false;
     }
   },
@@ -69,46 +83,93 @@ export const useAuthStore = create((set, get) => ({
   login: async (data) => {
     set({ isLoggingIn: true });
     try {
-      const res = await axiosInstance.post("/auth/login", data);
-      set({ authUser: res.data, isLoggingIn: false });
+      // Mock: Simulate login success
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      set({ authUser: mockUser, isLoggingIn: false });
       toast.success("Đăng nhập thành công");
     } catch (error) {
-      const errorMessage = error.response?.data?.message || "Đã xảy ra lỗi";
-      set({ registerError: errorMessage }); // Lưu thông báo lỗi
+      const errorMessage = "Đã xảy ra lỗi";
+      set({ registerError: errorMessage });
       toast.error(errorMessage);
     } finally {
       set({ isLoggingIn: false });
     }
   },
   fetchDataByRole: async (role) => {
-    // Hàm lấy dữ liệu theo vai trò (role)
-    const response = await axiosInstance.get(`/auth/data?role=${role}`);
-    return response.data;
+    // Mock: Return mock data
+    await new Promise(resolve => setTimeout(resolve, 500));
+    return { data: "Mock data for role " + role };
   },
   logout: async () => {
     try {
-      await axiosInstance.post("/auth/logout");
+      // Mock: Simulate logout
+      await new Promise(resolve => setTimeout(resolve, 500));
       set({ authUser: null });
       toast.success("Đăng xuất thành công");
     } catch (error) {
-      toast.error(error.response.data.message);
+      toast.error("Lỗi đăng xuất");
     }
   },
 
   deleteAccount: async () => {
     try {
       set({ isDeleting: true });
-      const response = await axiosInstance.delete("/auth/delete"); // Delete API
-      set({ authUser: null, isLoggingIn: false }); // Clear Zustand state
-      toast.success(response.data.message);
+      // Mock: Simulate delete
+      await new Promise(resolve => setTimeout(resolve, 500));
+      set({ authUser: null, isLoggingIn: false });
+      toast.success("Tài khoản đã được xóa");
       return true;
     } catch (error) {
-      toast.error(
-        error.response?.data?.message ||
-          "An error occurred while deleting your account."
-      );
+      toast.error("Lỗi khi xóa tài khoản");
     } finally {
       set({ isDeleting: false });
+    }
+  },
+
+  updateProfile: async (data) => {
+    set({ isUpdatingProfile: true });
+    try {
+      // Mock: Simulate update
+      await new Promise(resolve => setTimeout(resolve, 500));
+      set((state) => ({ authUser: { ...state.authUser, ...data } }));
+      toast.success("Cập nhật thông tin cá nhân thành công!");
+    } catch (error) {
+      toast.error("Đã xảy ra lỗi khi cập nhật!");
+    } finally {
+      set({ isUpdatingProfile: false });
+    }
+  },
+  changeRole: async (role) => {
+    set({ isUpdatingProfile: true });
+    try {
+      // Mock: Simulate role change
+      await new Promise(resolve => setTimeout(resolve, 500));
+      set((state) => ({ authUser: { ...state.authUser, role } }));
+      toast.success(`Đã thay đổi quyền thành ${role}`);
+    } catch (error) {
+      toast.error("Đã xảy ra lỗi khi thay đổi quyền!");
+    } finally {
+      set({ isUpdatingProfile: false });
+    }
+  },
+
+  updateProfileInfo: async (data) => {
+    set((state) => ({
+      authUser: { ...state.authUser, ...data },
+      isUpdatingProfile: true,
+      errorMessage: "",
+    }));
+
+    try {
+      // Mock: Simulate update
+      await new Promise(resolve => setTimeout(resolve, 500));
+      set((state) => ({ authUser: { ...state.authUser, ...data } }));
+      toast.success("Cập nhật thông tin cá nhân thành công!");
+    } catch (error) {
+      set((state) => ({ authUser: { ...state.authUser, ...data } })); // Rollback nếu lỗi
+      toast.error("Lỗi cập nhật");
+    } finally {
+      set({ isUpdatingProfile: false });
     }
   },
 
@@ -185,18 +246,17 @@ export const useAuthStore = create((set, get) => ({
     const { authUser } = get();
     if (!authUser || get().socket?.connected) return;
 
-    const socket = io(BACKEND_URL, {
-      query: {
-        userId: authUser._id,
+    // Mock: Simulate socket connection
+    const socket = {
+      connected: true,
+      disconnect: () => set({ socket: null }),
+      on: (event, callback) => {
+        if (event === "getOnlineUsers") {
+          callback(["mock-user-1", "mock-user-2"]);
+        }
       },
-    });
-    socket.connect();
-
+    };
     set({ socket: socket });
-
-    socket.on("getOnlineUsers", (userIds) => {
-      set({ onlineUsers: userIds });
-    });
   },
   disconnectSocket: () => {
     if (get().socket?.connected) get().socket.disconnect();

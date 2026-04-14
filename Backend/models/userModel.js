@@ -1,92 +1,67 @@
-import { DataTypes, Model } from "sequelize";
-import sequelize from "../config/db.js";
-class User extends Model {}
+import mongoose from "mongoose";
 
-User.init(
+const userSchema = mongoose.Schema(
   {
+    //accountId can be google Id, facebook Id, github Id etc.
     accountId: {
-      type: DataTypes.STRING,
-      allowNull: true,
+      type: String,
     },
     username: {
-      type: DataTypes.STRING,
-      allowNull: false,
+      type: String,
+      required: true,
     },
     firstname: {
-      type: DataTypes.STRING,
-      allowNull: false,
+      type: String,
+      required: true,
     },
     lastname: {
-      type: DataTypes.STRING,
-      allowNull: false,
+      type: String,
+      required: true,
     },
     email: {
-      type: DataTypes.STRING,
-      allowNull: false,
-      unique: true,
+      type: String,
+      required: true,
     },
     password: {
-      type: DataTypes.STRING,
-      allowNull: false,
+      type: String,
+      required: true,
     },
     phone: {
-      type: DataTypes.STRING,
-      allowNull: true,
+      type: Number,
+    },
+    location: {
+      type: String, // Địa chỉ hoặc vị trí rao bán
     },
     role: {
-      type: DataTypes.ENUM("buyer", "user", "seller", "admin"),
-      defaultValue: "buyer",
+      type: String,
+      enum: ["buyer", "seller", "admin"], // Phân quyền người dùng
+      default: "buyer",
     },
     profilePic: {
-      type: DataTypes.STRING,
-      defaultValue: "",
+      type: String,
+      default: "",
     },
+    followers: [],
+    following: [],
     isBlocked: {
-      type: DataTypes.BOOLEAN,
-      defaultValue: false,
+      type: Boolean,
+      default: false, // Mặc định người dùng không bị chặn
     },
-    blockExpires: {
-      type: DataTypes.DATE,
-      allowNull: true,
-    },
-    loginAttempts: {
-      type: DataTypes.INTEGER,
-      defaultValue: 0,
-    },
+    blockExpires: { type: Date },
+    loginAttempts: { type: Number, default: 0 },
     lastLogin: {
-      type: DataTypes.DATE,
-      defaultValue: DataTypes.NOW,
+      type: Date,
+      default: Date.now,
     },
-    soldItems: {
-      type: DataTypes.INTEGER,
-      defaultValue: 0,
-    },
-    activeListings: {
-      type: DataTypes.INTEGER,
-      defaultValue: 0,
-    },
-    responseRate: {
-      type: DataTypes.FLOAT,
-      defaultValue: 0,
-    },
-    isVerified: {
-      type: DataTypes.BOOLEAN,
-      defaultValue: false,
-    },
-    verificationCode: {
-      type: DataTypes.STRING,
-      allowNull: true,
-    },
-    verificationCodeExpires: {
-      type: DataTypes.DATE,
-      allowNull: true,
-    },
+    soldItems: { type: Number, default: 0 },
+    activeListings: { type: Number, default: 0 },
+    responseRate: { type: Number, default: 0 },
+    isVerified: { type: Boolean, default: false },
+    verificationCode: { type: String },
+    verificationCodeExpires: { type: Date },
   },
-  {
-    sequelize, // Tham chiếu tới instance của Sequelize
-    modelName: "User",
-    timestamps: true, // Tự động tạo `createdAt` và `updatedAt`
-  }
+  { timestamps: true }
 );
 
-export default User;
+const UserModel = mongoose.model("User", userSchema);
+export default UserModel;

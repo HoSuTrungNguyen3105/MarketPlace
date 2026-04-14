@@ -1,6 +1,6 @@
 import { Sequelize } from "sequelize";
 // Khởi tạo Sequelize với mysql2
-const sequelize = new Sequelize("node-mysql", "root", "Nguyen", {
+const sequelize = new Sequelize("marketplace", "root", "Nguyen", {
   host: "localhost",
   dialect: "mysql", // Sử dụng mysql (mysql2 đã được cài sẵn)
   logging: false, // Tắt logging (tuỳ chọn)

@@ -1,28 +1,28 @@
-import mysqlpool from "../config/db.js";
+import sequelize from "../config/db.js";
 
 import { Sequelize, DataTypes } from "sequelize";
 import userModel from "./userModel.js";
 import postModel from "./postModel.js";
 
-const sequelize = new Sequelize(
-  mysqlpool.database,
-  mysqlpool.user,
-  mysqlpool.password,
+const sequelize_db = new Sequelize(
+  sequelize.database,
+  sequelize.user,
+  sequelize.password,
   {
-    host: mysqlpool.host,
-    dialect: mysqlpool.dialect,
+    host: sequelize.host,
+    dialect: sequelize.dialect,
     operatorsAliases: false,
 
-    pool: {
-      max: mysqlpool.pool.max,
-      min: mysqlpool.pool.min,
-      acquire: mysqlpool.pool.acquire,
-      idle: mysqlpool.pool.idle,
-    },
+    // pool: {
+    //   max: sequelize.pool.max,
+    //   min: sequelize.pool.min,
+    //   acquire: sequelize.pool.acquire,
+    //   idle: sequelize.pool.idle,
+    // },
   }
 );
 
-sequelize
+sequelize_db
   .authenticate()
   .then(() => {
     console.log("connected..");
@@ -61,4 +61,4 @@ db.posts.belongsTo(db.products, {
   }
 })();
 
-export default db;
+export default sequelize_db;

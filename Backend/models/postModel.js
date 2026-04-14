@@ -1,31 +1,105 @@
-import { DataTypes, Model } from "sequelize";
-import sequelize from "../config/db.js"; // Đường dẫn tới cấu hình Sequelize
+import mongoose from "mongoose";
 
-class Post extends Model {}
-
-Post.init(
+const postSchema = mongoose.Schema(
   {
-    image: {
-      type: DataTypes.STRING,
+    userId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+      required: true,
     },
     title: {
-      type: DataTypes.STRING,
-      allowNull: false,
-    },
-    price: {
-      type: DataTypes.INTEGER,
+      type: String,
+      required: true,
+      trim: true,
     },
     description: {
-      type: DataTypes.TEXT,
+      type: String,
+      required: true,
     },
-    published: {
-      type: DataTypes.BOOLEAN,
+    category: {
+      type: Number,
+      required: true,
+    },
+    price: {
+      type: Number,
+      required: true,
+    },
+    location: {
+      type: String,
+    },
+    geoLocation: {
+      latitude: { type: Number },
+      longitude: { type: Number },
+    },
+    images: {
+      type: [String],
+      default: [],
+    },
+    contact: {
+      type: String,
+    },
+    condition: {
+      type: String,
+      enum: ["new", "used"],
+      default: "used",
+    },
+    sellerRating: {
+      type: Number,
+      default: 0,
+      min: 0,
+      max: 5,
+    },
+    isAvailable: {
+      type: Boolean,
+      default: true,
+    },
+    views: {
+      type: Number,
+      default: 0,
+    },
+    reports: {
+      type: [
+        {
+          reportedBy: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
+          reportedAt: { type: Date, default: Date.now },
+        },
+      ],
+      default: [],
+    },
+    keywords: {
+      type: [String],
+      default: [],
+    },
+    favoritesCount: {
+      type: Number,
+      default: 0,
+    },
+    isPromoted: {
+      type: Boolean,
+      default: false,
+    },
+    moderationStatus: {
+      type: String,
+      enum: ["pending", "approved", "rejected"],
+      default: "pending",
+    },
+    status: {
+      type: String,
+      enum: ["active", "archived", "deleted"],
+      default: "active",
+    },
+    // Bổ sung các fields động theo từng danh mục
+    customFields: {
+      type: Map,
+      of: mongoose.Schema.Types.Mixed,
+      default: {}, // Dữ liệu động cho từng danh mục
     },
   },
   {
-    sequelize, // Tham chiếu tới instance của Sequelize
-    modelName: "Post",
-    timestamps: true, // Tự động tạo `createdAt` và `updatedAt`
+    timestamps: true,
   }
 );
-export default Post;
+
+const PostModel = mongoose.model("MarketplacePost", postSchema);
+
+export default PostModel;

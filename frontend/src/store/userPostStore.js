@@ -2,6 +2,42 @@ import { create } from "zustand";
 import { axiosInstance } from "../lib/axios";
 import toast from "react-hot-toast";
 
+// Mock data
+const mockCategories = [
+  { id: 1, name: "Điện tử" },
+  { id: 2, name: "Quần áo" },
+  { id: 3, name: "Thực phẩm" },
+  { id: 4, name: "Sách vở" },
+  { id: 5, name: "Đồ gia dụng" },
+];
+
+const mockPosts = [
+  {
+    _id: "1",
+    title: "Mock Post 1",
+    description: "This is a mock post",
+    category: "Điện tử",
+    price: 100,
+    images: ["https://via.placeholder.com/150"],
+    isApproved: true,
+  },
+  {
+    _id: "2",
+    title: "Mock Post 2",
+    description: "Another mock post",
+    category: "Quần áo",
+    price: 50,
+    images: ["https://via.placeholder.com/150"],
+    isApproved: false,
+  },
+];
+
+const mockProvinces = [
+  { id: 1, name: "Hà Nội" },
+  { id: 2, name: "TP.HCM" },
+  { id: 3, name: "Đà Nẵng" },
+];
+
 export const usePostStore = create((set, get) => ({
   posts: [], // Lưu danh sách bài đăng
   post: null, // A single post
@@ -17,37 +53,36 @@ export const usePostStore = create((set, get) => ({
   loading: false, // Trạng thái loading
   error: null, // Lưu thông báo lỗi nếu có
 
-  // Hàm tạo bài đăng
+  // Hàm tạo bài đăng (mock)
   createPost: async (formData) => {
     try {
       set({ isCreating: true, errorMessages: [] });
-      const response = await axiosInstance.post("/post/posts", formData);
+      // Simulate API delay
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      const newPost = {
+        _id: Date.now().toString(),
+        title: formData.get('title') || 'Mock Title',
+        description: formData.get('description') || 'Mock Description',
+        category: formData.get('category') || 'Mock Category',
+        price: formData.get('price') || 0,
+        images: ['https://via.placeholder.com/150'],
+        isApproved: false,
+      };
       set((state) => ({
-        posts: [response.data, ...state.posts], // Thêm bài viết mới vào danh sách
+        posts: [newPost, ...state.posts], // Thêm bài viết mới vào danh sách
         createPostSuccess: true,
       }));
       set({ isCreating: false });
-      return response.data; // Trả về bài viết mới tạo
+      toast.success("Bài đăng đã được tạo thành công!");
+      return newPost; // Trả về bài viết mới tạo
     } catch (error) {
-      const errors = error.response?.data?.errors || [];
       set({
         isCreating: false,
         createPostSuccess: false,
-        errorMessages: errors,
+        errorMessages: ["Lỗi khi tạo bài đăng"],
       });
-
-      // Kiểm tra và hiển thị tất cả lỗi từ backend
-      if (error.response?.data?.errors) {
-        // Nếu có mảng lỗi từ backend
-        error.response.data.errors.forEach((err) => {
-          toast.error(err.message || "Lỗi không xác định từ backend");
-        });
-      } else {
-        // Nếu chỉ có một lỗi đơn lẻ
-        const errorMessage = error.response?.data?.message || "Đã xảy ra lỗi";
-        toast.error(errorMessage);
-      }
-      return false; // Trả về false nếu có lỗi
+      toast.error("Đã xảy ra lỗi khi tạo bài đăng");
+      return false;
     } finally {
       set({ isCreating: false });
     }
@@ -55,134 +90,119 @@ export const usePostStore = create((set, get) => ({
 
   // Reset createPostSuccess sau khi thông báo đã được xử lý
   resetCreatePostSuccess: () => set({ createPostSuccess: false }),
-  // Lấy bài viết theo ID
+  // Lấy bài viết theo ID (mock)
   getPostById: async (id) => {
-    set({ isLoading: true, error: null }); // Bắt đầu loading
+    set({ isLoading: true, error: null });
     try {
-      const response = await axiosInstance.get(`/post/detail/${id}`);
-      if (response.data.status === "Success") {
-        set({ post: response.data.data }); // Cập nhật bài viết vào state
-      }
+      await new Promise(resolve => setTimeout(resolve, 500));
+      const foundPost = mockPosts.find(p => p._id === id);
+      set({ post: foundPost || null });
     } catch (error) {
-      set({ error: "Error loading post", post: null }); // Nếu có lỗi
+      set({ error: "Error loading post", post: null });
     } finally {
-      set({ isLoading: false }); // Kết thúc loading
+      set({ isLoading: false });
     }
   },
   getPostByIdwithoutUser: async (id) => {
-    set({ isLoading: true, error: null }); // Bắt đầu loading
+    set({ isLoading: true, error: null });
     try {
-      const response = await axiosInstance.get(`/post/detail/without/${id}`);
-      if (response.data.status === "Success") {
-        set({ post: response.data.data }); // Cập nhật bài viết vào state
-      }
+      await new Promise(resolve => setTimeout(resolve, 500));
+      const foundPost = mockPosts.find(p => p._id === id);
+      set({ post: foundPost || null });
     } catch (error) {
-      set({ error: "Error loading post", post: null }); // Nếu có lỗi
+      set({ error: "Error loading post", post: null });
     } finally {
-      set({ isLoading: false }); // Kết thúc loading
+      set({ isLoading: false });
     }
   },
-  // Hàm lấy danh mục từ API
+  // Hàm lấy danh mục từ mock data
   fetchCategories: async () => {
-    set({ loading: true, error: null }); // Set loading true khi bắt đầu fetch
+    set({ loading: true, error: null });
     try {
-      const response = await axiosInstance.get("/post/categories"); // Gọi API danh mục
-      set({ categories: response.data, loading: false }); // Cập nhật danh mục khi thành công
+      await new Promise(resolve => setTimeout(resolve, 500));
+      set({ categories: mockCategories, loading: false });
     } catch (error) {
-      set({ error: "Lỗi khi lấy danh mục", loading: false }); // Set lỗi nếu có
+      set({ error: "Lỗi khi lấy danh mục", loading: false });
     }
   },
-  // Phương thức để fetch bài đăng
+  // Phương thức để fetch bài đăng (mock)
   fetchPosts: async () => {
-    set({ isLoading: true, error: null }); // Bắt đầu tải, đặt error về null
+    set({ isLoading: true, error: null });
     try {
-      const res = await axiosInstance.get("/post/postsId/allItems");
-      set({ posts: res.data.data });
+      await new Promise(resolve => setTimeout(resolve, 500));
+      set({ posts: mockPosts });
     } catch (error) {
-      console.error("Error:", error);
-      set({ error: "Có lỗi xảy ra khi tải bài đăng" }); // Lưu lỗi
+      set({ error: "Có lỗi xảy ra khi tải bài đăng" });
     } finally {
-      set({ isLoading: false }); // Kết thúc quá trình tải
+      set({ isLoading: false });
     }
   },
   fetchPostSearch: async () => {
-    set({ isLoading: true, error: null }); // Bắt đầu tải, đặt error về null
+    set({ isLoading: true, error: null });
     try {
-      const res = await axiosInstance.get("/post/getPostAp");
-      set({ posts: res.data.data });
+      await new Promise(resolve => setTimeout(resolve, 500));
+      set({ posts: mockPosts });
     } catch (error) {
-      console.error("Error:", error);
-      set({ error: "Có lỗi xảy ra khi tải bài đăng" }); // Lưu lỗi
+      set({ error: "Có lỗi xảy ra khi tải bài đăng" });
     } finally {
-      set({ isLoading: false }); // Kết thúc quá trình tải
+      set({ isLoading: false });
     }
   },
-  // Delete post
+  // Delete post (mock)
   deletePost: async (postId) => {
     try {
-      await axiosInstance.delete(`/post/user/${postId}`); // API call to delete the post
-      // Cập nhật danh sách bài viết bằng cách lọc ra bài bị xóa
+      await new Promise(resolve => setTimeout(resolve, 500));
       set((state) => ({
-        posts: state.posts.filter((post) => post._id !== postId), // Xóa bài khỏi danh sách
+        posts: state.posts.filter((post) => post._id !== postId),
       }));
+      toast.success("Bài đăng đã được xóa!");
     } catch (error) {
-      console.error("Error deleting post:", error);
-      throw error; // Rethrow error to handle it in the component
+      toast.error("Lỗi khi xóa bài đăng");
+      throw error;
     }
   },
   fetchPendingPosts: async () => {
     set({ isLoading: true });
     try {
-      const response = await axiosInstance.get("/admin/pendingPost"); // Lấy bài chưa duyệt
-      console.log(response.data); // Kiểm tra dữ liệu trả về từ API
-      if (response.data) {
-        set({ pendingPosts: response.data, isLoading: false });
-      } else {
-        console.log("No pending posts found.");
-      }
+      await new Promise(resolve => setTimeout(resolve, 500));
+      set({ pendingPosts: mockPosts.filter(p => !p.isApproved), isLoading: false });
     } catch (error) {
       console.error("Error fetching pending posts:", error);
     } finally {
       set({ isLoading: false });
     }
   },
-  // Hàm fetch bài viết đã duyệt
+  // Hàm fetch bài viết đã duyệt (mock)
   fetchApprovedPosts: async () => {
-    set({ isLoading: true, error: null }); // Đặt trạng thái loading
+    set({ isLoading: true, error: null });
     try {
-      const response = await axiosInstance.get("/admin/approvePost");
-      set({ approvedPosts: response.data, isLoading: false });
+      await new Promise(resolve => setTimeout(resolve, 500));
+      set({ approvedPosts: mockPosts.filter(p => p.isApproved), isLoading: false });
     } catch (error) {
-      console.error("Error fetching approved posts:", error);
       set({ error: "Error fetching approved posts", isLoading: false });
     }
   },
   toggleApproval: async (postId, currentStatus) => {
     try {
-      const response = await axiosInstance.put(`/post/approve/${postId}`, {
-        isApproved: !currentStatus, // Đảo ngược trạng thái
-      });
-
-      // Cập nhật danh sách bài viết trong state sau khi cập nhật thành công
-      if (response.status === 200) {
-        set((state) => ({
-          posts: state.posts.map((post) =>
-            post._id === postId ? { ...post, isApproved: !currentStatus } : post
-          ),
-        }));
-      }
+      await new Promise(resolve => setTimeout(resolve, 500));
+      set((state) => ({
+        posts: state.posts.map((post) =>
+          post._id === postId ? { ...post, isApproved: !currentStatus } : post
+        ),
+      }));
+      toast.success("Trạng thái đã được cập nhật!");
     } catch (error) {
       console.error("Error updating post approval status:", error);
     }
   },
-  // Hàm lấy dữ liệu tỉnh thành từ API
+  // Hàm lấy dữ liệu tỉnh thành từ mock data
   fetchProvinces: async () => {
-    set({ isLoading: true, error: null }); // Đặt trạng thái loading
+    set({ isLoading: true, error: null });
     try {
-      const response = await axiosInstance.get("/post/provinces"); // URL API
-      set({ provinces: response.data, isLoading: false }); // Cập nhật danh sách tỉnh thành
+      await new Promise(resolve => setTimeout(resolve, 500));
+      set({ provinces: mockProvinces, isLoading: false });
     } catch (error) {
-      set({ error: error.message, isLoading: false }); // Xử lý lỗi
+      set({ error: error.message, isLoading: false });
     }
   },
 
@@ -192,58 +212,148 @@ export const usePostStore = create((set, get) => ({
       get().provinces.find((p) => p.id === id)?.name || "Không có địa điểm"
     );
   },
-  // Hàm báo cáo bài viết
+  // Hàm báo cáo bài viết (mock)
   reportPost: async (postId, userId) => {
-    set({ isLoading: true, error: null }); // Đặt trạng thái loading khi bắt đầu
+    set({ isLoading: true, error: null });
 
     try {
-      const response = await axiosInstance.post(`/post/report/${postId}`, {
-        userId,
-      });
-
-      // Xử lý nếu báo cáo thành công
+      await new Promise(resolve => setTimeout(resolve, 500));
       set({ isLoading: false });
-      toast.success(response.data.message); // Hiển thị thông báo thành công
+      toast.success("Báo cáo thành công!");
     } catch (error) {
       set({
         isLoading: false,
-        error: error.response?.data?.message || "Có lỗi xảy ra khi báo cáo.",
+        error: "Có lỗi xảy ra khi báo cáo.",
       });
-      toast.error(
-        error.response?.data?.message || "Có lỗi xảy ra khi báo cáo."
-      ); // Hiển thị thông báo lỗi
-      console.error("Report failed:", error);
+      toast.error("Có lỗi xảy ra khi báo cáo.");
     }
   },
 
-  // Action to update the post
+  // Action to update the post (mock)
   updatePost: async (updatedPost) => {
     set({ isLoading: true, error: null });
     try {
-      // Use axiosInstance.put() to update the post
-      const response = await axiosInstance.put(
-        `/post/update/${updatedPost._id}`,
-        updatedPost,
-        {
-          headers: {
-            "Content-Type": "application/json", // Optional, but you can include this if needed
-          },
-        }
-      );
+      await new Promise(resolve => setTimeout(resolve, 500));
+      set((state) => ({
+        posts: state.posts.map((post) =>
+          post._id === updatedPost._id ? updatedPost : post
+        ),
+        post: updatedPost,
+        isLoading: false,
+      }));
+      toast.success("Bài viết đã được cập nhật thành công!");
+    } catch (error) {
+      set({ error: error.message, isLoading: false });
+      toast.error("Có lỗi xảy ra khi cập nhật bài viết.");
+    }
+  },
+  fetchPostSearch: async () => {
+    set({ isLoading: true, error: null }); // Bắt đầu tải, đặt error về null
+    try {
+      await new Promise(resolve => setTimeout(resolve, 500));
+      set({ posts: mockPosts });
+    } catch (error) {
+      console.error("Error:", error);
+      set({ error: "Có lỗi xảy ra khi tải bài đăng" }); // Lưu lỗi
+    } finally {
+      set({ isLoading: false }); // Kết thúc quá trình tải
+    }
+  },
+  // Delete post (mock)
+  deletePost: async (postId) => {
+    try {
+      await new Promise(resolve => setTimeout(resolve, 500));
+      set((state) => ({
+        posts: state.posts.filter((post) => post._id !== postId),
+      }));
+      toast.success("Bài đăng đã được xóa!");
+    } catch (error) {
+      console.error("Error deleting post:", error);
+      throw error;
+    }
+  },
+  fetchPendingPosts: async () => {
+    set({ isLoading: true });
+    try {
+      await new Promise(resolve => setTimeout(resolve, 500));
+      set({ pendingPosts: mockPosts.filter(p => !p.isApproved), isLoading: false });
+    } catch (error) {
+      console.error("Error fetching pending posts:", error);
+    } finally {
+      set({ isLoading: false });
+    }
+  },
+  // Hàm fetch bài viết đã duyệt (mock)
+  fetchApprovedPosts: async () => {
+    set({ isLoading: true, error: null });
+    try {
+      await new Promise(resolve => setTimeout(resolve, 500));
+      set({ approvedPosts: mockPosts.filter(p => p.isApproved), isLoading: false });
+    } catch (error) {
+      console.error("Error fetching approved posts:", error);
+      set({ error: "Error fetching approved posts", isLoading: false });
+    }
+  },
+  toggleApproval: async (postId, currentStatus) => {
+    try {
+      await new Promise(resolve => setTimeout(resolve, 500));
+      set((state) => ({
+        posts: state.posts.map((post) =>
+          post._id === postId ? { ...post, isApproved: !currentStatus } : post
+        ),
+      }));
+      toast.success("Trạng thái đã được cập nhật!");
+    } catch (error) {
+      console.error("Error updating post approval status:", error);
+    }
+  },
+  // Hàm lấy dữ liệu tỉnh thành từ mock data
+  fetchProvinces: async () => {
+    set({ isLoading: true, error: null });
+    try {
+      await new Promise(resolve => setTimeout(resolve, 500));
+      set({ provinces: mockProvinces, isLoading: false });
+    } catch (error) {
+      set({ error: error.message, isLoading: false });
+    }
+  },
 
-      // If the response is successful, update the store
-      if (response.status === 200) {
-        set((state) => ({
-          posts: state.posts.map((post) =>
-            post._id === updatedPost._id ? response.data : post
-          ),
-          post: response.data, // Update the current post
-          isLoading: false,
-        }));
-        toast.success("Bài viết đã được cập nhật thành công!"); // Success message
-      } else {
-        set({ error: response.data.message, isLoading: false });
-      }
+  // Hàm lấy tên tỉnh thành theo ID
+  getProvinceNameById: (id) => {
+    return (
+      get().provinces.find((p) => p.id === id)?.name || "Không có địa điểm"
+    );
+  },
+  // Hàm báo cáo bài viết (mock)
+  reportPost: async (postId, userId) => {
+    set({ isLoading: true, error: null });
+
+    try {
+      await new Promise(resolve => setTimeout(resolve, 500));
+      set({ isLoading: false });
+      toast.success("Báo cáo thành công!");
+    } catch (error) {
+      set({
+        isLoading: false,
+        error: "Có lỗi xảy ra khi báo cáo.",
+      });
+      toast.error("Có lỗi xảy ra khi báo cáo.");
+    }
+  },
+
+  // Action to update the post (mock)
+  updatePost: async (updatedPost) => {
+    set({ isLoading: true, error: null });
+    try {
+      await new Promise(resolve => setTimeout(resolve, 500));
+      set((state) => ({
+        posts: state.posts.map((post) =>
+          post._id === updatedPost._id ? updatedPost : post
+        ),
+        post: updatedPost,
+        isLoading: false,
+      }));
+      toast.success("Bài viết đã được cập nhật thành công!");
     } catch (error) {
       set({ error: error.message, isLoading: false });
       toast.error("Có lỗi xảy ra khi cập nhật bài viết.");

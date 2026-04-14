@@ -108,8 +108,22 @@ const handleImageUpload = async (images) => {
 };
 
 export const getAllPosts = async (req, res) => {
-  let products = await Post.findAll({});
-  res.status(200).send(products);
+  try {
+    const posts = await PostModel.find()
+      .populate("userId", "username _id") // Trả cả username và _id từ UserModel
+      .sort({ createdAt: -1 });
+
+    if (!posts) {
+      return res.status(404).json({ message: "No posts found" });
+    }
+
+    return res.json({
+      status: "Success",
+      data: posts, // Trả về danh sách bài đăng với thông tin báo cáo
+    });
+  } catch (error) {
+    res.status(500).json({ message: "Error retrieving posts" });
+  }
 };
 export const fetchAllPost = async (req, res) => {
   try {
